@@ -1,0 +1,40 @@
+# Python cache and test output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+test-results/
+coverage/
+
+# Local servers and runtime files
+*.pid
+*.log
+.http-server/
+
+# Browser caches and automation artifacts
+.playwright/
+playwright-report/
+blob-report/
+browser-cache/
+
+# Temporary screenshots and exports
+screenshots/
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.backup-before-*.html
+*.png.tmp
+
+# Editor and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini
