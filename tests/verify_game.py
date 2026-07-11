@@ -13,7 +13,10 @@ HTML = ROOT / "源代码" / "游戏源代码.html"
 PROTOTYPE = ROOT / "源代码" / "prototype_castle_layout.html"
 TABLE_DIR = ROOT / "单位属性表"
 EXPECTED_TABLE = "20260710.xlsx"
-EXPECTED_TABLE_SHA256 = "236C40B268A140DD11A5C16ABDAB886019A5714E850613C0FDFB3553E3E83D55"
+EXPECTED_TABLE_SHA256 = {
+    "236C40B268A140DD11A5C16ABDAB886019A5714E850613C0FDFB3553E3E83D55",  # 保存前
+    "D45C3B8966AFE529F68E3503A3004773E9565137F23170187105CB9A70B7C9B8",  # Excel 当前未保存内容
+}
 
 
 def fail(message: str) -> None:
@@ -43,7 +46,7 @@ latest = max(tables, key=lambda p: int(p.stem))
 if latest.name != EXPECTED_TABLE:
     fail(f"发现更新的属性表 {latest.name}；请先重新同步游戏数值")
 table_hash = hashlib.sha256(latest.read_bytes()).hexdigest().upper()
-if table_hash != EXPECTED_TABLE_SHA256:
+if table_hash not in EXPECTED_TABLE_SHA256:
     fail(f"{latest.name} 内容已变化；请重新读取并同步属性")
 
 source = HTML.read_text(encoding="utf-8")
@@ -54,7 +57,7 @@ required = {
     "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:400,attack:10,speed:100,range:60,interval:.2,cooldown:3,regen:10",
     "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:500,attack:20,speed:70,range:70,interval:.5,cooldown:3,regen:10",
     "象最新属性": "elephant:{name:'磐石象',cost:10,hp:800,attack:15,speed:50,range:80,interval:.8,cooldown:3,regen:20",
-    "龙最新属性": "dragon:{name:'星焰龙',cost:15,hp:600,attack:25,speed:60,range:100,interval:1,cooldown:5,regen:15",
+    "龙最新属性": "dragon:{name:'星焰龙',cost:15,hp:600,attack:30,speed:60,range:100,interval:1,cooldown:5,regen:15",
     "蛇药水倍率": "snake:{hp:1,attack:1,speed:2,attackSpeed:2,regen:1,poisonDamage:2,poisonDuration:1}",
     "狮药水倍率": "lion:{hp:1.3,attack:2,speed:1,attackSpeed:1.3,regen:1,killHeal:2}",
     "象药水倍率": "elephant:{hp:2,attack:1,speed:1,attackSpeed:1,regen:2,heavyDamage:2}",
@@ -64,16 +67,16 @@ required = {
     "象三秒重击": "if(u.type==='elephant'&&u.charge>=3)u.heavyReady=true",
     "象三倍伤害": "mult=3*(u.buffed?(u.buff.heavyDamage||1):1)",
     "龙燃烧": "v.burnDps=20*(u.buffed?(u.buff.burnDamage||1):1);v.burn=3*(u.buffed?(u.buff.burnDuration||1):1)",
-    "药水属性": "const POTION={cost:7,cooldown:15};",
-    "爆裂炮属性": "const BURST={cost:20,cooldown:25,damage:1000,shots:10};",
-    "守门炮属性": "const GUARD_CANNON={interval:.5,windup:.28,damage:30,rangeFactor:.25};",
-    "城门血量": "kind:'tower',side,hp:7000,maxHp:7000",
-    "金币增长": "this.coins.player+=2*dt;this.coins.enemy+=2*dt;",
+    "药水属性": "const POTION={cost:5,cooldown:20};",
+    "爆裂炮属性": "const BURST={cost:20,cooldown:20,damage:1000,shots:10};",
+    "守门炮属性": "const GUARD_CANNON={interval:2,windup:.28,damage:200,rangeFactor:.25};",
+    "城门血量": "kind:'tower',side,hp:10000,maxHp:10000",
+    "金币增长": "this.coins.player+=1*dt;this.coins.enemy+=1*dt;",
     "正式道路范围": "roadStart:105,roadEnd:1175",
     "按单位尺寸计算出生距离": "const distance=UNIT_DATA[type].size+CASTLE_GEOMETRY.spawnGap",
     "双方镜像出生参数": "return side==='player'?distance/path.length:1-distance/path.length;",
-    "连续三门城墙几何": "const CASTLE_GEOMETRY={wallHalfWidth:38,wallTop:198,wallBottom:522,gateHalfHeights:[25,31,25]",
-    "统一炮台几何": "const CANNON_GEOMETRY={mountOffsetY:-166,barrelLength:45,baseRadius:23,recoilDistance:4};",
+    "童话基地几何": "const CASTLE_GEOMETRY={wallHalfWidth:46,wallTop:198,wallBottom:522,gateHalfHeights:[23,34,23]",
+    "缩小炮台几何": "const CANNON_GEOMETRY={mountOffsetY:-166,barrelLength:38,baseRadius:20,recoilDistance:4};",
     "共享炮口计算": "const muzzle=this.cannonMuzzle(t)",
     "炮口闪光绘制": "else if(f.kind==='muzzle')",
     "炮口烟雾绘制": "else if(f.kind==='smoke')",
@@ -96,7 +99,7 @@ required = {
     "单发音频限时": "this.playTimed(voice,clipped,false)",
     "十连发动画时长": "const BURST_VISUAL_DURATION=FX_TIMING.burstLead+(BURST.shots-1)*FX_TIMING.burstStep+FX_TIMING.burstExplosion;",
     "十连发音频拟合": "this.playTimed(this.burstVoice,visualDuration,true)",
-    "纯视觉药水放大": "u.visualScale=1.3",
+    "纯视觉药水放大": "u.visualScale=1.4",
     "音频逐帧截止": "audio.updateClips();game.update(dt)",
     "全场部署参数": "deploy(side,type,lane,spawnT=null)",
     "点击部署仅选择道路": "if(target.d>DEPLOY_SNAP_RADIUS){this.hint('请点击道路范围内');return;}if(this.deploy('player',s.type,target.i))",

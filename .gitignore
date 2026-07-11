@@ -35,6 +35,7 @@ temp/
 *.swp
 *.swo
 *~
+~$*.xlsx
 .DS_Store
 Thumbs.db
 Desktop.ini
