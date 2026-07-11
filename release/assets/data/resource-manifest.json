@@ -1,0 +1,76 @@
+{
+  "entry": "奇境王冠.html",
+  "self_contained_entry": true,
+  "resources": [
+    {
+      "type": "image",
+      "source": "源代码/assets/fairy-garden-battlefield-v1.png",
+      "release": "assets/images/fairy-garden-battlefield-v1.png",
+      "bytes": 2274510,
+      "sha256": "286D8177D9DEB350737A4AA859FB6E659A83386757279353FAAD6F5A10E876B2",
+      "source_reference_count": 1,
+      "embedded_in_html": true
+    },
+    {
+      "type": "image",
+      "source": "源代码/assets/fairy-castle-gate-v1.png",
+      "release": "assets/images/fairy-castle-gate-v1.png",
+      "bytes": 1043809,
+      "sha256": "B5E953E80BBE4045C3522A5F230E819C9914382EC3E08AADEEC31821922E0CAB",
+      "source_reference_count": 1,
+      "embedded_in_html": true
+    },
+    {
+      "type": "image",
+      "source": "源代码/assets/fairy-road-stone-texture-v1.png",
+      "release": "assets/images/fairy-road-stone-texture-v1.png",
+      "bytes": 1928308,
+      "sha256": "8279B6481DAFB24885D9F06F244718500F8BD15C5C1125FEAF544503BFF6A1B9",
+      "source_reference_count": 12,
+      "embedded_in_html": true
+    },
+    {
+      "type": "image",
+      "source": "源代码/assets/fairy-cannon-barrel-v1.png",
+      "release": "assets/images/fairy-cannon-barrel-v1.png",
+      "bytes": 536441,
+      "sha256": "C4362AD1871C8BF9363E2CAA60CADB68ED2E4B9B479105B1B4CBBF814DED822C",
+      "source_reference_count": 1,
+      "embedded_in_html": true
+    },
+    {
+      "type": "audio",
+      "source": "音效/BGM/BGM .ogg",
+      "release": "assets/audio/BGM.ogg",
+      "bytes": 1946662,
+      "sha256": "2266905838EB6029F0B694CE1C8A463F737D1DDD65A8E67706E7F866D180C4F3",
+      "source_reference_count": 1,
+      "embedded_in_html": true
+    },
+    {
+      "type": "audio",
+      "source": "音效/加农炮/单发/cannon1.mp3",
+      "release": "assets/audio/cannon1.mp3",
+      "bytes": 50191,
+      "sha256": "EC43537645E7AC72CC3FF5F3AB7113F6FA18174B309A8157F2ECE64CC20A55EC",
+      "source_reference_count": 1,
+      "embedded_in_html": true
+    },
+    {
+      "type": "audio",
+      "source": "音效/加农炮/连发/explosions.mp3",
+      "release": "assets/audio/explosions.mp3",
+      "bytes": 238205,
+      "sha256": "DFD25DCB326B8F5057227226566E0F3F8187B45EAA561A98A956AE0DF91F8770",
+      "source_reference_count": 1,
+      "embedded_in_html": true
+    }
+  ],
+  "fonts": [
+    "Microsoft YaHei / Microsoft YaHei UI（系统字体）",
+    "Segoe UI Emoji / Apple Color Emoji / Noto Color Emoji（系统 Emoji 字体）",
+    "system-ui（系统回退字体）"
+  ],
+  "external_network_dependencies": [],
+  "json_runtime_dependencies": []
+}

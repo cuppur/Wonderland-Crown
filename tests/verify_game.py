@@ -10,12 +10,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = ROOT / "源代码" / "游戏源代码.html"
+BUILD_RELEASE = ROOT / "build_release.py"
 PROTOTYPE = ROOT / "源代码" / "prototype_castle_layout.html"
 TABLE_DIR = ROOT / "单位属性表"
 EXPECTED_TABLE = "20260710.xlsx"
 EXPECTED_TABLE_SHA256 = {
-    "236C40B268A140DD11A5C16ABDAB886019A5714E850613C0FDFB3553E3E83D55",  # 保存前
-    "D45C3B8966AFE529F68E3503A3004773E9565137F23170187105CB9A70B7C9B8",  # Excel 当前未保存内容
+    "9290F54AC364812D97442BE968CE8A34FAA0D7FD8EE8A417DA8405A52ABDDB58",
 }
 
 
@@ -36,6 +36,8 @@ def forbid(source: str, token: str, label: str) -> None:
 
 if not HTML.is_file():
     fail(f"找不到游戏文件：{HTML}")
+if not BUILD_RELEASE.is_file():
+    fail(f"找不到手机发布脚本：{BUILD_RELEASE}")
 if PROTOTYPE.exists():
     fail(f"正式吸收后仍残留临时城墙原型：{PROTOTYPE}")
 
@@ -106,6 +108,14 @@ required = {
     "拖拽部署仅选择道路": "if(target.d>DEPLOY_SNAP_RADIUS)game.hint('请拖到道路范围内');else if(!game.deploy('player',d.type,target.i))",
     "道路吸附半径": "const DEPLOY_SNAP_RADIUS=46;",
     "连发元数据竞态兜底": "this.burstVoice.fallbackDuration=11.740862",
+    "移动端禁止缩放 viewport": "maximum-scale=1, user-scalable=no, viewport-fit=cover",
+    "移动端性能模式": "const mobilePerformanceMode=",
+    "移动端横屏锁定": "screen.orientation?.lock",
+    "移动端全屏请求": "document.documentElement.requestFullscreen",
+    "触摸开始支持": "addEventListener('touchstart'",
+    "触摸拖动支持": "addEventListener('touchmove'",
+    "触摸结束支持": "addEventListener('touchend'",
+    "首次触摸音频解锁": "document.addEventListener('pointerdown',()=>{audio.ensureContext()",
 }
 for label, token in required.items():
     require(source, token, label)
