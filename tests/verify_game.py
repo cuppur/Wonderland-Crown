@@ -10,6 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = ROOT / "源代码" / "游戏源代码.html"
+PROTOTYPE = ROOT / "源代码" / "prototype_castle_layout.html"
 TABLE_DIR = ROOT / "单位属性表"
 EXPECTED_TABLE = "20260710.xlsx"
 EXPECTED_TABLE_SHA256 = "236C40B268A140DD11A5C16ABDAB886019A5714E850613C0FDFB3553E3E83D55"
@@ -32,6 +33,8 @@ def forbid(source: str, token: str, label: str) -> None:
 
 if not HTML.is_file():
     fail(f"找不到游戏文件：{HTML}")
+if PROTOTYPE.exists():
+    fail(f"正式吸收后仍残留临时城墙原型：{PROTOTYPE}")
 
 tables = [p for p in TABLE_DIR.glob("*.xlsx") if p.stem.isdigit()]
 if not tables:
@@ -57,7 +60,15 @@ required = {
     "守门炮属性": "const GUARD_CANNON={interval:.5,windup:.28,damage:30,rangeFactor:.25};",
     "城门血量": "kind:'tower',side,hp:7000,maxHp:7000",
     "金币增长": "this.coins.player+=2*dt;this.coins.enemy+=2*dt;",
-    "加长道路": "roadStart:75,roadEnd:1205",
+    "正式道路范围": "roadStart:105,roadEnd:1175",
+    "按单位尺寸计算出生距离": "const distance=UNIT_DATA[type].size+CASTLE_GEOMETRY.spawnGap",
+    "双方镜像出生参数": "return side==='player'?distance/path.length:1-distance/path.length;",
+    "连续三门城墙几何": "const CASTLE_GEOMETRY={wallHalfWidth:38,wallTop:198,wallBottom:522,gateHalfHeights:[25,31,25]",
+    "统一炮台几何": "const CANNON_GEOMETRY={mountOffsetY:-166,barrelLength:45,baseRadius:23,recoilDistance:4};",
+    "共享炮口计算": "const muzzle=this.cannonMuzzle(t)",
+    "炮口闪光绘制": "else if(f.kind==='muzzle')",
+    "炮口烟雾绘制": "else if(f.kind==='smoke')",
+    "炮弹短拖尾": "ctx.moveTo(p.x-dx/d*18,p.y-dy/d*18)",
     "连续交汇路面": "ctx.fill(outer,'evenodd')",
     "生成花园背景": "./assets/fairy-garden-battlefield-v1.png",
     "生成城堡立绘": "./assets/fairy-castle-gate-v1.png",
@@ -71,16 +82,17 @@ required = {
     "BGM 文件": "../音效/BGM/BGM%20.ogg",
     "单发音效": "../音效/加农炮/单发/cannon1.mp3",
     "连发音效": "../音效/加农炮/连发/explosions.mp3",
-    "单炮出膛触发一次": "this.cannonLaunches++;audio.playCannon(flight+FX_TIMING.cannonExplosion)",
+    "单炮出膛计数": "this.cannonLaunches++;this.cannonLaunchesBySide[side]++",
+    "单炮出膛触发一次音效": "audio.playCannon(flight+FX_TIMING.cannonExplosion)",
     "单发音频限时": "this.playTimed(voice,clipped,false)",
     "十连发动画时长": "const BURST_VISUAL_DURATION=FX_TIMING.burstLead+(BURST.shots-1)*FX_TIMING.burstStep+FX_TIMING.burstExplosion;",
     "十连发音频拟合": "this.playTimed(this.burstVoice,visualDuration,true)",
     "纯视觉药水放大": "u.visualScale=1.3",
     "音频逐帧截止": "audio.updateClips();game.update(dt)",
     "全场部署参数": "deploy(side,type,lane,spawnT=null)",
-    "点击部署点贴合道路": "if(target.d>DEPLOY_SNAP_RADIUS){this.hint('请点击道路范围内');return;}if(this.deploy('player',s.type,target.i,target.t))",
-    "拖拽部署点贴合道路": "if(target.d>DEPLOY_SNAP_RADIUS)game.hint('请拖到道路范围内');else if(!game.deploy('player',d.type,target.i,target.t))",
-    "道路吸附半径": "const DEPLOY_SNAP_RADIUS=52;",
+    "点击部署仅选择道路": "if(target.d>DEPLOY_SNAP_RADIUS){this.hint('请点击道路范围内');return;}if(this.deploy('player',s.type,target.i))",
+    "拖拽部署仅选择道路": "if(target.d>DEPLOY_SNAP_RADIUS)game.hint('请拖到道路范围内');else if(!game.deploy('player',d.type,target.i))",
+    "道路吸附半径": "const DEPLOY_SNAP_RADIUS=46;",
     "连发元数据竞态兜底": "this.burstVoice.fallbackDuration=11.740862",
 }
 for label, token in required.items():
