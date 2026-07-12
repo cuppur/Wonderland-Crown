@@ -15,7 +15,7 @@ PROTOTYPE = ROOT / "源代码" / "prototype_castle_layout.html"
 TABLE_DIR = ROOT / "单位属性表"
 EXPECTED_TABLE = "20260710.xlsx"
 EXPECTED_TABLE_SHA256 = {
-    "9290F54AC364812D97442BE968CE8A34FAA0D7FD8EE8A417DA8405A52ABDDB58",
+    "4934176548525233C1B6FB272CD9DF63D67748C679C4F7C5F6D5A757CB04D200",
 }
 
 
@@ -58,10 +58,10 @@ required = {
     "游戏标题": "<title>奇境王冠</title>",
     "外部样式入口": '<link rel="stylesheet" href="./css/style.css" />',
     "微软 Emoji 字体": 'font-family:"Segoe UI Emoji"',
-    "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:400,attack:10,speed:100,range:60,interval:.2,cooldown:3,regen:10",
-    "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:500,attack:20,speed:70,range:70,interval:.5,cooldown:3,regen:10",
-    "象最新属性": "elephant:{name:'磐石象',cost:10,hp:800,attack:15,speed:50,range:80,interval:.8,cooldown:3,regen:20",
-    "龙最新属性": "dragon:{name:'星焰龙',cost:15,hp:600,attack:30,speed:60,range:100,interval:1,cooldown:5,regen:15",
+    "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:400,attack:10,speed:80,range:60,interval:.2,cooldown:3,regen:10",
+    "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:500,attack:20,speed:60,range:70,interval:.5,cooldown:3,regen:10",
+    "象最新属性": "elephant:{name:'磐石象',cost:10,hp:800,attack:15,speed:40,range:80,interval:.8,cooldown:3,regen:20",
+    "龙最新属性": "dragon:{name:'星焰龙',cost:15,hp:600,attack:30,speed:50,range:100,interval:1,cooldown:5,regen:15",
     "蛇药水倍率": "snake:{hp:1,attack:1,speed:2,attackSpeed:2,regen:1,poisonDamage:2,poisonDuration:1}",
     "狮药水倍率": "lion:{hp:1.3,attack:2,speed:1,attackSpeed:1.3,regen:1,killHeal:2}",
     "象药水倍率": "elephant:{hp:2,attack:1,speed:1,attackSpeed:1,regen:2,heavyDamage:2}",
@@ -70,6 +70,12 @@ required = {
     "狮击杀回血": "const h=100*(lion.buffed?(lion.buff.killHeal||1):1)",
     "狮击杀回血特效事件": "this.fx.push({kind:'lionHeal',x:lion.x,y:lion.y,t:.75,max:.75})",
     "狮击杀回血特效绘制": "else if(f.kind==='lionHeal')",
+    "AI五金币购买药水": "this.coins.enemy>=POTION.cost&&Math.random()<.3",
+    "AI开局三秒禁出兵": "if(elapsed<3||elapsed-this.aiLastDeployAt<2)return",
+    "AI出兵至少间隔两秒": "if(this.deploy('enemy',type,lane))this.aiLastDeployAt=elapsed",
+    "AI出兵时间测试记录": "at:this.duration-this.timeLeft",
+    "单位对拼剑击事件": "kind:'clash'",
+    "单位对拼剑击动效": "else if(f.kind==='clash')",
     "象三秒重击": "if(u.type==='elephant'&&u.charge>=3)u.heavyReady=true",
     "象三倍伤害": "mult=3*(u.buffed?(u.buff.heavyDamage||1):1)",
     "龙燃烧": "v.burnDps=20*(u.buffed?(u.buff.burnDamage||1):1);v.burn=3*(u.buffed?(u.buff.burnDuration||1):1)",
