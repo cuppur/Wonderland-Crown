@@ -252,7 +252,7 @@ class Game{
    if(u.dead)continue;
    const enemies=this.units.filter(v=>!v.dead&&v.side!==u.side&&Math.hypot(v.x-u.x,v.y-u.y)<=u.range+v.size*.35);
    let target=null;if(enemies.length)target=enemies.sort((a,b)=>dist(u,a)-dist(u,b))[0];
-   const tower=this.towers[u.side==='player'?'enemy':'player'],gate=this.paths[u.lane].at(u.side==='player'?1:0),td=Math.hypot(gate.x-u.x,gate.y-u.y)-45;
+   const tower=this.towers[u.side==='player'?'enemy':'player'],gate=this.paths[u.lane].at(u.side==='player'?1:0),td=Math.hypot(gate.x-u.x,gate.y-u.y);
    if(target){u.facing=Math.atan2(target.y-u.y,target.x-u.x);if(u.attackClock<=0)this.unitAttack(u,target);}
    else if(td<=u.range){u.facing=Math.atan2(gate.y-u.y,gate.x-u.x);if(u.attackClock<=0)this.unitAttack(u,tower);}
    else this.moveUnit(u,dt);

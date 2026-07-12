@@ -123,7 +123,7 @@ required = {
     "点击部署仅选择道路": "if(target.d>DEPLOY_SNAP_RADIUS){this.hint('请点击道路范围内');return;}if(this.deploy('player',s.type,target.i))",
     "拖拽部署仅选择道路": "if(target.d>DEPLOY_SNAP_RADIUS)game.hint('请拖到道路范围内');else if(!game.deploy('player',d.type,target.i))",
     "道路吸附半径": "const DEPLOY_SNAP_RADIUS=46;",
-    "按路线门口攻击城墙": "gate=this.paths[u.lane].at(u.side==='player'?1:0),td=Math.hypot(gate.x-u.x,gate.y-u.y)-45",
+    "按可见门口端点攻击城墙": "gate=this.paths[u.lane].at(u.side==='player'?1:0),td=Math.hypot(gate.x-u.x,gate.y-u.y);",
     "连发元数据竞态兜底": "this.burstVoice.fallbackDuration=11.740862",
     "移动端禁止缩放 viewport": "maximum-scale=1, user-scalable=no, viewport-fit=cover",
     "移动端性能模式": "const mobilePerformanceMode=",
