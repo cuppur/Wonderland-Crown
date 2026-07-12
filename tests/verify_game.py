@@ -68,6 +68,8 @@ required = {
     "龙药水倍率": "dragon:{hp:1.3,attack:1.3,speed:1.3,attackSpeed:1.3,regen:1.3,burnDamage:1.3,burnDuration:1.3}",
     "蛇中毒": "const pd=2*(u.buffed?(u.buff.poisonDamage||1):1),dur=10*(u.buffed?(u.buff.poisonDuration||1):1)",
     "狮击杀回血": "const h=100*(lion.buffed?(lion.buff.killHeal||1):1)",
+    "狮击杀回血特效事件": "this.fx.push({kind:'lionHeal',x:lion.x,y:lion.y,t:.75,max:.75})",
+    "狮击杀回血特效绘制": "else if(f.kind==='lionHeal')",
     "象三秒重击": "if(u.type==='elephant'&&u.charge>=3)u.heavyReady=true",
     "象三倍伤害": "mult=3*(u.buffed?(u.buff.heavyDamage||1):1)",
     "龙燃烧": "v.burnDps=20*(u.buffed?(u.buff.burnDamage||1):1);v.burn=3*(u.buffed?(u.buff.burnDuration||1):1)",
