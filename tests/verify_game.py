@@ -111,7 +111,8 @@ required = {
     "药水王冠状态": "if(u.buffed)ctx.fillText('👑'",
     "中毒绿色视觉": "ctx.fillStyle='rgba(80,190,82,.24)'",
     "图片中毒标识": "ctx.drawImage(poisonStatusIcon,-size/2,-size/2,size,size)",
-    "中毒标识保持18像素": "18/(u.visualScale||1)",
+    "中毒图标缩小至60%": "size=s*1.35",
+    "中毒图标移到棋子外侧": "u.size+12/vs,-u.size-10/vs",
     "中毒标识呼吸动画": "const phase=performance.now()/900*TAU,pulse=1+Math.sin(phase)*.08",
     "燃烧单位火焰": "if(u.burn>0){const flicker=",
     "双倍龙火焰弹": "ctx.arc(0,0,18,0,TAU)",
@@ -129,7 +130,7 @@ required = {
     "触摸开始支持": "addEventListener('touchstart'",
     "触摸拖动支持": "addEventListener('touchmove'",
     "触摸结束支持": "addEventListener('touchend'",
-    "首次触摸音频解锁": "document.addEventListener('pointerdown',()=>{audio.ensureContext()",
+    "首次触摸自动进入横屏全屏": "document.addEventListener('pointerdown',()=>{if(mobilePerformanceMode)enterMobileMode()",
 }
 for label, token in required.items():
     require(source, token, label)
