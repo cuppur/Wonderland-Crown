@@ -54,6 +54,10 @@
 
 ## 项目治理
 
+- [x] 重构阶段1：创建 `backup_before_refactor/`、根目录 `assets/` 和公网资源清单。
+- [x] 重构阶段2：创建根目录 `index.html`，抽离 `css/style.css`，切换测试到新入口。
+- [ ] 重构阶段3：抽离 `js/audio.js` 并验证 BGM、单炮、连炮和手机首触摸解锁。
+- [ ] 后续按计划拆分 `ui.js`、`cards.js`、`skills.js`、`ai.js`、`units.js`、`battle.js`、`game.js`、`main.js`。
 - [x] 建立手机发布流水线：自包含 HTML、资源清单、release 目录和 ZIP。
 - [x] 完成 390×844 竖屏提示、844×390 横屏布局、触摸拖卡和移动性能模式验证。
 - [ ] 在一台真实 Android 手机上验证文件管理器解压直开、横屏锁定、全屏和 BGM。

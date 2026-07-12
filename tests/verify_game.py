@@ -9,8 +9,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-HTML = ROOT / "源代码" / "游戏源代码.html"
-BUILD_RELEASE = ROOT / "build_release.py"
+HTML = ROOT / "index.html"
+STYLE = ROOT / "css" / "style.css"
 PROTOTYPE = ROOT / "源代码" / "prototype_castle_layout.html"
 TABLE_DIR = ROOT / "单位属性表"
 EXPECTED_TABLE = "20260710.xlsx"
@@ -36,8 +36,8 @@ def forbid(source: str, token: str, label: str) -> None:
 
 if not HTML.is_file():
     fail(f"找不到游戏文件：{HTML}")
-if not BUILD_RELEASE.is_file():
-    fail(f"找不到手机发布脚本：{BUILD_RELEASE}")
+if not STYLE.is_file():
+    fail(f"找不到外部样式文件：{STYLE}")
 if PROTOTYPE.exists():
     fail(f"正式吸收后仍残留临时城墙原型：{PROTOTYPE}")
 
@@ -51,10 +51,12 @@ table_hash = hashlib.sha256(latest.read_bytes()).hexdigest().upper()
 if table_hash not in EXPECTED_TABLE_SHA256:
     fail(f"{latest.name} 内容已变化；请重新读取并同步属性")
 
-source = HTML.read_text(encoding="utf-8")
+html_source = HTML.read_text(encoding="utf-8")
+source = html_source + "\n" + STYLE.read_text(encoding="utf-8")
 
 required = {
     "游戏标题": "<title>奇境王冠</title>",
+    "外部样式入口": '<link rel="stylesheet" href="./css/style.css" />',
     "微软 Emoji 字体": 'font-family:"Segoe UI Emoji"',
     "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:400,attack:10,speed:100,range:60,interval:.2,cooldown:3,regen:10",
     "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:500,attack:20,speed:70,range:70,interval:.5,cooldown:3,regen:10",
@@ -78,24 +80,24 @@ required = {
     "按单位尺寸计算出生距离": "const distance=UNIT_DATA[type].size+CASTLE_GEOMETRY.spawnGap",
     "双方镜像出生参数": "return side==='player'?distance/path.length:1-distance/path.length;",
     "童话基地几何": "const CASTLE_GEOMETRY={wallHalfWidth:46,wallTop:198,wallBottom:522,gateHalfHeights:[23,34,23]",
-    "缩小炮台几何": "const CANNON_GEOMETRY={mountOffsetY:-166,barrelLength:38,baseRadius:20,recoilDistance:4};",
+    "城墙中部炮台几何": "const CANNON_GEOMETRY={mountOffsetY:0,barrelLength:38,baseRadius:20,recoilDistance:4};",
     "共享炮口计算": "const muzzle=this.cannonMuzzle(t)",
     "炮口闪光绘制": "else if(f.kind==='muzzle')",
     "炮口烟雾绘制": "else if(f.kind==='smoke')",
     "炮弹短拖尾": "ctx.moveTo(p.x-dx/d*18,p.y-dy/d*18)",
     "连续交汇路面": "ctx.fill(outer,'evenodd')",
-    "生成花园背景": "./assets/fairy-garden-battlefield-v1.png",
-    "生成城堡立绘": "./assets/fairy-castle-gate-v1.png",
-    "生成道路纹理": "./assets/fairy-road-stone-texture-v1.png",
-    "生成童话炮身": "./assets/fairy-cannon-barrel-v1.png",
+    "生成花园背景": "./assets/images/fairy-garden-battlefield-v1.png",
+    "生成城堡立绘": "./assets/images/fairy-castle-gate-v1.png",
+    "生成道路纹理": "./assets/images/fairy-road-stone-texture-v1.png",
+    "生成童话炮身": "./assets/images/fairy-cannon-barrel-v1.png",
     "道路纹理蒙版": "ctx.fillStyle=this.roadPattern()||'#f7dfaa'",
     "底部卡牌与金币": "#bottomDock{top:auto;bottom:1.2%",
     "左下战术键": "#tactical{top:auto;left:1.2%;right:auto;bottom:1.4%",
     "返回首页按钮": 'id="homeBtn"',
     "暂停按钮": 'id="pauseBtn"',
-    "BGM 文件": "../音效/BGM/BGM%20.ogg",
-    "单发音效": "../音效/加农炮/单发/cannon1.mp3",
-    "连发音效": "../音效/加农炮/连发/explosions.mp3",
+    "BGM 文件": "./assets/audio/BGM.ogg",
+    "单发音效": "./assets/audio/cannon1.mp3",
+    "连发音效": "./assets/audio/explosions.mp3",
     "单炮出膛计数": "this.cannonLaunches++;this.cannonLaunchesBySide[side]++",
     "单炮出膛触发一次音效": "audio.playCannon(flight+FX_TIMING.cannonExplosion)",
     "单发音频限时": "this.playTimed(voice,clipped,false)",
@@ -107,6 +109,7 @@ required = {
     "点击部署仅选择道路": "if(target.d>DEPLOY_SNAP_RADIUS){this.hint('请点击道路范围内');return;}if(this.deploy('player',s.type,target.i))",
     "拖拽部署仅选择道路": "if(target.d>DEPLOY_SNAP_RADIUS)game.hint('请拖到道路范围内');else if(!game.deploy('player',d.type,target.i))",
     "道路吸附半径": "const DEPLOY_SNAP_RADIUS=46;",
+    "按路线门口攻击城墙": "gate=this.paths[u.lane].at(u.side==='player'?1:0),td=Math.hypot(gate.x-u.x,gate.y-u.y)-45",
     "连发元数据竞态兜底": "this.burstVoice.fallbackDuration=11.740862",
     "移动端禁止缩放 viewport": "maximum-scale=1, user-scalable=no, viewport-fit=cover",
     "移动端性能模式": "const mobilePerformanceMode=",
@@ -130,24 +133,25 @@ forbidden = {
     "旧己方半场提示": "只能在己方半场部署",
     "旧己方半场点击限制": "p.x>FIELD.centerX",
     "旧己方半场寻路限制": "nearestLane(p,true)",
+    "卡牌属性描述节点": "<div class=\"card-stats\">",
 }
 for label, token in forbidden.items():
     forbid(source, token, label)
 
 assets = [
-    ROOT / "音效" / "BGM" / "BGM .ogg",
-    ROOT / "音效" / "加农炮" / "单发" / "cannon1.mp3",
-    ROOT / "音效" / "加农炮" / "连发" / "explosions.mp3",
+    ROOT / "assets" / "audio" / "BGM.ogg",
+    ROOT / "assets" / "audio" / "cannon1.mp3",
+    ROOT / "assets" / "audio" / "explosions.mp3",
 ]
 for asset in assets:
     if not asset.is_file() or asset.stat().st_size <= 0:
         fail(f"音频资源无效：{asset}")
 
 png_assets = {
-    ROOT / "源代码" / "assets" / "fairy-garden-battlefield-v1.png": (1200, 675, False),
-    ROOT / "源代码" / "assets" / "fairy-castle-gate-v1.png": (512, 512, True),
-    ROOT / "源代码" / "assets" / "fairy-road-stone-texture-v1.png": (512, 512, False),
-    ROOT / "源代码" / "assets" / "fairy-cannon-barrel-v1.png": (512, 256, True),
+    ROOT / "assets" / "images" / "fairy-garden-battlefield-v1.png": (1200, 675, False),
+    ROOT / "assets" / "images" / "fairy-castle-gate-v1.png": (512, 512, True),
+    ROOT / "assets" / "images" / "fairy-road-stone-texture-v1.png": (512, 512, False),
+    ROOT / "assets" / "images" / "fairy-cannon-barrel-v1.png": (512, 256, True),
 }
 for asset, (min_w, min_h, needs_alpha) in png_assets.items():
     if not asset.is_file() or asset.stat().st_size <= 0:

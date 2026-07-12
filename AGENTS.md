@@ -8,8 +8,8 @@
 - 游戏类型：单机、三路、固定卡组、即时对抗策略小游戏；玩法参考轻量化的《皇室战争》。
 - 核心玩法：玩家消耗持续增长的金币部署蛇、狮、象、龙；单位沿三路自动前进、克制和战斗，最终摧毁对方城门或在倒计时结束时比较城门生命。
 - 当前技术栈：单个静态 HTML 文件，原生 HTML/CSS/JavaScript、Canvas 2D、HTMLAudioElement、Web Audio API；无框架、无包管理器、无外部运行依赖。
-- 主入口：`源代码/游戏源代码.html`。
-- 启动方式：在项目根目录执行 `python -m http.server 8765 --bind 127.0.0.1`，打开 `http://127.0.0.1:8765/源代码/游戏源代码.html?test=1`。
+- 主入口：`index.html`；`源代码/游戏源代码.html` 为拆分期间保留的旧入口。
+- 启动方式：在项目根目录执行 `python -m http.server 8765 --bind 127.0.0.1`，打开 `http://127.0.0.1:8765/index.html?test=1`。
 - 构建方式：无构建步骤。源码就是运行产物。
 - 测试方式：`python tests/verify_game.py`。注意：截至本次审计该命令会失败，原因见“当前代码状态”和 `PROJECT_HANDOFF.md`。
 - 主要运行平台：Windows 桌面现代浏览器，设计基准为 16:9，必须重点检查 1920×1080；代码也包含较小窗口的响应式规则。
@@ -46,7 +46,7 @@
 
 ### 代码模块位置
 
-所有正式模块目前都在 `源代码/游戏源代码.html`：
+正式页面结构和当前 JavaScript 位于 `index.html`，样式已拆到 `css/style.css`；后续 JavaScript 模块按 TODO 逐步拆分：
 
 - UI：`<style>` 与页面顶部的 HUD、技能栏、卡牌栏、菜单/结算/报告 overlay。
 - 战斗逻辑：`Game` 类。
