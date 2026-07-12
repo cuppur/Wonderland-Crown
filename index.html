@@ -42,8 +42,8 @@
     <div id="pauseBanner">对局已暂停</div>
 
     <div id="tactical">
-      <button id="potionBtn" class="tactic"><strong>🧪 魔力药水 · 5</strong><small>拖到卡牌：下一只强化 · 20秒</small><div class="cool-mask"></div><div class="cool-label"></div></button>
-      <button id="burstBtn" class="tactic"><strong>💥 爆裂炮阵 · 20</strong><small>选择一路连开10炮 · 20秒</small><div class="cool-mask"></div><div class="cool-label"></div></button>
+      <button id="potionBtn" class="tactic"><strong>🧪 魔力药水 · 5G</strong><div class="cool-mask"></div><div class="cool-label"></div></button>
+      <button id="burstBtn" class="tactic"><strong>💥 爆裂炮阵 · 20G</strong><div class="cool-mask"></div><div class="cool-label"></div></button>
     </div>
 
     <div id="bottomDock" class="glass">
@@ -53,8 +53,6 @@
       <button class="card" data-type="elephant"><div class="card-art">🐘</div><div class="cost">10</div><div class="card-name">磐石象</div><div class="card-role">慢速坦克</div><div class="cool-mask"></div><div class="cool-label"></div></button>
       <button class="card" data-type="dragon"><div class="card-art">🐉</div><div class="cost">15</div><div class="card-name">星焰龙</div><div class="card-role">远程魔法战士</div><div class="cool-mask"></div><div class="cool-label"></div></button>
     </div>
-    <div id="versionTag">单机战术版 v3.2 · 属性表 20260710</div>
-
     <div id="menuOverlay" class="overlay">
       <div class="menu-panel glass">
         <div class="logo">奇境王冠</div><div class="subtitle">童话战场 · 固定四卡 · 单机对抗</div>
@@ -126,7 +124,7 @@ function prepareCannonSprite(){if(!cannonSprite.naturalWidth)return false;const 
 const FIELD={roadStart:105,roadEnd:1175,towerLeft:55,towerRight:1225,centerX:640,centerY:360,laneY:[242,360,478]};
 const DEPLOY_SNAP_RADIUS=46;
 const UNIT_BASE_VISUAL_SCALE=.7;
-const CASTLE_GEOMETRY={wallHalfWidth:46,wallTop:198,wallBottom:522,gateHalfHeights:[23,34,23],platformLength:72,platformHalfWidth:27,spawnGap:30};
+const CASTLE_GEOMETRY={wallHalfWidth:46,wallTop:198,wallBottom:522,gateHalfHeights:[23,34,23],spawnGap:30};
 const CANNON_GEOMETRY={mountOffsetY:0,barrelLength:38,baseRadius:20,recoilDistance:4};
 
 const UNIT_DATA={
@@ -183,8 +181,8 @@ function syncStaticUI(){
   el.querySelector('.cost').textContent=d.cost;el.querySelector('.card-name').textContent=d.name;el.querySelector('.card-role').textContent=d.role;
   el.title=`${d.name}｜${d.aoe?'范围内全部100%群伤':'单体伤害'}｜冷却${d.cooldown}秒｜${d.special}`;
  }
- $('#potionBtn strong').textContent=`🧪 魔力药水 · ${POTION.cost}`;$('#potionBtn small').textContent=`拖到卡牌：下一只强化 · ${POTION.cooldown}秒`;
- $('#burstBtn strong').textContent=`💥 爆裂炮阵 · ${BURST.cost}`;$('#burstBtn small').textContent=`一路${BURST.shots}炮 · ${BURST.cooldown}秒 · 每炮${BURST.damage}`;
+ $('#potionBtn strong').textContent=`🧪 魔力药水 · ${POTION.cost}G`;
+ $('#burstBtn strong').textContent=`💥 爆裂炮阵 · ${BURST.cost}G`;
  const rows={
   snake:{special:30,label:'30.0（毒，6秒窗）'},lion:{special:0,label:'0'},elephant:{special:10,label:'10.0（重击）'},dragon:{special:20,label:'20.0（燃烧）'}
  };
@@ -340,7 +338,7 @@ class Game{
    ctx.fillStyle='#fff7d9';ctx.strokeStyle='#c7975b';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-half-3,wallTop-5,half*2+6,18,7);ctx.fill();ctx.stroke();ctx.fillStyle=team;for(const x of[-34,-12,10,32]){ctx.beginPath();ctx.roundRect(x-6,wallTop-16,12,17,[4,4,1,1]);ctx.fill();ctx.stroke();}
    ctx.fillStyle=cream;ctx.strokeStyle='#c7975b';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-29,wallTop-23,58,23,9);ctx.fill();ctx.stroke();ctx.fillStyle=teamDark;ctx.beginPath();ctx.roundRect(-24,wallTop-19,48,14,6);ctx.fill();ctx.fillStyle='#f4cf6e';ctx.beginPath();ctx.arc(0,wallTop-12,4,0,TAU);ctx.fill();
    ctx.strokeStyle='#9a6d61';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-27,wallTop-20);ctx.lineTo(-27,wallTop-67);ctx.stroke();ctx.fillStyle=team;ctx.strokeStyle='#fff0bd';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-25,wallTop-64);ctx.lineTo(2,wallTop-54);ctx.lineTo(-25,wallTop-43);ctx.closePath();ctx.fill();ctx.stroke();
-   const lanePoints=this.paths.map(p=>p.at(t.side==='player'?0:1));for(let i=0;i<lanePoints.length;i++){const y=lanePoints[i].y-t.y,h=CASTLE_GEOMETRY.gateHalfHeights[i],main=i===1,frame=main?7:4,bayH=h+(main?17:12);ctx.fillStyle=cream;ctx.strokeStyle='#b98a71';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-half-8,y-bayH,half*2+18,bayH*2,main?18:14);ctx.fill();ctx.stroke();ctx.fillStyle=team;ctx.beginPath();ctx.roundRect(-half-3,y-bayH+6,17,bayH*2-12,8);ctx.fill();ctx.fillStyle='#f2c766';ctx.beginPath();ctx.roundRect(-half+18,y-bayH+8,5,bayH*2-16,3);ctx.fill();ctx.fillStyle='rgba(218,191,139,.86)';ctx.strokeStyle='rgba(130,92,79,.38)';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(half-5,y-CASTLE_GEOMETRY.platformHalfWidth,CASTLE_GEOMETRY.platformLength,CASTLE_GEOMETRY.platformHalfWidth*2,10);ctx.fill();ctx.stroke();ctx.fillStyle=main?'#433646':'#51434a';ctx.strokeStyle=main?'#e7b956':'#c99a5a';ctx.lineWidth=frame;ctx.beginPath();ctx.roundRect(main?-12:-4,y-h,half+(main?17:9),h*2,[h,5,5,h]);ctx.fill();ctx.stroke();ctx.fillStyle='rgba(255,219,139,.18)';ctx.beginPath();ctx.roundRect(main?3:7,y-h+7,half-(main?1:4),h*2-14,[h-8,3,3,h-8]);ctx.fill();if(main){ctx.fillStyle=team;ctx.strokeStyle='#fff0bd';ctx.lineWidth=2;ctx.beginPath();ctx.arc(-1,y-h-10,9,0,TAU);ctx.fill();ctx.stroke();ctx.fillStyle='#f5cf6e';for(const a of[-1.9,-1.2,-.5]){ctx.beginPath();ctx.arc(-1+Math.cos(a)*5,y-h-10+Math.sin(a)*5,2,0,TAU);ctx.fill();}}}
+   const lanePoints=this.paths.map(p=>p.at(t.side==='player'?0:1));for(let i=0;i<lanePoints.length;i++){const y=lanePoints[i].y-t.y,h=CASTLE_GEOMETRY.gateHalfHeights[i],main=i===1,frame=main?7:4,bayH=h+(main?17:12);ctx.fillStyle=cream;ctx.strokeStyle='#b98a71';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-half-8,y-bayH,half*2+18,bayH*2,main?18:14);ctx.fill();ctx.stroke();ctx.fillStyle=team;ctx.beginPath();ctx.roundRect(-half-3,y-bayH+6,17,bayH*2-12,8);ctx.fill();ctx.fillStyle='#f2c766';ctx.beginPath();ctx.roundRect(-half+18,y-bayH+8,5,bayH*2-16,3);ctx.fill();ctx.fillStyle=main?'#433646':'#51434a';ctx.strokeStyle=main?'#e7b956':'#c99a5a';ctx.lineWidth=frame;ctx.beginPath();ctx.roundRect(main?-12:-4,y-h,half+(main?17:9),h*2,[h,5,5,h]);ctx.fill();ctx.stroke();ctx.fillStyle='rgba(255,219,139,.18)';ctx.beginPath();ctx.roundRect(main?3:7,y-h+7,half-(main?1:4),h*2-14,[h-8,3,3,h-8]);ctx.fill();if(main){ctx.fillStyle=team;ctx.strokeStyle='#fff0bd';ctx.lineWidth=2;ctx.beginPath();ctx.arc(-1,y-h-10,9,0,TAU);ctx.fill();ctx.stroke();ctx.fillStyle='#f5cf6e';for(const a of[-1.9,-1.2,-.5]){ctx.beginPath();ctx.arc(-1+Math.cos(a)*5,y-h-10+Math.sin(a)*5,2,0,TAU);ctx.fill();}}}
    const cracks=1-hp;ctx.strokeStyle='rgba(91,61,69,.52)';ctx.lineWidth=2;for(let i=0;i<Math.floor(cracks*8);i++){const x=-30+(i*17)%55,y=wallTop+38+(i*41)%(wallHeight-76);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+6,y+8);ctx.lineTo(x+2,y+15);ctx.stroke();}this.drawTowerCannon(t,team);ctx.restore();}
   drawTowerCannon(t,team){const pose=this.cannonPose(t),localX=t.side==='player'?pose.mountX-t.x:t.x-pose.mountX,localY=pose.mountY-t.y,localAngle=t.side==='enemy'?Math.PI-pose.angle:pose.angle;ctx.fillStyle='#fff0cb';ctx.strokeStyle='#c7975b';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,localY,29,12,0,0,TAU);ctx.fill();ctx.stroke();ctx.fillStyle=team;ctx.strokeStyle='#fff0bd';ctx.lineWidth=3;ctx.beginPath();ctx.arc(localX,localY,CANNON_GEOMETRY.baseRadius,0,TAU);ctx.fill();ctx.stroke();ctx.fillStyle='#f1b957';for(const a of[.65,2.5,3.8,5.65]){ctx.beginPath();ctx.arc(localX+Math.cos(a)*13,localY+Math.sin(a)*13,2.2,0,TAU);ctx.fill();}ctx.save();ctx.translate(localX,localY);ctx.rotate(localAngle);const glow=t.windup>0?1-t.windup/GUARD_CANNON.windup:0;if(glow>0){ctx.fillStyle=`rgba(255,210,104,${.16+glow*.28})`;ctx.beginPath();ctx.arc(CANNON_GEOMETRY.barrelLength,0,7+glow*6,0,TAU);ctx.fill();}ctx.fillStyle='#4a4854';ctx.strokeStyle='#302b36';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(-7,-8,CANNON_GEOMETRY.barrelLength+7,16,7);ctx.fill();ctx.stroke();ctx.fillStyle='#77717e';ctx.fillRect(5,-5,CANNON_GEOMETRY.barrelLength-10,4);ctx.fillStyle='#26242d';ctx.beginPath();ctx.arc(CANNON_GEOMETRY.barrelLength,0,7,0,TAU);ctx.fill();ctx.stroke();ctx.restore();}
  drawSelection(){if(this.state!=='playing')return;if(this.hoverLane>=0&&this.selected){const p=this.paths[this.hoverLane],col=this.selected.kind==='burst'?'rgba(255,113,58,.9)':'rgba(255,235,145,.9)';ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=col;ctx.lineWidth=5;ctx.setLineDash([16,12]);ctx.shadowColor=col;ctx.shadowBlur=12;this.tracePath(p,0,1,72);ctx.stroke();ctx.restore();}}

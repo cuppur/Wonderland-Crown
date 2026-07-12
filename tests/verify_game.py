@@ -103,6 +103,8 @@ required = {
     "道路纹理蒙版": "ctx.fillStyle=this.roadPattern()||'#f7dfaa'",
     "底部卡牌与金币": "#bottomDock{top:auto;bottom:1.2%",
     "左下战术键": "#tactical{top:auto;left:1.2%;right:auto;bottom:1.4%",
+    "精简药水按钮": "🧪 魔力药水 · ${POTION.cost}G",
+    "精简炮阵按钮": "💥 爆裂炮阵 · ${BURST.cost}G",
     "返回首页按钮": 'id="homeBtn"',
     "暂停按钮": 'id="pauseBtn"',
     "BGM 文件": "./assets/audio/BGM.ogg",
@@ -144,6 +146,10 @@ for label, token in required.items():
     require(source, token, label)
 
 forbidden = {
+    "六块灰色门前平台": "CASTLE_GEOMETRY.platformHalfWidth",
+    "对局版本文字": 'id="versionTag"',
+    "药水详细描述": "拖到卡牌：下一只强化 · ${POTION.cooldown}秒",
+    "炮阵详细描述": "一路${BURST.shots}炮 · ${BURST.cooldown}秒 · 每炮${BURST.damage}",
     "旧吸血逻辑": "lifesteal",
     "旧城墙 5000 魔数": "maxHp===5000",
     "旧圆形交汇函数": "drawCrossHub",
