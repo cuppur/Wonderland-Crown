@@ -91,6 +91,7 @@ required = {
     "生成城堡立绘": "./assets/images/fairy-castle-gate-v1.png",
     "生成道路纹理": "./assets/images/fairy-road-stone-texture-v1.png",
     "生成童话炮身": "./assets/images/fairy-cannon-barrel-v1.png",
+    "透明中毒图标": "./assets/images/poison-status-icon-v1.png",
     "道路纹理蒙版": "ctx.fillStyle=this.roadPattern()||'#f7dfaa'",
     "底部卡牌与金币": "#bottomDock{top:auto;bottom:1.2%",
     "左下战术键": "#tactical{top:auto;left:1.2%;right:auto;bottom:1.4%",
@@ -109,9 +110,8 @@ required = {
     "重击状态图标": "if(u.heavyReady)ctx.fillText('💢'",
     "药水王冠状态": "if(u.buffed)ctx.fillText('👑'",
     "中毒绿色视觉": "ctx.fillStyle='rgba(80,190,82,.24)'",
-    "绿色线框中毒标识": "ctx.strokeStyle='#9bff7e'",
+    "图片中毒标识": "ctx.drawImage(poisonStatusIcon,-size/2,-size/2,size,size)",
     "中毒标识保持18像素": "18/(u.visualScale||1)",
-    "中毒标识绿色发光": "ctx.shadowColor='#52ff2f';ctx.shadowBlur=8",
     "中毒标识呼吸动画": "const phase=performance.now()/900*TAU,pulse=1+Math.sin(phase)*.08",
     "燃烧单位火焰": "if(u.burn>0){const flicker=",
     "双倍龙火焰弹": "ctx.arc(0,0,18,0,TAU)",
@@ -165,6 +165,7 @@ png_assets = {
     ROOT / "assets" / "images" / "fairy-castle-gate-v1.png": (512, 512, True),
     ROOT / "assets" / "images" / "fairy-road-stone-texture-v1.png": (512, 512, False),
     ROOT / "assets" / "images" / "fairy-cannon-barrel-v1.png": (512, 256, True),
+    ROOT / "assets" / "images" / "poison-status-icon-v1.png": (512, 512, True),
 }
 for asset, (min_w, min_h, needs_alpha) in png_assets.items():
     if not asset.is_file() or asset.stat().st_size <= 0:
