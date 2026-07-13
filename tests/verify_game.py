@@ -100,7 +100,14 @@ required = {
     "生成道路纹理": "./assets/images/fairy-road-stone-texture-v1.png",
     "生成童话炮身": "./assets/images/fairy-cannon-barrel-v1.png",
     "透明中毒图标": "./assets/images/poison-status-icon-v1.png",
-    "道路纹理蒙版": "ctx.fillStyle=this.roadPattern()||'#f7dfaa'",
+    "道路纹理蒙版": "const pattern=this.roadPattern()",
+    "统一道路视觉配置": "const ROAD_VISUAL={",
+    "柔和道路中心色": "centerColor:'#F3DDA4'",
+    "柔和道路边缘色": "sideColor:'#EFD6A0'",
+    "道路纹理透明度": "textureAlpha:.22",
+    "道路纹理放大": "textureTileSize:288",
+    "柔和边缘过渡": "transitionColor:'rgba(151,174,91,.16)'",
+    "两地图共享道路参数": "ROAD_VISUAL.crossInsets",
     "底部卡牌与金币": "#bottomDock{top:auto;bottom:1.2%",
     "左下战术键": "#tactical{top:auto;left:1.2%;right:auto;bottom:1.4%",
     "精简药水按钮": "🧪 魔力药水 · ${POTION.cost}G",
@@ -146,6 +153,7 @@ for label, token in required.items():
     require(source, token, label)
 
 forbidden = {
+    "旧道路深绿硬边": "ctx.strokeStyle='#599c50'",
     "六块灰色门前平台": "CASTLE_GEOMETRY.platformHalfWidth",
     "对局版本文字": 'id="versionTag"',
     "药水详细描述": "拖到卡牌：下一只强化 · ${POTION.cooldown}秒",
