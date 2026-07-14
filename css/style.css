@@ -213,3 +213,5 @@
   #resourceBox{background:#f2cf83;background-image:none}
   #tactical .tactic{background:#d7b7e8;background-image:none}
   #tactical .tactic:nth-child(2){background:#f3b184;background-image:none}
+  .mode-option b{text-align:center}
+  #centerHud::after{display:none}

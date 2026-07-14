@@ -55,10 +55,10 @@
     </div>
     <div id="menuOverlay" class="overlay">
       <div class="menu-panel glass">
-        <div class="logo">奇境王冠</div><div class="subtitle">童话战场 · 固定四卡 · 单机对抗</div>
+        <div class="logo">奇境王冠</div>
         <div class="mode-grid">
-          <div class="mode-option" data-mode="straight"><b>三路攻城</b><span>保留原始三条平行路线，战线清晰，适合测试兵种克制与基础平衡。</span></div>
-          <div class="mode-option active" data-mode="cross"><b>交汇战线</b><span>六段道路平滑汇入连续路面：上路通往右下、下路通往右上，中路直行。</span></div>
+          <div class="mode-option" data-mode="straight"><b>三路战线</b><span>三条平行路线，战线清晰</span></div>
+          <div class="mode-option active" data-mode="cross"><b>交汇战线</b><span>三条道路汇入平滑路面</span></div>
         </div>
         <div class="menu-row"><label>单局时长</label><select id="durationSelect"><option value="180">3 分钟</option><option value="240">4 分钟</option><option value="300" selected>5 分钟</option><option value="unlimited">无限制</option></select></div>
         <div class="menu-row"><button id="startBtn" class="primary">进入战场</button><button id="menuReportBtn" class="secondary">查看单位成本价值</button></div>
@@ -105,6 +105,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const lerp=(a,b,t)=>a+(b-a)*t;
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const shortestAngleDelta=(from,to)=>Math.atan2(Math.sin(to-from),Math.cos(to-from));
 const TAU=Math.PI*2;
 const UNIT_ICONS={snake:'🐍',lion:'🦁',elephant:'🐘',dragon:'🐉'};
 const SCENE_BACKGROUND_URL='./assets/images/fairy-garden-battlefield-v1.png';
@@ -134,14 +135,14 @@ const CASTLE_GEOMETRY={wallHalfWidth:46,wallTop:198,wallBottom:522,gateHalfHeigh
 const CANNON_GEOMETRY={mountOffsetY:0,barrelLength:38,baseRadius:20,recoilDistance:4};
 
 const UNIT_DATA={
- snake:{name:'毒影蛇',cost:10,hp:400,attack:10,speed:80,range:60,interval:.2,cooldown:3,regen:10,aoe:false,size:23,role:'快速刺客',special:'中毒2/s×10秒，可独立叠加'},
- lion:{name:'圣鬃狮',cost:10,hp:500,attack:20,speed:60,range:70,interval:.5,cooldown:3,regen:10,aoe:false,size:27,role:'均衡战士',special:'参与击杀回复100生命'},
- elephant:{name:'磐石象',cost:10,hp:800,attack:15,speed:40,range:80,interval:.8,cooldown:3,regen:20,aoe:true,size:32,role:'慢速坦克',special:'每3秒蓄势，下一击造成300%伤害'},
+ snake:{name:'毒影蛇',cost:10,hp:400,attack:10,speed:80,range:60,interval:.2,cooldown:4,regen:10,aoe:false,size:23,role:'快速刺客',special:'中毒2/s×10秒，可独立叠加'},
+ lion:{name:'圣鬃狮',cost:10,hp:600,attack:20,speed:60,range:70,interval:.5,cooldown:4,regen:10,aoe:false,size:27,role:'均衡战士',special:'参与击杀回复100生命'},
+ elephant:{name:'磐石象',cost:10,hp:800,attack:15,speed:40,range:80,interval:.8,cooldown:4,regen:20,aoe:true,size:32,role:'慢速坦克',special:'每3秒蓄势，下一击造成300%伤害'},
  dragon:{name:'星焰龙',cost:15,hp:600,attack:30,speed:50,range:100,interval:1,cooldown:5,regen:15,aoe:true,size:29,role:'远程魔法战士',special:'群体燃烧20/s×3秒，刷新不叠加'}
 };
 const POTION={cost:5,cooldown:20};
 const BURST={cost:20,cooldown:20,damage:1000,shots:10};
-const GUARD_CANNON={interval:2,windup:.28,damage:200,rangeFactor:.25};
+const GUARD_CANNON={interval:2,windup:.28,damage:150,rangeFactor:.2};
 const FX_TIMING={cannonSpeed:760,cannonExplosion:.38,burstLead:.02,burstStep:.11,burstExplosion:.48};
 const BURST_VISUAL_DURATION=FX_TIMING.burstLead+(BURST.shots-1)*FX_TIMING.burstStep+FX_TIMING.burstExplosion;
 const BUFFS={
@@ -283,9 +284,9 @@ class Game{
  damageTower(t,a){if(t.hp<=0)return;t.hp=Math.max(0,t.hp-a);t.hitFlash=1;t.shake=.2;this.texts.push({x:t.x+(t.side==='player'?35:-35),y:t.y-70,text:`-${Math.round(a)}`,t:.8,max:.8,color:'#ffd0a5'});audio.sfx('hit');}
  updateCannons(dt){for(const side of ['player','enemy']){const t=this.towers[side],mountY=t.y+CANNON_GEOMETRY.mountOffsetY;t.hitFlash=Math.max(0,t.hitFlash-dt*5);t.shake=Math.max(0,t.shake-dt);t.shotClock=Math.max(0,t.shotClock-dt);t.recoil=Math.max(0,t.recoil-dt*5.5);
    const candidates=this.units.filter(u=>!u.dead&&u.side!==side&&Math.hypot(u.x-t.x,u.y-t.y)<=t.range);let target=null;if(candidates.length)target=candidates.sort((a,b)=>Math.hypot(a.x-t.x,a.y-t.y)-Math.hypot(b.x-t.x,b.y-t.y))[0];
-    if(t.windup>0){t.windup-=dt;const locked=this.units.find(u=>u.id===t.targetId&&!u.dead)||target;if(locked)t.angle=Math.atan2(locked.y-mountY,locked.x-t.x);if(t.windup<=0&&locked){t.recoil=1;const muzzle=this.cannonMuzzle(t),flight=Math.hypot(locked.x-muzzle.x,locked.y-muzzle.y)/FX_TIMING.cannonSpeed;this.projectiles.push({kind:'cannon',x:muzzle.x,y:muzzle.y,px:muzzle.x-Math.cos(t.angle)*12,py:muzzle.y-Math.sin(t.angle)*12,tx:locked.x,ty:locked.y,target:locked,source:t,speed:FX_TIMING.cannonSpeed,damage:t.damage});this.fx.push({kind:'muzzle',x:muzzle.x,y:muzzle.y,t:.16,max:.16,angle:t.angle},{kind:'smoke',x:muzzle.x,y:muzzle.y,t:.48,max:.48,angle:t.angle});this.cannonLaunches++;this.cannonLaunchesBySide[side]++;this.lastCannonShot={side,muzzle:{...muzzle},projectileStart:{...muzzle},muzzleFx:{...muzzle},smokeFx:{...muzzle},angle:t.angle};audio.playCannon(flight+FX_TIMING.cannonExplosion);t.shotClock=Math.max(0,GUARD_CANNON.interval-GUARD_CANNON.windup);}t.targetId=null;
-   }else if(target){t.angle=Math.atan2(target.y-mountY,target.x-t.x);if(t.shotClock<=0){t.windup=GUARD_CANNON.windup;t.targetId=target.id;}}
-   else{const rest=side==='player'?0:Math.PI;t.angle+=(rest-t.angle)*dt*2.4;}
+    if(t.windup>0){t.windup-=dt;const locked=this.units.find(u=>u.id===t.targetId&&!u.dead)||target;if(locked){const aim=Math.atan2(locked.y-mountY,locked.x-t.x);t.angle+=shortestAngleDelta(t.angle,aim);}if(t.windup<=0&&locked){t.recoil=1;const muzzle=this.cannonMuzzle(t),flight=Math.hypot(locked.x-muzzle.x,locked.y-muzzle.y)/FX_TIMING.cannonSpeed;this.projectiles.push({kind:'cannon',x:muzzle.x,y:muzzle.y,px:muzzle.x-Math.cos(t.angle)*12,py:muzzle.y-Math.sin(t.angle)*12,tx:locked.x,ty:locked.y,target:locked,source:t,speed:FX_TIMING.cannonSpeed,damage:t.damage});this.fx.push({kind:'muzzle',x:muzzle.x,y:muzzle.y,t:.16,max:.16,angle:t.angle},{kind:'smoke',x:muzzle.x,y:muzzle.y,t:.48,max:.48,angle:t.angle});this.cannonLaunches++;this.cannonLaunchesBySide[side]++;this.lastCannonShot={side,muzzle:{...muzzle},projectileStart:{...muzzle},muzzleFx:{...muzzle},smokeFx:{...muzzle},angle:t.angle};audio.playCannon(flight+FX_TIMING.cannonExplosion);t.shotClock=Math.max(0,GUARD_CANNON.interval-GUARD_CANNON.windup);}t.targetId=null;
+   }else if(target){const aim=Math.atan2(target.y-mountY,target.x-t.x);t.angle+=shortestAngleDelta(t.angle,aim);if(t.shotClock<=0){t.windup=GUARD_CANNON.windup;t.targetId=target.id;}}
+   else{const rest=side==='player'?0:Math.PI;t.angle+=shortestAngleDelta(t.angle,rest)*clamp(dt*2.4,0,1);}
   }}
   updateProjectiles(dt){for(const p of this.projectiles){if(p.dead)continue;if(p.target&&!p.target.dead){p.tx=p.target.x;p.ty=p.target.y;}const dx=p.tx-p.x,dy=p.ty-p.y,d=Math.hypot(dx,dy),step=p.speed*dt;if(d<=step+5){p.x=p.tx;p.y=p.ty;p.dead=true;if(p.target&&!p.target.dead){if(p.kind==='cannon')this.damage(p.target,p.damage,null,'cannon',true);else{this.resolveUnitHit(p.source,p.target,p.damage);audio.sfx('hit');}}const life=p.kind==='cannon'?FX_TIMING.cannonExplosion:.38;this.fx.push({kind:p.kind==='cannon'?'explosion':'fireHit',x:p.x,y:p.y,t:life,max:life,side:p.source.side});}else{p.px=p.x;p.py=p.y;p.x+=dx/d*step;p.y+=dy/d*step;}}
   this.projectiles=this.projectiles.filter(p=>!p.dead);
@@ -302,7 +303,7 @@ class Game{
   const near=playerUnits.filter(u=>u.lane===lane&&u.t>.38);let type;if(this.potionArmed.enemy&&affordable.includes(this.potionArmed.enemy))type=this.potionArmed.enemy;else if(near.filter(u=>Math.abs(u.t-.65)<.18).length>=2&&affordable.includes('dragon'))type='dragon';else if(near.some(u=>u.type==='elephant')&&affordable.includes('dragon'))type='dragon';else if(near.some(u=>u.type==='dragon')&&affordable.includes('snake'))type='snake';else{const weighted=['lion','elephant','snake','lion','dragon'].filter(k=>affordable.includes(k));type=weighted[Math.floor(Math.random()*weighted.length)]||affordable[0];}
   if(this.deploy('enemy',type,lane))this.aiLastDeployAt=elapsed;
  }
- updateHUD(){const pt=this.towers.player,et=this.towers.enemy;$('#playerHpFill').style.width=`${pt.hp/pt.maxHp*100}%`;$('#enemyHpFill').style.width=`${et.hp/et.maxHp*100}%`;$('#playerHpText').textContent=`${Math.ceil(pt.hp)} / ${pt.maxHp}`;$('#enemyHpText').textContent=`${Math.ceil(et.hp)} / ${et.maxHp}`;if(Number.isFinite(this.timeLeft)){const m=Math.floor(this.timeLeft/60),s=Math.floor(this.timeLeft%60);$('#timer').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}else $('#timer').textContent='∞';$('#modeLabel').textContent=this.mode==='cross'?'交汇战线':'三路攻城';$('#coinText').textContent=`🟡 ${this.coins.player.toFixed(1)}`;$('#coinFill').style.width=`${clamp(this.coins.player/20*100,0,100)}%`;
+ updateHUD(){const pt=this.towers.player,et=this.towers.enemy;$('#playerHpFill').style.width=`${pt.hp/pt.maxHp*100}%`;$('#enemyHpFill').style.width=`${et.hp/et.maxHp*100}%`;$('#playerHpText').textContent=`${Math.ceil(pt.hp)} / ${pt.maxHp}`;$('#enemyHpText').textContent=`${Math.ceil(et.hp)} / ${et.maxHp}`;if(Number.isFinite(this.timeLeft)){const m=Math.floor(this.timeLeft/60),s=Math.floor(this.timeLeft%60);$('#timer').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}else $('#timer').textContent='∞';$('#modeLabel').textContent=this.mode==='cross'?'交汇战线':'三路战线';$('#coinText').textContent=`🟡 ${this.coins.player.toFixed(1)}`;$('#coinFill').style.width=`${clamp(this.coins.player/20*100,0,100)}%`;
   for(const [type,d] of Object.entries(UNIT_DATA)){const el=$(`.card[data-type="${type}"]`),cd=this.cool.player[type]||0;el.classList.toggle('disabled',this.coins.player<d.cost||cd>0);el.classList.toggle('armed',this.potionArmed.player===type);el.querySelector('.cool-mask').style.height=`${cd/d.cooldown*100}%`;el.querySelector('.cool-label').textContent=cd>0?cd.toFixed(1):'';}
   this.updateTacticDom($('#potionBtn'),this.tacticCool.player.potion,POTION.cooldown,this.coins.player<POTION.cost||!!this.potionArmed.player);this.updateTacticDom($('#burstBtn'),this.tacticCool.player.burst,BURST.cooldown,this.coins.player<BURST.cost);updateSystemButtons();
  }

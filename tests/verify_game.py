@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import math
 import shutil
 import struct
 import subprocess
@@ -15,7 +16,7 @@ PROTOTYPE = ROOT / "源代码" / "prototype_castle_layout.html"
 TABLE_DIR = ROOT / "单位属性表"
 EXPECTED_TABLE = "20260710.xlsx"
 EXPECTED_TABLE_SHA256 = {
-    "4934176548525233C1B6FB272CD9DF63D67748C679C4F7C5F6D5A757CB04D200",
+    "1002AA1C6CC8914C7A32B998DA42101CB18E5547334AD867EF568CBC433122E0",
 }
 
 
@@ -58,9 +59,9 @@ required = {
     "游戏标题": "<title>奇境王冠</title>",
     "外部样式入口": '<link rel="stylesheet" href="./css/style.css" />',
     "微软 Emoji 字体": 'font-family:"Segoe UI Emoji"',
-    "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:400,attack:10,speed:80,range:60,interval:.2,cooldown:3,regen:10",
-    "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:500,attack:20,speed:60,range:70,interval:.5,cooldown:3,regen:10",
-    "象最新属性": "elephant:{name:'磐石象',cost:10,hp:800,attack:15,speed:40,range:80,interval:.8,cooldown:3,regen:20",
+    "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:400,attack:10,speed:80,range:60,interval:.2,cooldown:4,regen:10",
+    "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:600,attack:20,speed:60,range:70,interval:.5,cooldown:4,regen:10",
+    "象最新属性": "elephant:{name:'磐石象',cost:10,hp:800,attack:15,speed:40,range:80,interval:.8,cooldown:4,regen:20",
     "龙最新属性": "dragon:{name:'星焰龙',cost:15,hp:600,attack:30,speed:50,range:100,interval:1,cooldown:5,regen:15",
     "蛇药水倍率": "snake:{hp:1,attack:1,speed:2,attackSpeed:2,regen:1,poisonDamage:2,poisonDuration:1}",
     "狮药水倍率": "lion:{hp:1.3,attack:2,speed:1,attackSpeed:1.3,regen:1,killHeal:2}",
@@ -86,7 +87,13 @@ required = {
     "龙燃烧": "v.burnDps=20*(u.buffed?(u.buff.burnDamage||1):1);v.burn=3*(u.buffed?(u.buff.burnDuration||1):1)",
     "药水属性": "const POTION={cost:5,cooldown:20};",
     "爆裂炮属性": "const BURST={cost:20,cooldown:20,damage:1000,shots:10};",
-    "守门炮属性": "const GUARD_CANNON={interval:2,windup:.28,damage:200,rangeFactor:.25};",
+    "守门炮属性": "const GUARD_CANNON={interval:2,windup:.28,damage:150,rangeFactor:.2};",
+    "炮台最短角度差": "const shortestAngleDelta=(from,to)=>Math.atan2(Math.sin(to-from),Math.cos(to-from));",
+    "炮台回中不绕远路": "t.angle+=shortestAngleDelta(t.angle,rest)*clamp(dt*2.4,0,1)",
+    "三路战线标题": "<b>三路战线</b><span>三条平行路线，战线清晰</span>",
+    "交汇战线精简说明": "<b>交汇战线</b><span>三条道路汇入平滑路面</span>",
+    "模式标题居中": ".mode-option b{text-align:center}",
+    "计时器内层虚线隐藏": "#centerHud::after{display:none}",
     "城门血量": "kind:'tower',side,hp:10000,maxHp:10000",
     "金币增长": "this.coins.player+=1*dt;this.coins.enemy+=1*dt;",
     "正式道路范围": "roadStart:105,roadEnd:1175",
@@ -162,7 +169,16 @@ required = {
 for label, token in required.items():
     require(source, token, label)
 
+
+def shortest_angle_delta(current: float, target: float) -> float:
+    return math.atan2(math.sin(target - current), math.cos(target - current))
+
+
+if abs(math.degrees(shortest_angle_delta(math.radians(-170), math.radians(180)))) > 11:
+    fail("炮台跨越 -π/π 时没有选择最短转向")
+
 forbidden = {
+    "首页副标题": "童话战场 · 固定四卡 · 单机对抗",
     "旧道路深绿硬边": "ctx.strokeStyle='#599c50'",
     "六块灰色门前平台": "CASTLE_GEOMETRY.platformHalfWidth",
     "对局版本文字": 'id="versionTag"',
