@@ -72,7 +72,7 @@
   .primary{background:linear-gradient(180deg,#ffe9a3,#c88424);color:#291806;font-size:18px}.secondary{background:#232b48;border:1px solid rgba(255,255,255,.16)}
   .primary:hover,.secondary:hover{filter:brightness(1.15)}
   .tips{margin-top:17px;font-size:12px;opacity:.62;line-height:1.7}
-  #reportPanel{text-align:left}.report-title{text-align:center;color:#fff0ad;font-size:28px;font-weight:1000}.formula{background:#10162a;border-left:4px solid var(--gold);padding:12px 14px;border-radius:8px;line-height:1.7;font-size:13px;margin:13px 0}
+  #reportPanel{width:min(1080px,92%);text-align:left}.report-title{text-align:center;color:#fff0ad;font-size:28px;font-weight:1000}.formula{background:#10162a;border-left:4px solid var(--gold);padding:12px 14px;border-radius:8px;line-height:1.7;font-size:13px;margin:13px 0 20px}#reportPanel table{table-layout:fixed}#reportPanel th,#reportPanel td{padding:13px 8px}#reportPanel th:nth-child(3),#reportPanel td:nth-child(3){width:18%}#reportPanel .menu-row{margin-top:24px}
   table{width:100%;border-collapse:collapse;font-size:12px}th,td{border-bottom:1px solid rgba(255,255,255,.12);padding:9px 7px;text-align:center}th{color:#ffe8a1;background:rgba(255,255,255,.04)}
   .warn{margin:13px 0;padding:11px 13px;border-radius:10px;background:rgba(255,117,94,.11);border:1px solid rgba(255,117,94,.25);font-size:12px;line-height:1.6}
   #resultTitle{font-size:48px;font-weight:1000;color:#fff0ad;text-shadow:0 5px 20px #000}#resultDetail{opacity:.8;margin:12px 0 20px}

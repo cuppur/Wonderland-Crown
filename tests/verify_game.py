@@ -14,9 +14,9 @@ HTML = ROOT / "index.html"
 STYLE = ROOT / "css" / "style.css"
 PROTOTYPE = ROOT / "源代码" / "prototype_castle_layout.html"
 TABLE_DIR = ROOT / "单位属性表"
-EXPECTED_TABLE = "20260710.xlsx"
+EXPECTED_TABLE = "20260726.xlsx"
 EXPECTED_TABLE_SHA256 = {
-    "1002AA1C6CC8914C7A32B998DA42101CB18E5547334AD867EF568CBC433122E0",
+    "E2872563EB72D0D8ECDDEB063E8184001B1E6DC48CCBEDB7C528A3839F812DBD",
 }
 
 
@@ -59,12 +59,13 @@ required = {
     "游戏标题": "<title>奇境王冠</title>",
     "外部样式入口": '<link rel="stylesheet" href="./css/style.css" />',
     "微软 Emoji 字体": 'font-family:"Segoe UI Emoji"',
-    "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:400,attack:10,speed:80,range:60,interval:.2,cooldown:4,regen:10",
-    "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:600,attack:20,speed:60,range:70,interval:.5,cooldown:4,regen:10",
-    "象最新属性": "elephant:{name:'磐石象',cost:10,hp:800,attack:15,speed:40,range:80,interval:.8,cooldown:4,regen:20",
-    "龙最新属性": "dragon:{name:'星焰龙',cost:15,hp:600,attack:30,speed:50,range:100,interval:1,cooldown:5,regen:15",
+    "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:500,attack:10,speed:80,range:60,interval:.2,cooldown:5,regen:10",
+    "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:700,attack:20,speed:60,range:70,interval:.5,cooldown:5,regen:10",
+    "象最新属性": "elephant:{name:'磐石象',cost:10,hp:1000,attack:15,speed:40,range:80,interval:.8,cooldown:5,regen:20",
+    "龙最新属性": "dragon:{name:'星焰龙',cost:10,hp:700,attack:25,speed:50,range:100,interval:1,cooldown:5,regen:15",
     "蛇药水倍率": "snake:{hp:1,attack:1,speed:2,attackSpeed:2,regen:1,poisonDamage:2,poisonDuration:1}",
-    "狮药水倍率": "lion:{hp:1.3,attack:2,speed:1,attackSpeed:1.3,regen:1,killHeal:2}",
+    "狮药水倍率": "lion:{hp:2,attack:2,speed:1,attackSpeed:1,regen:1,killHeal:2}",
+    "报告移除建议费用": "<th>每金币价值</th></tr>",
     "象药水倍率": "elephant:{hp:2,attack:1,speed:1,attackSpeed:1,regen:2,heavyDamage:2}",
     "龙药水倍率": "dragon:{hp:1.3,attack:1.3,speed:1.3,attackSpeed:1.3,regen:1.3,burnDamage:1.3,burnDuration:1.3}",
     "蛇中毒": "const pd=2*(u.buffed?(u.buff.poisonDamage||1):1),dur=10*(u.buffed?(u.buff.poisonDuration||1):1)",
@@ -96,6 +97,7 @@ required = {
     "计时器内层虚线隐藏": "#centerHud::after{display:none}",
     "城门血量": "kind:'tower',side,hp:10000,maxHp:10000",
     "金币增长": "this.coins.player+=1*dt;this.coins.enemy+=1*dt;",
+    "初始金币": "this.coins={player:15,enemy:15}",
     "正式道路范围": "roadStart:105,roadEnd:1175",
     "按单位尺寸计算出生距离": "const distance=UNIT_DATA[type].size+CASTLE_GEOMETRY.spawnGap",
     "双方镜像出生参数": "return side==='player'?distance/path.length:1-distance/path.length;",
@@ -196,6 +198,8 @@ forbidden = {
     "旧己方半场点击限制": "p.x>FIELD.centerX",
     "旧己方半场寻路限制": "nearestLane(p,true)",
     "卡牌属性描述节点": "<div class=\"card-stats\">",
+    "报告模型建议费用": "模型建议费用",
+    "报告模型结论": "模型结论",
 }
 for label, token in forbidden.items():
     forbid(source, token, label)
@@ -248,7 +252,7 @@ result = subprocess.run(
 if result.returncode != 0:
     fail(f"JavaScript 语法错误：{result.stderr.strip()}")
 
-print("[PASS] 最新属性表未被修改，且仍为 20260710.xlsx")
+print("[PASS] 最新属性表未被修改，且仍为 20260726.xlsx")
 print("[PASS] 四单位、药水、城门、金币、爆裂炮和守门炮静态配置已同步")
 print("[PASS] 底部卡牌、左下战术键、双地图道路与系统按钮契约存在")
 print("[PASS] BGM、单发炮、连发炮资源存在，音画限时逻辑存在")

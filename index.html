@@ -47,7 +47,7 @@
     </div>
 
     <div id="bottomDock" class="glass">
-      <div id="resourceBox" class="glass"><div id="coinText">🟡 20.0</div><div id="coinBar"><div id="coinFill"></div></div><div id="income">金币增长：1 / 秒</div></div>
+      <div id="resourceBox" class="glass"><div id="coinText">🟡 15.0</div><div id="coinBar"><div id="coinFill"></div></div><div id="income">金币增长：1 / 秒</div></div>
       <button class="card" data-type="snake"><div class="card-art">🐍</div><div class="cost">10</div><div class="card-name">毒影蛇</div><div class="card-role">快速刺客</div><div class="cool-mask"></div><div class="cool-label"></div></button>
       <button class="card" data-type="lion"><div class="card-art">🦁</div><div class="cost">10</div><div class="card-name">圣鬃狮</div><div class="card-role">均衡战士</div><div class="cool-mask"></div><div class="cool-label"></div></button>
       <button class="card" data-type="elephant"><div class="card-art">🐘</div><div class="cost">10</div><div class="card-name">磐石象</div><div class="card-role">慢速坦克</div><div class="cool-mask"></div><div class="cool-label"></div></button>
@@ -75,14 +75,13 @@
           <b>综合价值 = 血量/100 + 等效DPS/10 + 移速/100 + 射程/100 + 持续回复/10</b><br>
           每金币价值 = 综合价值 ÷ 当前费用。该模型用于发现明显失衡，不等同于真实胜率。
         </div>
-        <table><thead><tr><th>单位</th><th>直伤DPS</th><th>特殊DPS</th><th>等效DPS</th><th>持续回复/s</th><th>综合价值</th><th>当前费用</th><th>每金币价值</th><th>模型建议费用</th></tr></thead>
+        <table><thead><tr><th>单位</th><th>直伤DPS</th><th>特殊DPS</th><th>等效DPS</th><th>持续回复/s</th><th>综合价值</th><th>当前费用</th><th>每金币价值</th></tr></thead>
           <tbody id="reportBody">
-            <tr><td>毒影蛇</td><td>50.0</td><td>30.0（毒，6秒窗）</td><td>80.0</td><td>10.0</td><td>14.60</td><td>10</td><td>1.46</td><td>15</td></tr>
-            <tr><td>圣鬃狮</td><td>40.0</td><td>0</td><td>40.0</td><td>20.0</td><td>12.40</td><td>10</td><td>1.24</td><td>12</td></tr>
-            <tr><td>磐石象</td><td>18.75</td><td>10.0（重击）</td><td>38.81（群伤）</td><td>20.0</td><td>15.18</td><td>10</td><td>1.52</td><td>15</td></tr>
-            <tr><td>星焰龙</td><td>25.0</td><td>20.0（燃烧）</td><td>60.75（群伤）</td><td>15.0</td><td>15.18</td><td>15</td><td>1.01</td><td>15</td></tr>
+            <tr><td>毒影蛇</td><td>50.0</td><td>30.0（毒，6秒窗）</td><td>80.00</td><td>10.0</td><td>15.40</td><td>10</td><td>1.54</td></tr>
+            <tr><td>圣鬃狮</td><td>40.0</td><td>0</td><td>40.00</td><td>20.0</td><td>14.30</td><td>10</td><td>1.43</td></tr>
+            <tr><td>磐石象</td><td>18.75</td><td>10.0（重击）</td><td>38.81</td><td>20.0</td><td>17.08</td><td>10</td><td>1.71</td></tr>
+            <tr><td>星焰龙</td><td>25.0</td><td>20.0（燃烧）</td><td>60.75</td><td>15.0</td><td>16.08</td><td>10</td><td>1.61</td></tr>
           </tbody></table>
-        <div id="reportSummary" class="warn"><b>模型结论：</b>最新属性表下，磐石象与毒影蛇的单位金币价值仍较高；星焰龙已接近1.0。本版本严格保留属性表费用，不擅自调价。</div>
         <div class="menu-row"><button id="closeReportBtn" class="primary">返回</button></div>
       </div>
     </div>
@@ -135,10 +134,10 @@ const CASTLE_GEOMETRY={wallHalfWidth:46,wallTop:198,wallBottom:522,gateHalfHeigh
 const CANNON_GEOMETRY={mountOffsetY:0,barrelLength:38,baseRadius:20,recoilDistance:4};
 
 const UNIT_DATA={
- snake:{name:'毒影蛇',cost:10,hp:400,attack:10,speed:80,range:60,interval:.2,cooldown:4,regen:10,aoe:false,size:23,role:'快速刺客',special:'中毒2/s×10秒，可独立叠加'},
- lion:{name:'圣鬃狮',cost:10,hp:600,attack:20,speed:60,range:70,interval:.5,cooldown:4,regen:10,aoe:false,size:27,role:'均衡战士',special:'参与击杀回复100生命'},
- elephant:{name:'磐石象',cost:10,hp:800,attack:15,speed:40,range:80,interval:.8,cooldown:4,regen:20,aoe:true,size:32,role:'慢速坦克',special:'每3秒蓄势，下一击造成300%伤害'},
- dragon:{name:'星焰龙',cost:15,hp:600,attack:30,speed:50,range:100,interval:1,cooldown:5,regen:15,aoe:true,size:29,role:'远程魔法战士',special:'群体燃烧20/s×3秒，刷新不叠加'}
+ snake:{name:'毒影蛇',cost:10,hp:500,attack:10,speed:80,range:60,interval:.2,cooldown:5,regen:10,aoe:false,size:23,role:'快速刺客',special:'中毒2/s×10秒，可独立叠加'},
+ lion:{name:'圣鬃狮',cost:10,hp:700,attack:20,speed:60,range:70,interval:.5,cooldown:5,regen:10,aoe:false,size:27,role:'均衡战士',special:'参与击杀回复100生命'},
+ elephant:{name:'磐石象',cost:10,hp:1000,attack:15,speed:40,range:80,interval:.8,cooldown:5,regen:20,aoe:true,size:32,role:'慢速坦克',special:'每3秒蓄势，下一击造成300%伤害'},
+ dragon:{name:'星焰龙',cost:10,hp:700,attack:25,speed:50,range:100,interval:1,cooldown:5,regen:15,aoe:true,size:29,role:'远程魔法战士',special:'群体燃烧20/s×3秒，刷新不叠加'}
 };
 const POTION={cost:5,cooldown:20};
 const BURST={cost:20,cooldown:20,damage:1000,shots:10};
@@ -147,7 +146,7 @@ const FX_TIMING={cannonSpeed:760,cannonExplosion:.38,burstLead:.02,burstStep:.11
 const BURST_VISUAL_DURATION=FX_TIMING.burstLead+(BURST.shots-1)*FX_TIMING.burstStep+FX_TIMING.burstExplosion;
 const BUFFS={
  snake:{hp:1,attack:1,speed:2,attackSpeed:2,regen:1,poisonDamage:2,poisonDuration:1},
- lion:{hp:1.3,attack:2,speed:1,attackSpeed:1.3,regen:1,killHeal:2},
+ lion:{hp:2,attack:2,speed:1,attackSpeed:1,regen:1,killHeal:2},
  elephant:{hp:2,attack:1,speed:1,attackSpeed:1,regen:2,heavyDamage:2},
  dragon:{hp:1.3,attack:1.3,speed:1.3,attackSpeed:1.3,regen:1.3,burnDamage:1.3,burnDuration:1.3}
 };
@@ -193,7 +192,7 @@ function syncStaticUI(){
  const rows={
   snake:{special:30,label:'30.0（毒，6秒窗）'},lion:{special:0,label:'0'},elephant:{special:10,label:'10.0（重击）'},dragon:{special:20,label:'20.0（燃烧）'}
  };
- $('#reportBody').innerHTML=Object.entries(UNIT_DATA).map(([type,d])=>{const direct=d.attack/d.interval,special=rows[type].special,effective=(direct+special)*(d.aoe?1.35:1),sustain=d.regen+(type==='lion'?10:0),value=d.hp/100+effective/10+d.speed/100+d.range/100+sustain/10;return`<tr><td>${d.name}</td><td>${direct.toFixed(direct%1?2:1)}</td><td>${rows[type].label}</td><td>${effective.toFixed(2)}</td><td>${sustain.toFixed(1)}</td><td>${value.toFixed(2)}</td><td>${d.cost}</td><td>${(value/d.cost).toFixed(2)}</td><td>${Math.round(value)}</td></tr>`}).join('');
+ $('#reportBody').innerHTML=Object.entries(UNIT_DATA).map(([type,d])=>{const direct=d.attack/d.interval,special=rows[type].special,effective=(direct+special)*(d.aoe?1.35:1),sustain=d.regen+(type==='lion'?10:0),value=d.hp/100+effective/10+d.speed/100+d.range/100+sustain/10;return`<tr><td>${d.name}</td><td>${direct.toFixed(direct%1?2:1)}</td><td>${rows[type].label}</td><td>${effective.toFixed(2)}</td><td>${sustain.toFixed(1)}</td><td>${value.toFixed(2)}</td><td>${d.cost}</td><td>${(value/d.cost).toFixed(2)}</td></tr>`}).join('');
 }
 
 class Path{
@@ -204,7 +203,7 @@ class Path{
 }
 
 class Game{
- constructor(){this.state='menu';this.mode='cross';this.duration=300;this.timeLeft=300;this.elapsed=0;this.paths=[];this.units=[];this.projectiles=[];this.fx=[];this.texts=[];this.spawnHistory=[];this.nextId=1;this.selected=null;this.hoverLane=-1;this.coins={player:20,enemy:20};this.potionArmed={player:null,enemy:null};this.cool={player:{},enemy:{}};this.tacticCool={player:{potion:0,burst:0},enemy:{potion:0,burst:0}};this.towers={};this.aiClock=1;this.aiLastDeployAt=-Infinity;this.last=0;this.grass=[];this.intensity=0;this.pointer={x:0,y:0};this.cannonLaunches=0;this.cannonLaunchesBySide={player:0,enemy:0};this.lastCannonShot=null;this.burstUses=0;this.staticBg=null;this.staticBgDpr=0;this.makeGrass();this.buildPaths();this.resetTowers();}
+ constructor(){this.state='menu';this.mode='cross';this.duration=300;this.timeLeft=300;this.elapsed=0;this.paths=[];this.units=[];this.projectiles=[];this.fx=[];this.texts=[];this.spawnHistory=[];this.nextId=1;this.selected=null;this.hoverLane=-1;this.coins={player:15,enemy:15};this.potionArmed={player:null,enemy:null};this.cool={player:{},enemy:{}};this.tacticCool={player:{potion:0,burst:0},enemy:{potion:0,burst:0}};this.towers={};this.aiClock=1;this.aiLastDeployAt=-Infinity;this.last=0;this.grass=[];this.intensity=0;this.pointer={x:0,y:0};this.cannonLaunches=0;this.cannonLaunchesBySide={player:0,enemy:0};this.lastCannonShot=null;this.burstUses=0;this.staticBg=null;this.staticBgDpr=0;this.makeGrass();this.buildPaths();this.resetTowers();}
  makeGrass(){let seed=14591;const rnd=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646},count=mobilePerformanceMode?190:430;for(let i=0;i<count;i++)this.grass.push({x:rnd()*W,y:rnd()*H,r:rnd()*1.7+.3,a:rnd()*.22+.05});}
  buildPaths(){
   if(this.mode==='straight')this.paths=FIELD.laneY.map(y=>new Path([{x:FIELD.roadStart,y},{x:315,y},{x:500,y:y+2},{x:640,y},{x:780,y:y-2},{x:965,y},{x:FIELD.roadEnd,y}]));
@@ -218,7 +217,7 @@ class Game{
  resetTowers(){this.towers={player:this.newTower('player'),enemy:this.newTower('enemy')};}
  newTower(side){return{kind:'tower',side,hp:10000,maxHp:10000,x:side==='player'?FIELD.towerLeft:FIELD.towerRight,y:FIELD.centerY,angle:side==='player'?0:Math.PI,range:(FIELD.towerRight-FIELD.towerLeft)*GUARD_CANNON.rangeFactor,damage:GUARD_CANNON.damage,shotClock:0,windup:0,targetId:null,hitFlash:0,shake:0,recoil:0};}
   start(){
-   audio.stopGame();this.state='playing';this.timeLeft=this.duration;this.elapsed=0;this.units=[];this.projectiles=[];this.fx=[];this.texts=[];this.spawnHistory=[];this.nextId=1;this.cannonLaunches=0;this.cannonLaunchesBySide={player:0,enemy:0};this.lastCannonShot=null;this.burstUses=0;this.coins={player:20,enemy:20};this.potionArmed={player:null,enemy:null};this.cool={player:{snake:0,lion:0,elephant:0,dragon:0},enemy:{snake:0,lion:0,elephant:0,dragon:0}};this.tacticCool={player:{potion:0,burst:0},enemy:{potion:0,burst:0}};this.aiClock=1.2;this.aiLastDeployAt=-Infinity;this.selected=null;this.buildPaths();this.resetTowers();this.updateHUD();hideAllOverlays();updateSystemButtons();this.hint('拖拽卡牌到任意道路位置部署；药水拖到卡牌强化下一只');audio.start(true);
+   audio.stopGame();this.state='playing';this.timeLeft=this.duration;this.elapsed=0;this.units=[];this.projectiles=[];this.fx=[];this.texts=[];this.spawnHistory=[];this.nextId=1;this.cannonLaunches=0;this.cannonLaunchesBySide={player:0,enemy:0};this.lastCannonShot=null;this.burstUses=0;this.coins={player:15,enemy:15};this.potionArmed={player:null,enemy:null};this.cool={player:{snake:0,lion:0,elephant:0,dragon:0},enemy:{snake:0,lion:0,elephant:0,dragon:0}};this.tacticCool={player:{potion:0,burst:0},enemy:{potion:0,burst:0}};this.aiClock=1.2;this.aiLastDeployAt=-Infinity;this.selected=null;this.buildPaths();this.resetTowers();this.updateHUD();hideAllOverlays();updateSystemButtons();this.hint('拖拽卡牌到任意道路位置部署；药水拖到卡牌强化下一只');audio.start(true);
  }
  end(reason='时间结束'){
   if(this.state!=='playing')return;this.state='ended';let win;if(this.towers.enemy.hp<=0&&this.towers.player.hp<=0)win='draw';else if(this.towers.enemy.hp<=0)win='player';else if(this.towers.player.hp<=0)win='enemy';else if(this.towers.player.hp===this.towers.enemy.hp)win='draw';else win=this.towers.player.hp>this.towers.enemy.hp?'player':'enemy';
