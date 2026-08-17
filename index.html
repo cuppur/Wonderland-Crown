@@ -69,20 +69,27 @@
     <div id="reportOverlay" class="overlay hidden">
       <div id="reportPanel" class="menu-panel glass">
         <div class="report-title">单位成本价值报告</div>
-        <div class="formula"><b>估算公式（6秒交战窗口）：</b><br>
-          等效DPS =（直伤DPS + 特殊效果DPS）× 群伤系数（单体1.00，群体1.35）<br>
-          持续回复 = 每秒生命回复 + 击杀回血期望（狮子按每10秒参与击杀1次估算）<br>
-          <b>综合价值 = 血量/100 + 等效DPS/10 + 移速/100 + 射程/100 + 持续回复/10</b><br>
-          每金币价值 = 综合价值 ÷ 当前费用。该模型用于发现明显失衡，不等同于真实胜率。
+        <div id="reportContent" class="report-content">
+          <details id="reportFormula" class="report-formula-details" open>
+            <summary><span class="formula-collapsed-label">查看计算公式</span><span class="formula-expanded-label">收起计算公式</span></summary>
+            <div class="formula"><b>估算公式（6秒交战窗口）：</b><br>
+              等效DPS =（直伤DPS + 特殊效果DPS）× 群伤系数（单体1.00，群体1.35）<br>
+              持续回复 = 每秒生命回复 + 击杀回血期望（狮子按每10秒参与击杀1次估算）<br>
+              <b>综合价值 = 血量/100 + 等效DPS/10 + 移速/100 + 射程/100 + 持续回复/10</b><br>
+              每金币价值 = 综合价值 ÷ 当前费用。该模型用于发现明显失衡，不等同于真实胜率。
+            </div>
+          </details>
+          <div class="report-table-scroll" role="region" aria-label="单位成本价值数据表" tabindex="0">
+            <table><thead><tr><th>单位</th><th>直伤DPS</th><th>特殊DPS</th><th>等效DPS</th><th>持续回复/s</th><th>综合价值</th><th>当前费用</th><th>每金币价值</th></tr></thead>
+              <tbody id="reportBody">
+                <tr><td>毒影蛇</td><td>50.0</td><td>30.0（毒，6秒窗）</td><td>80.00</td><td>10.0</td><td>15.40</td><td>10</td><td>1.54</td></tr>
+                <tr><td>圣鬃狮</td><td>40.0</td><td>0</td><td>40.00</td><td>20.0</td><td>14.30</td><td>10</td><td>1.43</td></tr>
+                <tr><td>磐石象</td><td>18.75</td><td>10.0（重击）</td><td>38.81</td><td>20.0</td><td>17.08</td><td>10</td><td>1.71</td></tr>
+                <tr><td>星焰龙</td><td>25.0</td><td>20.0（燃烧）</td><td>60.75</td><td>15.0</td><td>16.08</td><td>10</td><td>1.61</td></tr>
+              </tbody></table>
+          </div>
         </div>
-        <table><thead><tr><th>单位</th><th>直伤DPS</th><th>特殊DPS</th><th>等效DPS</th><th>持续回复/s</th><th>综合价值</th><th>当前费用</th><th>每金币价值</th></tr></thead>
-          <tbody id="reportBody">
-            <tr><td>毒影蛇</td><td>50.0</td><td>30.0（毒，6秒窗）</td><td>80.00</td><td>10.0</td><td>15.40</td><td>10</td><td>1.54</td></tr>
-            <tr><td>圣鬃狮</td><td>40.0</td><td>0</td><td>40.00</td><td>20.0</td><td>14.30</td><td>10</td><td>1.43</td></tr>
-            <tr><td>磐石象</td><td>18.75</td><td>10.0（重击）</td><td>38.81</td><td>20.0</td><td>17.08</td><td>10</td><td>1.71</td></tr>
-            <tr><td>星焰龙</td><td>25.0</td><td>20.0（燃烧）</td><td>60.75</td><td>15.0</td><td>16.08</td><td>10</td><td>1.61</td></tr>
-          </tbody></table>
-        <div class="menu-row"><button id="closeReportBtn" class="primary">返回</button></div>
+        <div class="report-footer"><button id="closeReportBtn" class="primary">返回</button></div>
       </div>
     </div>
 
@@ -137,7 +144,7 @@ const UNIT_DATA={
  snake:{name:'毒影蛇',cost:10,hp:500,attack:10,speed:80,range:60,interval:.2,cooldown:5,regen:10,aoe:false,size:23,role:'快速刺客',special:'中毒2/s×10秒，可独立叠加'},
  lion:{name:'圣鬃狮',cost:10,hp:700,attack:20,speed:60,range:70,interval:.5,cooldown:5,regen:10,aoe:false,size:27,role:'均衡战士',special:'参与击杀回复100生命'},
  elephant:{name:'磐石象',cost:10,hp:1000,attack:15,speed:40,range:80,interval:.8,cooldown:5,regen:20,aoe:true,size:32,role:'慢速坦克',special:'每3秒蓄势，下一击造成300%伤害'},
- dragon:{name:'星焰龙',cost:10,hp:700,attack:25,speed:50,range:100,interval:1,cooldown:5,regen:15,aoe:true,size:29,role:'远程魔法战士',special:'群体燃烧20/s×3秒，刷新不叠加'}
+ dragon:{name:'星焰龙',cost:10,hp:800,attack:20,speed:50,range:100,interval:1,cooldown:5,regen:15,aoe:true,size:29,role:'远程魔法战士',special:'群体燃烧20/s×3秒，刷新不叠加'}
 };
 const POTION={cost:5,cooldown:20};
 const BURST={cost:20,cooldown:20,damage:1000,shots:10};
@@ -322,7 +329,7 @@ class Game{
  tracePath(p,t0=0,t1=1,steps=34){ctx.beginPath();for(let i=0;i<=steps;i++){const q=p.at(lerp(t0,t1,i/steps));if(i===0)ctx.moveTo(q.x,q.y);else ctx.lineTo(q.x,q.y);}}
  roadPattern(){return roadTextureTile.dataset.ready?ctx.createPattern(roadTextureTile,'repeat'):null;}
  roadLightGradient(){const g=ctx.createLinearGradient(FIELD.roadStart,0,FIELD.roadEnd,0);g.addColorStop(0,ROAD_VISUAL.sideColor);g.addColorStop(.5,ROAD_VISUAL.centerColor);g.addColorStop(1,ROAD_VISUAL.sideColor);return g;}
- strokeRoad(p,t0=0,t1=1){ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='rgba(85,117,66,.12)';ctx.shadowBlur=4;this.tracePath(p,t0,t1);ctx.strokeStyle=ROAD_VISUAL.transitionColor;ctx.lineWidth=ROAD_VISUAL.transitionWidth;ctx.stroke();ctx.shadowBlur=0;this.tracePath(p,t0,t1);ctx.strokeStyle=ROAD_VISUAL.edgeColor;ctx.lineWidth=ROAD_VISUAL.edgeWidth;ctx.stroke();this.tracePath(p,t0,t1);ctx.strokeStyle=ROAD_VISUAL.innerBlendColor;ctx.lineWidth=ROAD_VISUAL.innerBlendWidth;ctx.stroke();this.tracePath(p,t0,t1);ctx.strokeStyle=this.roadLightGradient();ctx.lineWidth=ROAD_VISUAL.roadWidth;ctx.stroke();const pattern=this.roadPattern();if(pattern){ctx.globalAlpha=ROAD_VISUAL.textureAlpha;this.tracePath(p,t0,t1);ctx.strokeStyle=pattern;ctx.lineWidth=ROAD_VISUAL.roadWidth-2;ctx.stroke();ctx.globalAlpha=1;}this.tracePath(p,t0,t1);ctx.strokeStyle=ROAD_VISUAL.centerLight;ctx.lineWidth=1.5;ctx.stroke();ctx.restore();}
+ strokeRoad(p,t0=0,t1=1){ctx.save();ctx.lineCap='round';ctx.lineJoin='round';this.tracePath(p,t0,t1);ctx.strokeStyle=ROAD_VISUAL.transitionColor;ctx.lineWidth=ROAD_VISUAL.transitionWidth;ctx.stroke();this.tracePath(p,t0,t1);ctx.strokeStyle=ROAD_VISUAL.edgeColor;ctx.lineWidth=ROAD_VISUAL.edgeWidth;ctx.stroke();this.tracePath(p,t0,t1);ctx.strokeStyle=ROAD_VISUAL.innerBlendColor;ctx.lineWidth=ROAD_VISUAL.innerBlendWidth;ctx.stroke();this.tracePath(p,t0,t1);ctx.strokeStyle=this.roadLightGradient();ctx.lineWidth=ROAD_VISUAL.roadWidth;ctx.stroke();const pattern=this.roadPattern();if(pattern){ctx.globalAlpha=ROAD_VISUAL.textureAlpha;this.tracePath(p,t0,t1);ctx.strokeStyle=pattern;ctx.lineWidth=ROAD_VISUAL.roadWidth-2;ctx.stroke();ctx.globalAlpha=1;}ctx.restore();}
  drawRoadRunes(p){for(let t=.14;t<.92;t+=.17){if(this.mode==='cross'&&t>.39&&t<.61)continue;const q=p.at(t);ctx.save();ctx.translate(q.x,q.y);ctx.rotate(p.tangent(t));ctx.strokeStyle='rgba(116,88,143,.13)';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(0,0,5.5,0,TAU);ctx.stroke();ctx.beginPath();ctx.moveTo(-3,0);ctx.lineTo(3,0);ctx.moveTo(0,-3);ctx.lineTo(0,3);ctx.stroke();ctx.restore();}}
  crossRoadShape(inset=0){
   const p=new Path2D(),xL=FIELD.roadStart+inset,xR=FIELD.roadEnd-inset,top=215+inset,bottom=505-inset,centerTop=292+inset,centerBottom=428-inset;
@@ -332,9 +339,16 @@ class Game{
   leftHole(282-inset,333+inset,470+inset);leftHole(387-inset,438+inset,470+inset);rightHole(282-inset,333+inset,810-inset);rightHole(387-inset,438+inset,810-inset);return p;
  }
  drawCrossRoad(){
-  ctx.save();const ci=ROAD_VISUAL.crossInsets,outer=this.crossRoadShape(ci.transition),edge=this.crossRoadShape(ci.edge),blend=this.crossRoadShape(ci.blend),inner=this.crossRoadShape(ci.road),texture=this.crossRoadShape(ci.texture);ctx.shadowColor='rgba(85,117,66,.12)';ctx.shadowBlur=4;ctx.fillStyle=ROAD_VISUAL.transitionColor;ctx.fill(outer,'evenodd');ctx.shadowBlur=0;ctx.fillStyle=ROAD_VISUAL.edgeColor;ctx.fill(edge,'evenodd');ctx.fillStyle=ROAD_VISUAL.innerBlendColor;ctx.fill(blend,'evenodd');ctx.fillStyle=this.roadLightGradient();ctx.fill(inner,'evenodd');const pattern=this.roadPattern();if(pattern){ctx.globalAlpha=ROAD_VISUAL.textureAlpha;ctx.fillStyle=pattern;ctx.fill(texture,'evenodd');ctx.globalAlpha=1;}ctx.save();ctx.clip(inner,'evenodd');const centerWash=ctx.createRadialGradient(FIELD.centerX,FIELD.centerY,30,FIELD.centerX,FIELD.centerY,330);centerWash.addColorStop(0,'rgba(255,247,213,.11)');centerWash.addColorStop(.62,'rgba(222,215,157,.035)');centerWash.addColorStop(1,'rgba(126,165,84,.08)');ctx.fillStyle=centerWash;ctx.fillRect(250,190,780,340);ctx.restore();ctx.strokeStyle='rgba(122,154,83,.24)';ctx.lineWidth=1.5;ctx.stroke(edge);ctx.restore();
+  ctx.save();const ci=ROAD_VISUAL.crossInsets,outer=this.crossRoadShape(ci.transition),edge=this.crossRoadShape(ci.edge),blend=this.crossRoadShape(ci.blend),inner=this.crossRoadShape(ci.road),texture=this.crossRoadShape(ci.texture);
+  ctx.fillStyle=ROAD_VISUAL.transitionColor;ctx.fill(outer,'evenodd');
+  ctx.fillStyle=ROAD_VISUAL.edgeColor;ctx.fill(edge,'evenodd');
+  ctx.fillStyle=ROAD_VISUAL.innerBlendColor;ctx.fill(blend,'evenodd');
+  ctx.fillStyle=this.roadLightGradient();ctx.fill(inner,'evenodd');
+  const pattern=this.roadPattern();if(pattern){ctx.globalAlpha=ROAD_VISUAL.textureAlpha;ctx.fillStyle=pattern;ctx.fill(texture,'evenodd');ctx.globalAlpha=1;}
+  ctx.strokeStyle=ROAD_VISUAL.edgeColor;ctx.lineWidth=1.5;ctx.stroke(edge);
+  ctx.restore();
  }
- drawRoadDecor(){const marks=[.16,.33,.69,.86];ctx.save();ctx.globalAlpha=ROAD_VISUAL.decorAlpha;for(let lane=0;lane<this.paths.length;lane++){const p=this.paths[lane];for(let j=0;j<marks.length;j++){const t=marks[j],q=p.at(t),a=p.tangent(t),nx=-Math.sin(a),ny=Math.cos(a),side=(lane*3+j)%2?1:-1,off=ROAD_VISUAL.roadWidth*.55,x=q.x+nx*off*side,y=q.y+ny*off*side;ctx.fillStyle=j%2?'#a8b86f':'#d8c58f';ctx.beginPath();ctx.ellipse(x,y,7+(lane+j)%4,2.5, a,0,TAU);ctx.fill();if((lane+j)%3===0)this.drawGrassTuft(x+nx*5*side,y+ny*5*side,.34);ctx.fillStyle='rgba(231,217,163,.55)';for(let k=0;k<2;k++){ctx.beginPath();ctx.arc(x+(k?6:-5),y+(k?-2:3),1.2,0,TAU);ctx.fill();}}}ctx.restore();}
+ drawRoadDecor(){const marks=[.16,.33,.69,.86];ctx.save();ctx.globalAlpha=ROAD_VISUAL.decorAlpha;for(let lane=0;lane<this.paths.length;lane++){const p=this.paths[lane];for(let j=0;j<marks.length;j++){const t=marks[j],q=p.at(t),a=p.tangent(t),nx=-Math.sin(a),ny=Math.cos(a),side=(lane*3+j)%2?1:-1,off=ROAD_VISUAL.roadWidth*.55,x=q.x+nx*off*side,y=q.y+ny*off*side;ctx.fillStyle=j%2?'#a8b86f':'#d8c58f';ctx.beginPath();ctx.ellipse(x,y,7+(lane+j)%4,2.5,a,0,TAU);ctx.fill();if((lane+j)%3===0)this.drawGrassTuft(x+nx*5*side,y+ny*5*side,.34);ctx.fillStyle='rgba(231,217,163,.55)';for(let k=0;k<2;k++){ctx.beginPath();ctx.arc(x+(k?6:-5),y+(k?-2:3),1.2,0,TAU);ctx.fill();}}}ctx.restore();}
  drawPaths(){if(this.mode==='cross'){this.drawCrossRoad();for(const p of this.paths)this.drawRoadRunes(p);}else{for(const p of this.paths){this.strokeRoad(p,0,1);this.drawRoadRunes(p);}}this.drawRoadDecor();}
  drawBases(){this.drawTower(this.towers.player);this.drawTower(this.towers.enemy);}
   drawTower(t){ctx.save();const shake=t.shake>0?(Math.random()-.5)*3:0;ctx.translate(t.x+shake,t.y);if(t.side==='enemy')ctx.scale(-1,1);const hp=t.hp/t.maxHp,team=t.side==='player'?'#6fc9f1':'#f69aaa',teamDark=t.side==='player'?'#3d91bd':'#cf667d',cream=t.hitFlash>0?'#fff8df':'#fff0cb',wallTop=CASTLE_GEOMETRY.wallTop-t.y,wallHeight=CASTLE_GEOMETRY.wallBottom-CASTLE_GEOMETRY.wallTop,half=CASTLE_GEOMETRY.wallHalfWidth;
@@ -393,7 +407,7 @@ async function enterMobileMode(){if(!mobilePerformanceMode)return;audio.ensureCo
 document.addEventListener('fullscreenchange',updateMobileLayout);
 $('#mobileModeBtn').addEventListener('click',enterMobileMode);$('#mobileEnterBtn').addEventListener('click',enterMobileMode);
 document.addEventListener('pointerdown',()=>{if(mobilePerformanceMode)enterMobileMode();else audio.ensureContext();},{once:true,capture:true});
-let mobileTouchActive=false;shell.addEventListener('touchstart',()=>{mobileTouchActive=true},{passive:true});shell.addEventListener('touchmove',e=>{if(mobileTouchActive)e.preventDefault()},{passive:false});shell.addEventListener('touchend',()=>{mobileTouchActive=false},{passive:true});shell.addEventListener('touchcancel',()=>{mobileTouchActive=false},{passive:true});
+let mobileTouchActive=false;shell.addEventListener('touchstart',()=>{mobileTouchActive=true},{passive:true});shell.addEventListener('touchmove',e=>{const reportScrollTarget=e.target instanceof Element&&e.target.closest('#reportPanel');if(mobileTouchActive&&!reportScrollTarget)e.preventDefault()},{passive:false});shell.addEventListener('touchend',()=>{mobileTouchActive=false},{passive:true});shell.addEventListener('touchcancel',()=>{mobileTouchActive=false},{passive:true});
 document.addEventListener('contextmenu',e=>{if(mobilePerformanceMode)e.preventDefault()});document.addEventListener('gesturestart',e=>{if(mobilePerformanceMode)e.preventDefault()},{passive:false});document.addEventListener('selectstart',e=>{if(mobilePerformanceMode)e.preventDefault()});
 if(mobilePerformanceMode){updateMobileLayout();setTimeout(()=>enterMobileMode(),0);}
 
@@ -427,11 +441,12 @@ function returnHome(){if(typeof cleanupDrag==='function')cleanupDrag();game.stat
 function togglePause(){if(game.state==='playing'){if(typeof cleanupDrag==='function')cleanupDrag();game.state='paused';audio.pauseGame();game.hint('对局已暂停');}else if(game.state==='paused'){game.state='playing';audio.resumeGame();game.hint('对局继续');}updateSystemButtons();}
 $('#homeBtn').addEventListener('click',returnHome);$('#pauseBtn').addEventListener('click',togglePause);$('#backMenuBtn').addEventListener('click',returnHome);
 let reportReturnState='menu';
-function showReport(){reportReturnState=game.state;if(game.state==='playing'){if(typeof cleanupDrag==='function')cleanupDrag();game.state='paused';audio.pauseGame();}$('#reportOverlay').classList.remove('hidden');updateSystemButtons();}
-$('#reportBtn').addEventListener('click',showReport);$('#menuReportBtn').addEventListener('click',showReport);$('#closeReportBtn').addEventListener('click',()=>{$('#reportOverlay').classList.add('hidden');if(reportReturnState==='playing'){game.state='playing';audio.resumeGame();}updateSystemButtons();});
+function showReport(){reportReturnState=game.state;if(game.state==='playing'){if(typeof cleanupDrag==='function')cleanupDrag();game.state='paused';audio.pauseGame();}$('#reportFormula').open=!mobilePerformanceMode;$('#reportContent').scrollTop=0;$('#reportOverlay').classList.remove('hidden');shell.classList.add('report-open');updateSystemButtons();}
+function closeReport(){if($('#reportOverlay').classList.contains('hidden'))return false;$('#reportOverlay').classList.add('hidden');shell.classList.remove('report-open');if(reportReturnState==='playing'){game.state='playing';audio.resumeGame();}updateSystemButtons();return true;}
+$('#reportBtn').addEventListener('click',showReport);$('#menuReportBtn').addEventListener('click',showReport);$('#closeReportBtn').addEventListener('click',closeReport);
 $('#audioBtn').addEventListener('click',()=>{audio.ensureContext();const m=audio.toggle();if(game.state==='playing'&&!m&&audio.bgm.paused)audio.playBgm(false);$('#audioBtn').textContent=m?'🔇':'🔊'});
 $('#fullBtn').addEventListener('click',async()=>{try{if(!document.fullscreenElement)await shell.requestFullscreen();else await document.exitFullscreen();}catch(e){game.hint('浏览器未允许全屏')}});
-function hideAllOverlays(){$('#menuOverlay').classList.add('hidden');$('#resultOverlay').classList.add('hidden');$('#reportOverlay').classList.add('hidden')}
+function hideAllOverlays(){$('#menuOverlay').classList.add('hidden');$('#resultOverlay').classList.add('hidden');$('#reportOverlay').classList.add('hidden');shell.classList.remove('report-open')}
 updateSystemButtons();
 })();
 </script>

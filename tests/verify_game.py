@@ -16,7 +16,7 @@ PROTOTYPE = ROOT / "源代码" / "prototype_castle_layout.html"
 TABLE_DIR = ROOT / "单位属性表"
 EXPECTED_TABLE = "20260726.xlsx"
 EXPECTED_TABLE_SHA256 = {
-    "E2872563EB72D0D8ECDDEB063E8184001B1E6DC48CCBEDB7C528A3839F812DBD",
+    "5A305758F63CA865DE6EA69326E1B1D0FCFF7D65BF630E5B33F8833919965FE3",
 }
 
 
@@ -62,7 +62,7 @@ required = {
     "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:500,attack:10,speed:80,range:60,interval:.2,cooldown:5,regen:10",
     "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:700,attack:20,speed:60,range:70,interval:.5,cooldown:5,regen:10",
     "象最新属性": "elephant:{name:'磐石象',cost:10,hp:1000,attack:15,speed:40,range:80,interval:.8,cooldown:5,regen:20",
-    "龙最新属性": "dragon:{name:'星焰龙',cost:10,hp:700,attack:25,speed:50,range:100,interval:1,cooldown:5,regen:15",
+    "龙最新属性": "dragon:{name:'星焰龙',cost:10,hp:800,attack:20,speed:50,range:100,interval:1,cooldown:5,regen:15",
     "蛇药水倍率": "snake:{hp:1,attack:1,speed:2,attackSpeed:2,regen:1,poisonDamage:2,poisonDuration:1}",
     "狮药水倍率": "lion:{hp:2,attack:2,speed:1,attackSpeed:1,regen:1,killHeal:2}",
     "报告移除建议费用": "<th>每金币价值</th></tr>",
@@ -167,6 +167,10 @@ required = {
     "触摸拖动支持": "addEventListener('touchmove'",
     "触摸结束支持": "addEventListener('touchend'",
     "首次触摸自动进入横屏全屏": "document.addEventListener('pointerdown',()=>{if(mobilePerformanceMode)enterMobileMode()",
+    "报告固定底部返回区": "class=\"report-footer\"",
+    "报告移动端公式折叠": "$('#reportFormula').open=!mobilePerformanceMode",
+    "报告触摸滚动区": "html.mobile-device .report-content",
+    "报告打开时解除战场触摸拦截": "#game-shell.report-open{touch-action:pan-x pan-y}",
 }
 for label, token in required.items():
     require(source, token, label)
