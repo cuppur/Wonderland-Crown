@@ -75,6 +75,15 @@ P5：给用户最终汇报（诊断 + 整改措施 + 落地到 index.html 的步
 - 第3轮：顶栏/底栏放大约 35%（1080p 顶约 85px、底约 190px），电脑和手机都放大；清理执行三项：删 fairy-castle-gate-v1.png + fairy-cannon-barrel-v1.png（同步删 index.html 加载代码、manifest、测试断言）、删 PROJECT_HANDOFF.md 并按真实结构重写精简版 AGENTS.md、删历史属性表只留 20260730.xlsx 并把测试改锁它；manifest 旧 source 字段和 LOVABLE_DEPLOY.md 保留不动；执行顺序：展示页修改 + 城堡概念页一起做，用户看完再选城堡、再决定是否落地 index.html。
 - 用户截图红线位置：所有道路分岔/汇合处的内侧锐角（城墙附近两条路分开处、中央交汇口上下两侧）都要圆角过渡。
 
+### 第二轮执行阶段（用户已确认规划，2026-10-07）
+
+- [ ] Q1 清理：删两张未绘制图片及引用；删 PROJECT_HANDOFF.md、重写精简 AGENTS.md；删历史属性表只留 20260730.xlsx、测试改锁它；跑 `python tests/verify_game.py` 必须 PASS
+- [ ] Q2 展示页修改 `design/ui-preview.html`：卡片区还原原版外观（组件化）；路宽 ×0.7、去白线留石子；单位走中线；分岔/交汇内角圆角约一路宽；HUD 放大约 35%
+- [ ] Q3 城堡概念页 `design/castle-concepts.html`：圆塔要塞群 / 蘑菇童话村 / 糖果蛋糕城，三方案并排，同一战场底图，玩法结构不变
+- [ ] Q4 截图自检 + 汇报，等用户选城堡
+
+下一步：Q1。
+
 ## 已暂停的任务：项目清理（用户叫停，"已做的不管，没做的搁着"）
 
 已完成：
