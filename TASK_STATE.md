@@ -32,15 +32,23 @@
 ### 阶段计划
 
 - [x] P0 建立本文件并提交
-- [ ] P1 页面骨架：比例切换、stage 容器、HUD DOM 组件（顶栏、底栏金币/4卡/2技能、菜单按钮），CSS 用容器查询单位随 stage 缩放
+- [x] P1 页面骨架：比例切换、stage 容器、HUD DOM 组件（顶栏、底栏金币/4卡/2技能、菜单按钮）
 - [ ] P2 Canvas 战场：程序手绘草地、交汇道路（参数化）、三门城墙、墙顶炮台
 - [ ] P3 动态演示：自动出兵、按路长换算速度、单位交战、炮台转向开火、卡牌点击出兵与冷却、金币增长、倒计时
 - [ ] P4 截图自检 1920×1080 / 844×390 / 1024×768，修问题
 - [ ] P5 最终汇报（诊断 + 整改措施 + 落地步骤），更新记忆
 
+### P1 结构约定（P2/P3 要遵守）
+
+- 文件末尾有三个 `<script>`：第 1 个是 P1（舞台/比例/菜单，导出 `window.QJ={$,$$,stage,fitStage}`）；第 2 个占位 `/*P2-FIELD*/`，替换成战场绘制；第 3 个占位 `/*P3-DEMO*/`，替换成演示逻辑，末尾保留 `QJ.fitStage();`。
+- 舞台尺寸变化时派发 `window` 事件 `stage-resize`（detail `{w,h}`），P2 监听它重建画布与道路几何。
+- HUD 尺寸全部用 rem，`html` 的 font-size = 基准单位 u（`computeUnit`：`max(4.3, min(h/100, w*.0072))` px）。
+- 战场安全区：顶栏占 top .9rem~6.5rem，底栏占 bottom .9rem~14.3rem（含 1.2rem 选中上浮）；道路纵向范围要落在这两者之间。
+- DOM id：`#field` 画布，`#pHp/#eHp` 血条 `<i>`，`#pHpText/#eHpText`，`#timer`，`#coinText/#coinBar`，`.card[data-type]`，`.skill[data-skill=potion|burst]`，`.cd` 冷却遮罩（父元素加 `.cooling` 并设 `--p` 0~1、文字为秒数），`.selected`/`.poor`/`.buffed` 状态类，`#hint`（加 `.show`），`#autoBtn`、`#restartBtn`、`#pauseItem`。
+
 ### 下一步
 
-P1：写 `design/ui-preview.html` 骨架。
+P2：替换 `/*P2-FIELD*/`，实现参数化交汇道路与程序手绘战场，导出 `QJ.field`（paths、门位置、炮台位置、draw 函数）。
 
 ## 已暂停的任务：项目清理（用户叫停，"已做的不管，没做的搁着"）
 

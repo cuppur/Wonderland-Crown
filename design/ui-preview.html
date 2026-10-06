@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>奇境王冠 · 对局 UI 重构预览</title>
+<style>
+/* ============================================================
+   奇境王冠 · 对局 UI 重构预览（展示页，不是正式游戏）
+   - 战场：Canvas 程序绘制的俯视手绘风草地 / 道路 / 三门城墙 / 墙顶炮台
+   - HUD：独立 DOM 组件，尺寸单位 rem = 舞台基准单位 u（由 JS 按舞台尺寸计算）
+   - 比例：舞台可切换 16:9 / 19.5:9 / 4:3 / 自适应窗口，战场随比例拉伸
+   ============================================================ */
+:root{
+  --ink:#5b4461;            /* 全局描边与文字：深紫棕，替代纯黑 */
+  --ink-soft:rgba(91,68,97,.18);
+  --cream:#fff8ea; --cream-2:#fbedd2; --line:#ead3ad;
+  --gold:#f7c94f; --gold-d:#d99a2b;
+  --blue:#5aa9f0; --blue-d:#2f72bd; --blue-l:#d8ecff;
+  --red:#f27384;  --red-d:#c4485e;  --red-l:#ffe0e4;
+  --ui-font:"Microsoft YaHei UI","PingFang SC","HarmonyOS Sans SC","Noto Sans SC",system-ui,sans-serif;
+  --num-font:"Segoe UI","SF Pro Rounded","Arial Rounded MT Bold",system-ui,sans-serif;
+  --emoji:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:#2b2531;color:var(--ink);font-family:var(--ui-font);overflow:hidden;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+
+/* ---------- 预览工具栏（页面外壳，固定 px，不随舞台缩放） ---------- */
+#toolbar{position:fixed;inset:0 0 auto 0;height:44px;display:flex;align-items:center;gap:8px;padding:0 14px;color:#efe6f4;font-size:13px;z-index:10}
+#toolbar .title{font-weight:700;font-size:14px;margin-right:6px;white-space:nowrap}
+#toolbar .group{display:flex;gap:6px}
+#toolbar button{padding:5px 12px;border-radius:999px;background:#443b4d;border:1px solid #5b5066;color:#efe6f4;font-size:12.5px;white-space:nowrap}
+#toolbar button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#4b3550;font-weight:700}
+#toolbar .size{margin-left:auto;font:12px/1 var(--num-font);opacity:.7;white-space:nowrap}
+body.fill #toolbar{opacity:.18;transition:opacity .2s}
+body.fill #toolbar:hover{opacity:1}
+#viewport{position:fixed;inset:44px 0 0 0;display:grid;place-items:center}
+body.fill #viewport{inset:0}
+
+/* ---------- 舞台 ---------- */
+#stage{position:relative;overflow:hidden;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.45);background:#93d16f;user-select:none;touch-action:none}
+body.fill #stage{border-radius:0;box-shadow:none}
+#field{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+/* 所有 HUD 尺寸使用 rem（= u）。最小字号用 max() 保底，保证手机可读。 */
+.hud{position:absolute;pointer-events:none}
+.hud > *{pointer-events:auto}
+.panel{background:var(--cream);border:max(1.5px,.22rem) solid var(--line);box-shadow:0 .35rem 0 var(--ink-soft)}
+
+/* ---------- 顶部细条：双方血条 + 倒计时 + 菜单 ---------- */
+#topbar{left:1.2rem;right:1.2rem;top:.9rem;height:5.6rem;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;align-items:center;gap:1.2rem}
+.plate{height:5rem;border-radius:2.5rem;display:flex;align-items:center;gap:1rem;padding:0 1.6rem 0 .5rem;min-width:0}
+.plate.enemy{flex-direction:row-reverse;padding:0 .5rem 0 1.6rem}
+.crest{flex:none;width:4rem;height:4rem;border-radius:50%;display:grid;place-items:center;font-size:2.1rem;color:#fff;background:var(--blue);border:.25rem solid #fff;box-shadow:0 0 0 max(1px,.16rem) var(--blue-d)}
+.enemy .crest{background:var(--red);box-shadow:0 0 0 max(1px,.16rem) var(--red-d)}
+.plate .info{flex:1;min-width:0}
+.plate .row{display:flex;justify-content:space-between;align-items:baseline;gap:.8rem;font-size:max(10px,1.55rem);font-weight:800;line-height:1.15;white-space:nowrap}
+.enemy .row{flex-direction:row-reverse}
+.plate .hp{font:700 max(9px,1.35rem)/1 var(--num-font);font-variant-numeric:tabular-nums;opacity:.75}
+.bar{height:1.35rem;margin-top:.4rem;border-radius:1rem;background:#eee2d0;overflow:hidden;box-shadow:inset 0 .15rem 0 rgba(91,68,97,.14)}
+.bar i{display:block;height:100%;width:100%;border-radius:inherit;background:linear-gradient(#86caff,#4f9de9);transition:width .25s}
+.enemy .bar{transform:scaleX(-1)}
+.enemy .bar i{background:linear-gradient(#ffa2ae,#ee6779)}
+.timer{min-width:13rem;height:5.6rem;padding:0 2.2rem;border-radius:2.8rem;display:grid;place-content:center;text-align:center;background:linear-gradient(#fff4cc,#ffe08c);border:max(1.5px,.24rem) solid #efc25b;box-shadow:0 .35rem 0 rgba(170,115,30,.22)}
+.timer b{font:800 max(15px,2.8rem)/1 var(--num-font);font-variant-numeric:tabular-nums;color:#7b4a2a;letter-spacing:.05em}
+.timer small{display:block;margin-top:.25rem;font-size:max(9px,1.1rem);font-weight:700;color:#a87445}
+.round-btn{width:5rem;height:5rem;border-radius:50%;display:grid;place-items:center;font-size:2.2rem;background:var(--cream);border:max(1.5px,.22rem) solid var(--line);box-shadow:0 .35rem 0 var(--ink-soft)}
+.round-btn:active{transform:translateY(.25rem);box-shadow:0 .1rem 0 var(--ink-soft)}
+.burger{display:grid;gap:.42rem}
+.burger i{display:block;width:2.1rem;height:.36rem;border-radius:.2rem;background:var(--ink)}
+#menuPop{position:absolute;right:1.2rem;top:7.6rem;padding:.8rem;border-radius:1.8rem;display:none;flex-direction:column;gap:.3rem;min-width:17rem;z-index:3}
+#menuPop.open{display:flex}
+#menuPop button{display:flex;align-items:center;gap:1rem;padding:.9rem 1.2rem;border-radius:1.2rem;font-size:max(11px,1.6rem);font-weight:700;text-align:left}
+#menuPop button:hover{background:var(--cream-2)}
+#menuPop .ico{font-family:var(--emoji);font-size:max(12px,1.8rem);width:2.4rem;text-align:center}
+
+/* ---------- 战场提示 ---------- */
+#hint{left:50%;top:8.4rem;transform:translateX(-50%);padding:.7rem 1.8rem;border-radius:2rem;background:rgba(91,68,97,.82);color:#fff;font-size:max(10px,1.45rem);font-weight:700;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none}
+#hint.show{opacity:1}
+
+/* ---------- 底部一行：技能 + 金币 + 四张卡 ---------- */
+#dock{left:1.2rem;right:1.2rem;bottom:.9rem;height:13.4rem}
+#skills{position:absolute;left:0;bottom:0;display:flex;gap:.9rem}
+#hand{position:absolute;left:50%;bottom:0;transform:translateX(-50%);display:flex;align-items:flex-end;gap:1rem}
+
+.skill{position:relative;width:10rem;height:11.6rem;border-radius:1.8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;overflow:hidden}
+.skill .art{height:5.2rem;display:grid;place-items:center;font-family:var(--emoji);font-size:4.6rem;line-height:1}
+.skill .art svg{width:7rem;height:5.2rem}
+.skill .name{font-size:max(10px,1.55rem);font-weight:800;white-space:nowrap}
+.skill .meta{display:flex;gap:.5rem;align-items:center;font:700 max(9px,1.3rem)/1 var(--num-font)}
+.skill .count{padding:.25rem .7rem;border-radius:1rem;background:var(--blue-l);color:var(--blue-d)}
+.skill.potion{background:linear-gradient(#f9efff,#efdcff)}
+.skill.burst{background:linear-gradient(#fff4e6,#ffe1c4)}
+
+.coins{width:12.4rem;height:10.4rem;border-radius:1.8rem;padding:1rem 1.2rem;display:flex;flex-direction:column;justify-content:center;gap:.6rem}
+.coins .top{display:flex;align-items:center;gap:.8rem}
+.coin-ico{flex:none;width:3.6rem;height:3.6rem;border-radius:50%;background:radial-gradient(circle at 35% 32%,#fff3b8 0 18%,#f9d25e 19% 60%,#e7a92f 61%);box-shadow:inset 0 0 0 .3rem rgba(255,255,255,.35),0 0 0 max(1px,.16rem) #c98a22}
+.coins b{font:800 max(15px,3rem)/1 var(--num-font);font-variant-numeric:tabular-nums;color:#7b4a2a}
+.coins .bar{margin-top:0;height:1.2rem}
+.coins .bar i{background:linear-gradient(#ffe37d,#f2b73a)}
+.coins small{font-size:max(9px,1.2rem);font-weight:700;color:#a87445;white-space:nowrap}
+
+.card{position:relative;width:11rem;height:13rem;border-radius:1.8rem;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:1.1rem;gap:.35rem;background:var(--card-bg);border:max(2px,.3rem) solid #fff;box-shadow:0 0 0 max(1px,.16rem) rgba(91,68,97,.28),0 .45rem 0 var(--ink-soft);transition:transform .15s,filter .2s}
+.card .art{font-family:var(--emoji);font-size:5.4rem;line-height:1;margin-bottom:.2rem}
+.card .name{font-size:max(10px,1.75rem);font-weight:800;white-space:nowrap}
+.card .tag{padding:.2rem .8rem;border-radius:1rem;background:rgba(255,255,255,.75);font-size:max(9px,1.2rem);font-weight:700;white-space:nowrap;color:#7a5c80}
+.cost{position:absolute;left:-.9rem;top:-.9rem;width:3.8rem;height:3.8rem;border-radius:50%;display:grid;place-items:center;font:800 max(11px,1.8rem)/1 var(--num-font);color:#7b4a2a;background:radial-gradient(circle at 35% 30%,#fff1b0,#f6c74d 60%,#e8a930);border:max(1.5px,.22rem) solid #fff;box-shadow:0 0 0 max(1px,.14rem) #c98a22;z-index:2}
+.skill .cost{left:auto;right:.6rem;top:.6rem;width:3rem;height:3rem;font-size:max(10px,1.45rem)}
+.card[data-type="snake"]{--card-bg:linear-gradient(#efffe8,#cdeec0)}
+.card[data-type="lion"]{--card-bg:linear-gradient(#fff6e0,#ffe0aa)}
+.card[data-type="elephant"]{--card-bg:linear-gradient(#eef8ff,#cfe6fb)}
+.card[data-type="dragon"]{--card-bg:linear-gradient(#fbf0ff,#e7d2fb)}
+.card:hover{transform:translateY(-.5rem)}
+.card.selected,.skill.selected{transform:translateY(-1.2rem);box-shadow:0 0 0 max(2px,.35rem) var(--gold),0 .8rem 0 var(--ink-soft)}
+.card.poor,.skill.poor{filter:saturate(.3) brightness(.97)}
+.card.poor .cost,.skill.poor .cost{background:radial-gradient(circle at 35% 30%,#ffd9dd,#f48a97 60%,#d65b6c);box-shadow:0 0 0 max(1px,.14rem) #b94457;color:#fff}
+.card.buffed{box-shadow:0 0 0 max(2px,.35rem) #c79bff,0 .45rem 0 var(--ink-soft)}
+.card.buffed::before{content:"👑";position:absolute;right:.5rem;top:.3rem;font-family:var(--emoji);font-size:2.2rem}
+
+/* 冷却遮罩：圆形扫描 + 秒数 */
+.cd{position:absolute;inset:0;border-radius:inherit;display:none;place-items:center;background:conic-gradient(rgba(70,48,82,.58) calc(var(--p,0) * 1turn),rgba(70,48,82,.16) 0);font:800 max(13px,2.6rem)/1 var(--num-font);color:#fff;text-shadow:0 .2rem 0 rgba(0,0,0,.25);z-index:1}
+.cooling .cd{display:grid}
+
+/* ---------- 竖屏提示（仅自适应模式） ---------- */
+#rotate{position:absolute;inset:0;display:none;place-content:center;text-align:center;gap:12px;background:#2b2531;color:#fff;font-size:16px;z-index:5}
+#rotate .ico{font-size:44px;font-family:var(--emoji)}
+#stage.portrait #rotate{display:grid}
+</style>
+</head>
+<body>
+<div id="toolbar">
+  <span class="title">奇境王冠 · 对局 UI 预览</span>
+  <div class="group" id="ratioGroup">
+    <button data-ratio="1.7778" aria-pressed="true">电脑 16:9</button>
+    <button data-ratio="2.1667">手机横屏 19.5:9</button>
+    <button data-ratio="1.3333">平板 4:3</button>
+    <button data-ratio="fill">自适应窗口</button>
+  </div>
+  <div class="group">
+    <button id="autoBtn" aria-pressed="true">自动演示</button>
+    <button id="restartBtn">重新开始</button>
+  </div>
+  <span class="size" id="sizeLabel"></span>
+</div>
+
+<div id="viewport">
+  <div id="stage">
+    <canvas id="field" aria-label="交汇战线战场"></canvas>
+
+    <div id="topbar" class="hud">
+      <div class="plate player panel">
+        <div class="crest">♛</div>
+        <div class="info">
+          <div class="row"><span>曙光王庭</span><span class="hp" id="pHpText">7000</span></div>
+          <div class="bar"><i id="pHp"></i></div>
+        </div>
+      </div>
+      <div class="timer"><b id="timer">05:00</b><small>交汇战线</small></div>
+      <div class="plate enemy panel">
+        <div class="crest">♜</div>
+        <div class="info">
+          <div class="row"><span>暮影王庭</span><span class="hp" id="eHpText">7000</span></div>
+          <div class="bar"><i id="eHp"></i></div>
+        </div>
+      </div>
+      <button class="round-btn" id="menuBtn" title="菜单" aria-label="菜单" aria-expanded="false"><span class="burger"><i></i><i></i><i></i></span></button>
+    </div>
+    <div id="menuPop" class="panel" role="menu">
+      <button role="menuitem" id="pauseItem"><span class="ico">⏸️</span><span>暂停对局</span></button>
+      <button role="menuitem"><span class="ico">🔊</span><span>音乐与音效</span></button>
+      <button role="menuitem"><span class="ico">📊</span><span>数值报告</span></button>
+      <button role="menuitem"><span class="ico">⛶</span><span>全屏</span></button>
+      <button role="menuitem"><span class="ico">🏠</span><span>返回首页</span></button>
+    </div>
+
+    <div id="hint" class="hud" aria-live="polite"></div>
+
+    <div id="dock" class="hud">
+      <div id="skills">
+        <button class="skill potion panel" data-skill="potion" title="魔力药水：选中后点一张卡牌，强化该卡下一次部署的单位">
+          <span class="cost">5</span>
+          <span class="art">🧪</span><span class="name">魔力药水</span>
+          <span class="meta"><span class="count">强化下一只</span></span>
+          <span class="cd"></span>
+        </button>
+        <button class="skill burst panel" data-skill="burst" title="爆裂炮阵：选中后点一条道路，沿该路连续炮击">
+          <span class="cost">20</span>
+          <span class="art"><svg viewBox="0 0 70 52" aria-hidden="true">
+            <ellipse cx="35" cy="47" rx="24" ry="3.5" fill="rgba(91,68,97,.18)"/>
+            <rect x="20" y="15" width="40" height="15" rx="7.5" fill="#5f6577" transform="rotate(-14 40 22)"/>
+            <rect x="53" y="10" width="8" height="19" rx="3" fill="#4a4f5f" transform="rotate(-14 57 19)"/>
+            <circle cx="24" cy="36" r="10" fill="#c98a4b" stroke="#8b5a32" stroke-width="2.5"/>
+            <circle cx="24" cy="36" r="3" fill="#f7c94f"/>
+            <rect x="8" y="38" width="30" height="7" rx="3.5" fill="#a46a3c"/>
+          </svg></span>
+          <span class="name">爆裂炮阵</span>
+          <span class="meta"><span class="count">×10 炮</span></span>
+          <span class="cd"></span>
+        </button>
+      </div>
+      <div id="hand">
+        <div class="coins panel">
+          <div class="top"><span class="coin-ico"></span><b id="coinText">20</b></div>
+          <div class="bar"><i id="coinBar"></i></div>
+          <small>每秒 +2 金币</small>
+        </div>
+        <button class="card" data-type="snake" title="毒影蛇 · 快速刺客&#10;生命 500 · 攻击 10 · 移速 80 · 射程 60&#10;中毒 2/s×10 秒，可独立叠加"><span class="cost">10</span><span class="art">🐍</span><span class="name">毒影蛇</span><span class="tag">快速刺客</span><span class="cd"></span></button>
+        <button class="card" data-type="lion" title="圣鬃狮 · 均衡战士&#10;生命 700 · 攻击 20 · 移速 60 · 射程 70&#10;参与击杀回复 100 生命"><span class="cost">10</span><span class="art">🦁</span><span class="name">圣鬃狮</span><span class="tag">均衡战士</span><span class="cd"></span></button>
+        <button class="card" data-type="elephant" title="磐石象 · 慢速坦克&#10;生命 1000 · 攻击 15 · 移速 40 · 射程 80&#10;每 3 秒蓄势，下一击 300% 伤害"><span class="cost">10</span><span class="art">🐘</span><span class="name">磐石象</span><span class="tag">慢速坦克</span><span class="cd"></span></button>
+        <button class="card" data-type="dragon" title="星焰龙 · 远程魔法&#10;生命 800 · 攻击 20 · 移速 50 · 射程 100&#10;群体燃烧 20/s×3 秒"><span class="cost">10</span><span class="art">🐉</span><span class="name">星焰龙</span><span class="tag">远程魔法</span><span class="cd"></span></button>
+      </div>
+    </div>
+
+    <div id="rotate"><div class="ico">📱↻</div><div>请将设备旋转至横屏</div></div>
+  </div>
+</div>
+
+<script>
+/* P1：舞台尺寸、比例切换、u 基准单位。战场绘制（P2）与演示逻辑（P3）见后续脚本块。 */
+(() => {
+'use strict';
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const stage = $('#stage');
+let ratio = 1.7778;
+
+// u = 舞台基准单位（px）。按高度 1%，宽度过窄时收缩，太小时保底以保证手机可读。
+function computeUnit(w, h) { return Math.max(4.3, Math.min(h / 100, w * .0072)); }
+
+function fitStage() {
+  const vp = $('#viewport').getBoundingClientRect();
+  let w, h;
+  if (ratio === 'fill') { w = vp.width; h = vp.height; }
+  else {
+    const pad = 24, aw = vp.width - pad, ah = vp.height - pad;
+    if (aw / ah > ratio) { h = ah; w = h * ratio; } else { w = aw; h = w / ratio; }
+  }
+  w = Math.floor(w); h = Math.floor(h);
+  stage.style.width = w + 'px'; stage.style.height = h + 'px';
+  document.documentElement.style.fontSize = computeUnit(w, h).toFixed(2) + 'px';
+  stage.classList.toggle('portrait', ratio === 'fill' && w / h < 1.15);
+  $('#sizeLabel').textContent = `${w}×${h} · ${(w / h).toFixed(2)}:1`;
+  window.dispatchEvent(new CustomEvent('stage-resize', { detail: { w, h } }));
+}
+
+$$('#ratioGroup button').forEach(b => b.addEventListener('click', () => {
+  $$('#ratioGroup button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  ratio = b.dataset.ratio === 'fill' ? 'fill' : +b.dataset.ratio;
+  document.body.classList.toggle('fill', ratio === 'fill');
+  fitStage();
+}));
+const menuBtn = $('#menuBtn'), menuPop = $('#menuPop');
+menuBtn.addEventListener('click', e => { e.stopPropagation(); const open = !menuPop.classList.contains('open'); menuPop.classList.toggle('open', open); menuBtn.setAttribute('aria-expanded', open); });
+document.addEventListener('click', e => { if (!menuPop.contains(e.target)) { menuPop.classList.remove('open'); menuBtn.setAttribute('aria-expanded', false); } });
+window.addEventListener('resize', fitStage);
+window.QJ = { $, $$, stage, fitStage };
+})();
+</script>
+<script>/*P2-FIELD*/</script>
+<script>/*P3-DEMO*/
+QJ.fitStage();
+</script>
+</body>
+</html>
