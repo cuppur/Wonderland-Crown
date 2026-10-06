@@ -33,7 +33,7 @@
 
 - [x] P0 建立本文件并提交
 - [x] P1 页面骨架：比例切换、stage 容器、HUD DOM 组件（顶栏、底栏金币/4卡/2技能、菜单按钮）
-- [ ] P2 Canvas 战场：程序手绘草地、交汇道路（参数化）、三门城墙、墙顶炮台
+- [x] P2 Canvas 战场：程序手绘草地、交汇道路（参数化）、三门城墙、墙顶炮台（已嵌入，待截图调整）
 - [ ] P3 动态演示：自动出兵、按路长换算速度、单位交战、炮台转向开火、卡牌点击出兵与冷却、金币增长、倒计时
 - [ ] P4 截图自检 1920×1080 / 844×390 / 1024×768，修问题
 - [ ] P5 最终汇报（诊断 + 整改措施 + 落地步骤），更新记忆
@@ -46,9 +46,16 @@
 - 战场安全区：顶栏占 top .9rem~6.5rem，底栏占 bottom .9rem~14.3rem（含 1.2rem 选中上浮）；道路纵向范围要落在这两者之间。
 - DOM id：`#field` 画布，`#pHp/#eHp` 血条 `<i>`，`#pHpText/#eHpText`，`#timer`，`#coinText/#coinBar`，`.card[data-type]`，`.skill[data-skill=potion|burst]`，`.cd` 冷却遮罩（父元素加 `.cooling` 并设 `--p` 0~1、文字为秒数），`.selected`/`.poor`/`.buffed` 状态类，`#hint`（加 `.show`），`#autoBtn`、`#restartBtn`、`#pauseItem`。
 
+### P2 接口（P3 使用）
+
+- `QJ.field = {ctx, canvas, TEAM, INK, rr, circle, drawWall(g,F,side,st), drawCannon(g,F,side,st), muzzle(F,side,angle), highlightLane(g,F,i,color), nearestLane(F,x,y), rng, F, bg, dpr}`。
+- `drawWall` 的 st：`{hp:0~1, shake, flash, time}`；`drawCannon` 的 st：`{angle, recoil:0~1, glow:0~1}`。
+- 几何 `F`：`paths[3]`（Path：`at(t)`、`angle(t)`、`nearest(x,y)`、`length`、`trace(g)`；t=0 为己方出生平台、t=1 为敌方出生平台），`rw` 路宽，`S0` 线宽基准，`unitR` 单位半径，`k` = 当前路长/原版 1070px（速度、射程乘 k），`pivot.player/enemy` 炮台中心，`ys` 三路 y，`cx/cy`。
+- 尺寸变化后派发 `field-ready` 事件；每帧先 `ctx.drawImage(field.bg,0,0,F.w,F.h)` 再画城墙、单位、炮台、特效。
+
 ### 下一步
 
-P2：替换 `/*P2-FIELD*/`，实现参数化交汇道路与程序手绘战场，导出 `QJ.field`（paths、门位置、炮台位置、draw 函数）。
+P3：替换 `<script>/*P3-DEMO*/` 块（保留末尾 `QJ.fitStage();`），实现循环渲染与演示逻辑；然后 P4 截图。
 
 ## 已暂停的任务：项目清理（用户叫停，"已做的不管，没做的搁着"）
 
