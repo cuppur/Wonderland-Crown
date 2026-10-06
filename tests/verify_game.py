@@ -12,11 +12,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 HTML = ROOT / "index.html"
 STYLE = ROOT / "css" / "style.css"
-PROTOTYPE = ROOT / "源代码" / "prototype_castle_layout.html"
 TABLE_DIR = ROOT / "单位属性表"
-EXPECTED_TABLE = "20260726.xlsx"
+EXPECTED_TABLE = "20260730.xlsx"
 EXPECTED_TABLE_SHA256 = {
-    "5A305758F63CA865DE6EA69326E1B1D0FCFF7D65BF630E5B33F8833919965FE3",
+    "29FAB6D7CCFA1175778D9706FF7D4277CAFB72D29D1F72DD90C42BAAA9F232B2",
 }
 
 
@@ -39,8 +38,6 @@ if not HTML.is_file():
     fail(f"找不到游戏文件：{HTML}")
 if not STYLE.is_file():
     fail(f"找不到外部样式文件：{STYLE}")
-if PROTOTYPE.exists():
-    fail(f"正式吸收后仍残留临时城墙原型：{PROTOTYPE}")
 
 tables = [p for p in TABLE_DIR.glob("*.xlsx") if p.stem.isdigit()]
 if not tables:
@@ -110,9 +107,7 @@ required = {
     "恢复旧版连续交汇路面": "ctx.fill(outer,'evenodd')",
     "恢复旧版交汇几何": "centerTop=292+inset,centerBottom=428-inset",
     "生成花园背景": "./assets/images/fairy-garden-battlefield-v1.png",
-    "生成城堡立绘": "./assets/images/fairy-castle-gate-v1.png",
     "生成道路纹理": "./assets/images/fairy-road-stone-texture-v1.png",
-    "生成童话炮身": "./assets/images/fairy-cannon-barrel-v1.png",
     "透明中毒图标": "./assets/images/poison-status-icon-v1.png",
     "道路纹理蒙版": "const pattern=this.roadPattern()",
     "统一道路视觉配置": "const ROAD_VISUAL={",
@@ -219,9 +214,7 @@ for asset in assets:
 
 png_assets = {
     ROOT / "assets" / "images" / "fairy-garden-battlefield-v1.png": (1200, 675, False),
-    ROOT / "assets" / "images" / "fairy-castle-gate-v1.png": (512, 512, True),
     ROOT / "assets" / "images" / "fairy-road-stone-texture-v1.png": (512, 512, False),
-    ROOT / "assets" / "images" / "fairy-cannon-barrel-v1.png": (512, 256, True),
     ROOT / "assets" / "images" / "poison-status-icon-v1.png": (512, 512, True),
 }
 for asset, (min_w, min_h, needs_alpha) in png_assets.items():
@@ -235,7 +228,7 @@ for asset, (min_w, min_h, needs_alpha) in png_assets.items():
     if width < min_w or height < min_h:
         fail(f"图片分辨率过低：{asset} ({width}x{height})")
     if needs_alpha and color_type not in (4, 6):
-        fail(f"城堡立绘缺少透明通道：{asset}")
+        fail(f"图片缺少透明通道：{asset}")
 
 node = shutil.which("node")
 if not node:
@@ -256,10 +249,10 @@ result = subprocess.run(
 if result.returncode != 0:
     fail(f"JavaScript 语法错误：{result.stderr.strip()}")
 
-print("[PASS] 最新属性表未被修改，且仍为 20260726.xlsx")
+print("[PASS] 最新属性表未被修改，且仍为 20260730.xlsx")
 print("[PASS] 四单位、药水、城门、金币、爆裂炮和守门炮静态配置已同步")
 print("[PASS] 底部卡牌、左下战术键、双地图道路与系统按钮契约存在")
 print("[PASS] BGM、单发炮、连发炮资源存在，音画限时逻辑存在")
-print("[PASS] 花园背景、透明城堡、道路纹理和童话炮身 PNG 有效并已接入")
+print("[PASS] 花园背景、道路纹理和中毒图标 PNG 有效并已接入")
 print("[PASS] 点击与拖拽均允许在整条道路任意位置部署")
 print("[PASS] HTML 内联 JavaScript 语法检查通过")

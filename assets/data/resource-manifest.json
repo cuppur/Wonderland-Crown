@@ -14,29 +14,11 @@
     },
     {
       "type": "image",
-      "source": "源代码/assets/fairy-castle-gate-v1.png",
-      "publicPath": "assets/images/fairy-castle-gate-v1.png",
-      "bytes": 1043809,
-      "sha256": "B5E953E80BBE4045C3522A5F230E819C9914382EC3E08AADEEC31821922E0CAB",
-      "source_reference_count": 1,
-      "embedded_in_html": false
-    },
-    {
-      "type": "image",
       "source": "源代码/assets/fairy-road-stone-texture-v1.png",
       "publicPath": "assets/images/fairy-road-stone-texture-v1.png",
       "bytes": 1928308,
       "sha256": "8279B6481DAFB24885D9F06F244718500F8BD15C5C1125FEAF544503BFF6A1B9",
       "source_reference_count": 12,
-      "embedded_in_html": false
-    },
-    {
-      "type": "image",
-      "source": "源代码/assets/fairy-cannon-barrel-v1.png",
-      "publicPath": "assets/images/fairy-cannon-barrel-v1.png",
-      "bytes": 536441,
-      "sha256": "C4362AD1871C8BF9363E2CAA60CADB68ED2E4B9B479105B1B4CBBF814DED822C",
-      "source_reference_count": 1,
       "embedded_in_html": false
     },
     {

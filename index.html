@@ -8,9 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <title>奇境王冠</title>
 <link rel="preload" href="./assets/images/fairy-garden-battlefield-v1.png" as="image" />
-<link rel="preload" href="./assets/images/fairy-castle-gate-v1.png" as="image" />
 <link rel="preload" href="./assets/images/fairy-road-stone-texture-v1.png" as="image" />
-<link rel="preload" href="./assets/images/fairy-cannon-barrel-v1.png" as="image" />
 <!-- UI decision: pastel fairy-tale HUD with cards/coins below, tactics at lower left, and all controls outside the road-safe battle zone. -->
 <link rel="stylesheet" href="./css/style.css" />
 </head>
@@ -116,8 +114,6 @@ const TAU=Math.PI*2;
 const UNIT_ICONS={snake:'🐍',lion:'🦁',elephant:'🐘',dragon:'🐉'};
 const SCENE_BACKGROUND_URL='./assets/images/fairy-garden-battlefield-v1.png';
 const sceneBackground=new Image();sceneBackground.decoding='async';sceneBackground.src=SCENE_BACKGROUND_URL;
-const CASTLE_SPRITE_URL='./assets/images/fairy-castle-gate-v1.png';
-const castleSprite=new Image();castleSprite.decoding='async';castleSprite.src=CASTLE_SPRITE_URL;
 const ROAD_TEXTURE_URL='./assets/images/fairy-road-stone-texture-v1.png';
 const roadTexture=new Image();roadTexture.decoding='async';roadTexture.src=ROAD_TEXTURE_URL;
 const ROAD_VISUAL={
@@ -126,14 +122,10 @@ const ROAD_VISUAL={
  edgeColor:'rgba(112,148,79,.42)',transitionColor:'rgba(151,174,91,.16)',centerLight:'rgba(255,249,218,.16)',
  crossInsets:{transition:0,edge:3,blend:6,road:9,texture:11},decorAlpha:.28
 };
-const CANNON_SPRITE_URL='./assets/images/fairy-cannon-barrel-v1.png';
-const cannonSprite=new Image();cannonSprite.decoding='async';cannonSprite.src=CANNON_SPRITE_URL;
 const POISON_STATUS_ICON_URL='./assets/images/poison-status-icon-v1.png';
 const poisonStatusIcon=new Image();poisonStatusIcon.decoding='async';poisonStatusIcon.src=POISON_STATUS_ICON_URL;
 const roadTextureTile=document.createElement('canvas');roadTextureTile.width=ROAD_VISUAL.textureTileSize;roadTextureTile.height=ROAD_VISUAL.textureTileSize;
-const cannonSpriteTile=document.createElement('canvas');cannonSpriteTile.width=192;cannonSpriteTile.height=96;
 function prepareRoadTexture(){if(!roadTexture.naturalWidth)return false;const s=ROAD_VISUAL.textureTileSize,tc=roadTextureTile.getContext('2d');tc.clearRect(0,0,s,s);tc.imageSmoothingEnabled=true;tc.imageSmoothingQuality='high';tc.globalAlpha=.72;tc.drawImage(roadTexture,0,0,s,s);tc.globalAlpha=1;roadTextureTile.dataset.ready='1';return true;}
-function prepareCannonSprite(){if(!cannonSprite.naturalWidth)return false;const cc=cannonSpriteTile.getContext('2d'),sw=cannonSprite.naturalWidth,sh=cannonSprite.naturalHeight;cc.clearRect(0,0,192,96);cc.imageSmoothingEnabled=true;cc.imageSmoothingQuality='high';cc.drawImage(cannonSprite,sw*.18,sh*.23,sw*.64,sh*.54,0,0,192,96);cannonSpriteTile.dataset.ready='1';return true;}
 const FIELD={roadStart:105,roadEnd:1175,towerLeft:55,towerRight:1225,centerX:640,centerY:360,laneY:[242,360,478]};
 const DEPLOY_SNAP_RADIUS=46;
 const UNIT_BASE_VISUAL_SCALE=.7;
@@ -392,11 +384,10 @@ class Game{
 const game=new Game();
 const refreshSceneBackground=()=>{game.staticBg=null};sceneBackground.addEventListener('load',refreshSceneBackground,{once:true});if(sceneBackground.complete&&sceneBackground.naturalWidth)refreshSceneBackground();
 const refreshRoadTexture=()=>{prepareRoadTexture();game.staticBg=null};roadTexture.addEventListener('load',refreshRoadTexture,{once:true});if(roadTexture.complete&&roadTexture.naturalWidth)refreshRoadTexture();
-const refreshCannonSprite=()=>{prepareCannonSprite()};cannonSprite.addEventListener('load',refreshCannonSprite,{once:true});if(cannonSprite.complete&&cannonSprite.naturalWidth)refreshCannonSprite();
 syncStaticUI();
 const TEST_MODE=['127.0.0.1','localhost'].includes(location.hostname)&&new URLSearchParams(location.search).has('test');
 let testProbe=null,spawnProbe=null,testProbeNext=0;
-function getTestPayload(){return{state:game.state,mode:game.mode,timeLeft:game.timeLeft,coins:{...game.coins},potionArmed:{...game.potionArmed},tacticCool:{player:{...game.tacticCool.player},enemy:{...game.tacticCool.enemy}},towerHp:{player:game.towers.player.hp,enemy:game.towers.enemy.hp},counters:{cannonLaunches:game.cannonLaunches,cannonLaunchesBySide:{...game.cannonLaunchesBySide},burstUses:game.burstUses},lastCannonShot:game.lastCannonShot,scene:{src:sceneBackground.src,loaded:!!sceneBackground.naturalWidth,width:sceneBackground.naturalWidth,height:sceneBackground.naturalHeight,castleSrc:castleSprite.src,castleLoaded:!!castleSprite.naturalWidth,castleWidth:castleSprite.naturalWidth,castleHeight:castleSprite.naturalHeight,roadSrc:roadTexture.src,roadLoaded:!!roadTexture.naturalWidth,roadWidth:roadTexture.naturalWidth,roadHeight:roadTexture.naturalHeight,cannonSrc:cannonSprite.src,cannonLoaded:!!cannonSprite.naturalWidth,cannonWidth:cannonSprite.naturalWidth,cannonHeight:cannonSprite.naturalHeight},units:game.units.map(u=>({id:u.id,side:u.side,type:u.type,lane:u.lane,t:u.t,x:u.x,y:u.y,facing:u.facing,hp:u.hp,maxHp:u.maxHp,attack:u.attack,speed:u.speed,interval:u.interval,regen:u.regen,size:u.size,visualScale:u.visualScale,buffed:u.buffed})),projectiles:game.projectiles.map(p=>({kind:p.kind,x:p.x,y:p.y,px:p.px,py:p.py})),fx:game.fx.slice(0,24).map(f=>({kind:f.kind,x:f.x,y:f.y,t:f.t,max:f.max})),pathLengths:game.paths.map(p=>p.length),geometry:{castle:CASTLE_GEOMETRY,cannon:CANNON_GEOMETRY,cannons:Object.fromEntries(Object.entries(game.towers).map(([side,t])=>[side,{pose:game.cannonPose(t),muzzle:game.cannonMuzzle(t)}])),gates:Object.fromEntries(Object.entries(game.towers).map(([side,t])=>[side,game.paths.map(p=>p.at(side==='player'?0:1))])),spawns:Object.fromEntries(['player','enemy'].map(side=>[side,Object.fromEntries(Object.keys(UNIT_DATA).map(type=>[type,game.paths.map((p,lane)=>({t:game.spawnT(side,type,lane),...p.at(game.spawnT(side,type,lane))}))]))]))},audio:audio.state(),config:{units:UNIT_DATA,potion:POTION,burst:BURST,guardCannon:{...GUARD_CANNON,range:game.towers.player.range},fxTiming:FX_TIMING,burstVisualDuration:BURST_VISUAL_DURATION,buffs:BUFFS,towerHp:game.towers.player.maxHp,field:FIELD}};}
+function getTestPayload(){return{state:game.state,mode:game.mode,timeLeft:game.timeLeft,coins:{...game.coins},potionArmed:{...game.potionArmed},tacticCool:{player:{...game.tacticCool.player},enemy:{...game.tacticCool.enemy}},towerHp:{player:game.towers.player.hp,enemy:game.towers.enemy.hp},counters:{cannonLaunches:game.cannonLaunches,cannonLaunchesBySide:{...game.cannonLaunchesBySide},burstUses:game.burstUses},lastCannonShot:game.lastCannonShot,scene:{src:sceneBackground.src,loaded:!!sceneBackground.naturalWidth,width:sceneBackground.naturalWidth,height:sceneBackground.naturalHeight,roadSrc:roadTexture.src,roadLoaded:!!roadTexture.naturalWidth,roadWidth:roadTexture.naturalWidth,roadHeight:roadTexture.naturalHeight},units:game.units.map(u=>({id:u.id,side:u.side,type:u.type,lane:u.lane,t:u.t,x:u.x,y:u.y,facing:u.facing,hp:u.hp,maxHp:u.maxHp,attack:u.attack,speed:u.speed,interval:u.interval,regen:u.regen,size:u.size,visualScale:u.visualScale,buffed:u.buffed})),projectiles:game.projectiles.map(p=>({kind:p.kind,x:p.x,y:p.y,px:p.px,py:p.py})),fx:game.fx.slice(0,24).map(f=>({kind:f.kind,x:f.x,y:f.y,t:f.t,max:f.max})),pathLengths:game.paths.map(p=>p.length),geometry:{castle:CASTLE_GEOMETRY,cannon:CANNON_GEOMETRY,cannons:Object.fromEntries(Object.entries(game.towers).map(([side,t])=>[side,{pose:game.cannonPose(t),muzzle:game.cannonMuzzle(t)}])),gates:Object.fromEntries(Object.entries(game.towers).map(([side,t])=>[side,game.paths.map(p=>p.at(side==='player'?0:1))])),spawns:Object.fromEntries(['player','enemy'].map(side=>[side,Object.fromEntries(Object.keys(UNIT_DATA).map(type=>[type,game.paths.map((p,lane)=>({t:game.spawnT(side,type,lane),...p.at(game.spawnT(side,type,lane))}))]))]))},audio:audio.state(),config:{units:UNIT_DATA,potion:POTION,burst:BURST,guardCannon:{...GUARD_CANNON,range:game.towers.player.range},fxTiming:FX_TIMING,burstVisualDuration:BURST_VISUAL_DURATION,buffs:BUFFS,towerHp:game.towers.player.maxHp,field:FIELD}};}
 function getTestSpawnHistory(){return game.spawnHistory.map(s=>({...s}));}
 function seedTestCannonTargets(){for(let lane=0;lane<3;lane++){for(const [side,t] of [['enemy',.12],['player',.88]]){const u=game.createUnit(side,'elephant',lane,t);game.units.push(u);game.spawnHistory.push({side,type:u.type,lane,t:u.t,x:u.x,y:u.y,facing:u.facing,test:true});}}}
 function seedTestTowerAttackers(){for(let lane=0;lane<3;lane++){for(const [side,t] of [['player',.982],['enemy',.018]])game.units.push(game.createUnit(side,'snake',lane,t));}}

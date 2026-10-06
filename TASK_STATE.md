@@ -77,12 +77,14 @@ P5：给用户最终汇报（诊断 + 整改措施 + 落地到 index.html 的步
 
 ### 第二轮执行阶段（用户已确认规划，2026-10-07）
 
-- [ ] Q1 清理：删两张未绘制图片及引用；删 PROJECT_HANDOFF.md、重写精简 AGENTS.md；删历史属性表只留 20260730.xlsx、测试改锁它；跑 `python tests/verify_game.py` 必须 PASS
+- [x] Q1 清理：删两张未绘制图片及引用；删 PROJECT_HANDOFF.md、重写精简 AGENTS.md；删历史属性表只留 20260730.xlsx、测试改锁它；跑 `python tests/verify_game.py` 必须 PASS
 - [ ] Q2 展示页修改 `design/ui-preview.html`：卡片区还原原版外观（组件化）；路宽 ×0.7、去白线留石子；单位走中线；分岔/交汇内角圆角约一路宽；HUD 放大约 35%
 - [ ] Q3 城堡概念页 `design/castle-concepts.html`：圆塔要塞群 / 蘑菇童话村 / 糖果蛋糕城，三方案并排，同一战场底图，玩法结构不变
 - [ ] Q4 截图自检 + 汇报，等用户选城堡
 
-下一步：Q1。
+Q1 结果：删了 fairy-castle-gate-v1.png、fairy-cannon-barrel-v1.png（含 index.html preload/加载/测试探针字段、manifest 条目、测试断言）；顺带去掉 style.css 里 11 处指向不存在路径 `css/assets/fairy-road-stone-texture-v1.png` 的 404 背景图（原本就加载失败，画面不变）；删 PROJECT_HANDOFF.md，AGENTS.md 重写为精简版；属性表只留 20260730.xlsx，测试改锁它，verify_game.py 全 PASS；浏览器实测开局出兵正常、无 console 错误、无 404。
+
+下一步：Q2（改 design/ui-preview.html）。
 
 ## 已暂停的任务：项目清理（用户叫停，"已做的不管，没做的搁着"）
 
@@ -90,8 +92,6 @@ P5：给用户最终汇报（诊断 + 整改措施 + 落地到 index.html 的步
 - 主目录 beauty 未提交工作（Pixi 版、角色、output 等）已永久删除；主目录现为 detached HEAD @2173db7。
 - 删除分支 beauty、master、codex/UI、claude/musing-gagarin-76474b、claude/nice-hugle-5903b0；移除对应 worktree、692c 损坏工作区、codex refs、.git 临时对象并 gc。
 
-搁置未做（不要主动做）：
-- 删 `fairy-castle-gate-v1.png`、`fairy-cannon-barrel-v1.png` 及代码/清单/测试引用。
-- 删 `PROJECT_HANDOFF.md`、精简 `AGENTS.md`。
-- 删历史属性表（保留最新 `20260730.xlsx`；它与 20260726 数值完全一致，仅样式/元数据不同；测试仍锁 20260726，所以 `tests/verify_game.py` 目前失败）。
-- 敏感词替换：用户明确叫停，不要替换游戏用词。
+后续：贴图/交接文档/历史属性表三项已在第二轮 Q1 完成。
+- 敏感词替换：用户确认与风控无关，永久关闭，不要替换游戏用词。
+- manifest 里的旧 `source` 路径字段和 LOVABLE_DEPLOY.md：用户选择保留，不要动。
