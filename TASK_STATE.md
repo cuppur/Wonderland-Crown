@@ -78,13 +78,13 @@ P5：给用户最终汇报（诊断 + 整改措施 + 落地到 index.html 的步
 ### 第二轮执行阶段（用户已确认规划，2026-10-07）
 
 - [x] Q1 清理：删两张未绘制图片及引用；删 PROJECT_HANDOFF.md、重写精简 AGENTS.md；删历史属性表只留 20260730.xlsx、测试改锁它；跑 `python tests/verify_game.py` 必须 PASS
-- [ ] Q2 展示页修改 `design/ui-preview.html`：卡片区还原原版外观（组件化）；路宽 ×0.7、去白线留石子；单位走中线；分岔/交汇内角圆角约一路宽；HUD 放大约 35%
+- [x] Q2 展示页修改 `design/ui-preview.html`：卡片区还原原版外观（组件化）；路宽 ×0.7、去白线留石子；单位走中线；分岔/交汇内角圆角约一路宽；HUD 放大约 35%
 - [ ] Q3 城堡概念页 `design/castle-concepts.html`：圆塔要塞群 / 蘑菇童话村 / 糖果蛋糕城，三方案并排，同一战场底图，玩法结构不变
 - [ ] Q4 截图自检 + 汇报，等用户选城堡
 
 Q1 结果：删了 fairy-castle-gate-v1.png、fairy-cannon-barrel-v1.png（含 index.html preload/加载/测试探针字段、manifest 条目、测试断言）；顺带去掉 style.css 里 11 处指向不存在路径 `css/assets/fairy-road-stone-texture-v1.png` 的 404 背景图（原本就加载失败，画面不变）；删 PROJECT_HANDOFF.md，AGENTS.md 重写为精简版；属性表只留 20260730.xlsx，测试改锁它，verify_game.py 全 PASS；浏览器实测开局出兵正常、无 console 错误、无 404。
 
-下一步：Q2（改 design/ui-preview.html）。
+下一步：Q3（城堡概念页 design/castle-concepts.html）。用户说视觉验收页不必严谨，差不多即可。
 
 Q2 参考数据（原版 1080p 实测的最终生效样式，换算 1rem≈16.6px）：
 - #bottomDock 736×203，flex 对齐 stretch，padding 10/13，gap 10，border 4px #a06d9d，圆角 27，底色 #f3dce8；阴影 inset 0 3px #fff, 0 0 0 3px #ffe8a1, 0 6px 0 #7a567d, 0 12px 19px rgba(56,40,61,.4)；::before "🌸"、::after "🌼" 19px，top -13px，left/right 18px。

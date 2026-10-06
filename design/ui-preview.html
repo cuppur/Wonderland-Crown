@@ -81,48 +81,51 @@ body.fill #stage{border-radius:0;box-shadow:none}
 #hint{left:50%;top:8.4rem;transform:translateX(-50%);padding:.7rem 1.8rem;border-radius:2rem;background:rgba(91,68,97,.82);color:#fff;font-size:max(10px,1.45rem);font-weight:700;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none}
 #hint.show{opacity:1}
 
-/* ---------- 底部一行：技能 + 金币 + 四张卡 ---------- */
-#dock{left:1.2rem;right:1.2rem;bottom:.9rem;height:13.4rem}
-#skills{position:absolute;left:0;bottom:0;display:flex;gap:.9rem}
-#hand{position:absolute;left:50%;bottom:0;transform:translateX(-50%);display:flex;align-items:flex-end;gap:1rem}
+/* ---------- 底部：左侧技能 + 中间卡牌托盘（外观还原原版） ---------- */
+#dock{left:1.2rem;right:1.2rem;bottom:.9rem;height:12.6rem}
+#skills{position:absolute;left:0;bottom:0;display:flex;gap:.8rem}
+#hand{position:absolute;left:50%;bottom:0;transform:translateX(-50%);height:100%;display:flex;align-items:stretch;gap:.62rem;padding:.62rem .8rem;border-radius:1.7rem;background:#f3dce8;border:max(2px,.25rem) solid #a06d9d;box-shadow:inset 0 .19rem 0 #fff,0 0 0 max(1.5px,.19rem) #ffe8a1,0 .38rem 0 #7a567d,0 .75rem 1.2rem rgba(56,40,61,.4)}
+#hand::before,#hand::after{position:absolute;top:-.82rem;font-family:var(--emoji);font-size:max(12px,1.2rem);line-height:1;z-index:4}
+#hand::before{content:"🌸";left:1.1rem}
+#hand::after{content:"🌼";right:1.1rem}
 
-.skill{position:relative;width:10rem;height:11.6rem;border-radius:1.8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;overflow:hidden}
-.skill .art{height:5.2rem;display:grid;place-items:center;font-family:var(--emoji);font-size:4.6rem;line-height:1}
-.skill .art svg{width:7rem;height:5.2rem}
-.skill .name{font-size:max(10px,1.55rem);font-weight:800;white-space:nowrap}
-.skill .meta{display:flex;gap:.5rem;align-items:center;font:700 max(9px,1.3rem)/1 var(--num-font)}
-.skill .count{padding:.25rem .7rem;border-radius:1rem;background:var(--blue-l);color:var(--blue-d)}
-.skill.potion{background:linear-gradient(#f9efff,#efdcff)}
-.skill.burst{background:linear-gradient(#fff4e6,#ffe1c4)}
+.coins{width:7.4rem;border-radius:1.05rem;padding:.5rem;display:flex;flex-direction:column;justify-content:center;gap:.32rem;background:#f2cf83;border:max(1.5px,.19rem) solid #d49b56;box-shadow:inset 0 .13rem 0 #fff,0 .19rem 0 #a8683e;color:#65403f}
+.coins b{font-size:max(12px,1.25rem);font-weight:900;color:#593013;text-shadow:0 1px #fff4bd;white-space:nowrap;font-variant-numeric:tabular-nums}
+.coins .bar{height:.6rem;margin:0;border:max(1px,.13rem) solid #6c351c;background:#5b2f1c;box-shadow:none}
+.coins .bar i{background:linear-gradient(90deg,#f0a918,#fff08d);box-shadow:inset 0 1px #fff7bd}
+.coins small{font-size:max(8px,.7rem);font-weight:800;opacity:.72;white-space:nowrap}
 
-.coins{width:12.4rem;height:10.4rem;border-radius:1.8rem;padding:1rem 1.2rem;display:flex;flex-direction:column;justify-content:center;gap:.6rem}
-.coins .top{display:flex;align-items:center;gap:.8rem}
-.coin-ico{flex:none;width:3.6rem;height:3.6rem;border-radius:50%;background:radial-gradient(circle at 35% 32%,#fff3b8 0 18%,#f9d25e 19% 60%,#e7a92f 61%);box-shadow:inset 0 0 0 .3rem rgba(255,255,255,.35),0 0 0 max(1px,.16rem) #c98a22}
-.coins b{font:800 max(15px,3rem)/1 var(--num-font);font-variant-numeric:tabular-nums;color:#7b4a2a}
-.coins .bar{margin-top:0;height:1.2rem}
-.coins .bar i{background:linear-gradient(#ffe37d,#f2b73a)}
-.coins small{font-size:max(9px,1.2rem);font-weight:700;color:#a87445;white-space:nowrap}
+.card{position:relative;width:8.5rem;border-radius:1.25rem;padding:0 .38rem;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;color:#492919;background:var(--card-bg);border:max(1.5px,.19rem) solid #fff6d4;box-shadow:inset 0 .13rem 0 #fff,0 0 0 max(1.5px,.19rem) #8c6a9c,0 .32rem 0 #705179,0 .56rem .8rem rgba(0,0,0,.27);transition:transform .15s,filter .2s}
+.card::before{content:"";position:absolute;inset:.19rem;border:1px solid rgba(255,255,255,.48);border-radius:.56rem;pointer-events:none}
+.card .art{width:100%;height:4.6rem;margin-top:.9rem;display:grid;place-items:center;font-family:var(--emoji);font-size:2.9rem;line-height:1;background:radial-gradient(ellipse at 50% 95%,rgba(255,255,255,.68),transparent 63%)}
+.card .name{font-size:max(10px,.9rem);font-weight:900;text-shadow:0 1px #fff9d0;white-space:nowrap;margin-top:.15rem}
+.card .tag{font-size:max(8px,.58rem);font-weight:800;opacity:.72;white-space:nowrap}
+.cost{position:absolute;right:.32rem;top:.32rem;width:2.2rem;height:2.2rem;border-radius:50%;display:grid;place-items:center;font:900 max(10px,1rem)/1 var(--num-font);color:#2a1903;background:radial-gradient(circle at 35% 30%,#fff9b8,#e9a92c 55%,#86510e 57%);border:max(1.5px,.13rem) solid #fff6b5;box-shadow:0 .13rem 0 #6f3d0e,0 .25rem .45rem rgba(0,0,0,.4);z-index:2}
+.card[data-type="snake"]{--card-bg:linear-gradient(160deg,#efffd8,#abe88f 56%,#72bf85)}
+.card[data-type="lion"]{--card-bg:linear-gradient(160deg,#fff4cf,#ffd078 58%,#ed9563)}
+.card[data-type="elephant"]{--card-bg:linear-gradient(160deg,#eafdff,#9fdef0 58%,#75aede)}
+.card[data-type="dragon"]{--card-bg:linear-gradient(160deg,#fcecff,#d9a8ef 58%,#a77fcb)}
 
-.card{position:relative;width:11rem;height:13rem;border-radius:1.8rem;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:1.1rem;gap:.35rem;background:var(--card-bg);border:max(2px,.3rem) solid #fff;box-shadow:0 0 0 max(1px,.16rem) rgba(91,68,97,.28),0 .45rem 0 var(--ink-soft);transition:transform .15s,filter .2s}
-.card .art{font-family:var(--emoji);font-size:5.4rem;line-height:1;margin-bottom:.2rem}
-.card .name{font-size:max(10px,1.75rem);font-weight:800;white-space:nowrap}
-.card .tag{padding:.2rem .8rem;border-radius:1rem;background:rgba(255,255,255,.75);font-size:max(9px,1.2rem);font-weight:700;white-space:nowrap;color:#7a5c80}
-.cost{position:absolute;left:-.9rem;top:-.9rem;width:3.8rem;height:3.8rem;border-radius:50%;display:grid;place-items:center;font:800 max(11px,1.8rem)/1 var(--num-font);color:#7b4a2a;background:radial-gradient(circle at 35% 30%,#fff1b0,#f6c74d 60%,#e8a930);border:max(1.5px,.22rem) solid #fff;box-shadow:0 0 0 max(1px,.14rem) #c98a22;z-index:2}
-.skill .cost{left:auto;right:.6rem;top:.6rem;width:3rem;height:3rem;font-size:max(10px,1.45rem)}
-.card[data-type="snake"]{--card-bg:linear-gradient(#efffe8,#cdeec0)}
-.card[data-type="lion"]{--card-bg:linear-gradient(#fff6e0,#ffe0aa)}
-.card[data-type="elephant"]{--card-bg:linear-gradient(#eef8ff,#cfe6fb)}
-.card[data-type="dragon"]{--card-bg:linear-gradient(#fbf0ff,#e7d2fb)}
-.card:hover{transform:translateY(-.5rem)}
-.card.selected,.skill.selected{transform:translateY(-1.2rem);box-shadow:0 0 0 max(2px,.35rem) var(--gold),0 .8rem 0 var(--ink-soft)}
-.card.poor,.skill.poor{filter:saturate(.3) brightness(.97)}
-.card.poor .cost,.skill.poor .cost{background:radial-gradient(circle at 35% 30%,#ffd9dd,#f48a97 60%,#d65b6c);box-shadow:0 0 0 max(1px,.14rem) #b94457;color:#fff}
-.card.buffed{box-shadow:0 0 0 max(2px,.35rem) #c79bff,0 .45rem 0 var(--ink-soft)}
-.card.buffed::before{content:"👑";position:absolute;right:.5rem;top:.3rem;font-family:var(--emoji);font-size:2.2rem}
+.skill{position:relative;width:8rem;height:9.8rem;border-radius:1.15rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;overflow:hidden;color:#613b65;border:max(1.5px,.19rem) solid #fff1c8;box-shadow:inset 0 .13rem 0 #fff,0 0 0 max(1.5px,.19rem) #7f5b98,0 .32rem 0 #654777,0 .56rem .9rem rgba(0,0,0,.27);transition:transform .15s,filter .2s}
+.skill.potion{background:#d7b7e8}
+.skill.burst{background:#f3b184}
+.skill .art{height:4rem;display:grid;place-items:center;font-family:var(--emoji);font-size:3.1rem;line-height:1}
+.skill .art svg{width:5.4rem;height:4rem}
+.skill .name{font-size:max(10px,.95rem);font-weight:800;white-space:nowrap}
+.skill .meta{font:700 max(8px,.7rem)/1 var(--num-font)}
+.skill .count{padding:.15rem .5rem;border-radius:1rem;background:rgba(255,255,255,.55)}
+.skill .cost{width:1.9rem;height:1.9rem;font-size:max(9px,.85rem)}
 
-/* 冷却遮罩：圆形扫描 + 秒数 */
-.cd{position:absolute;inset:0;border-radius:inherit;display:none;place-items:center;background:conic-gradient(rgba(70,48,82,.58) calc(var(--p,0) * 1turn),rgba(70,48,82,.16) 0);font:800 max(13px,2.6rem)/1 var(--num-font);color:#fff;text-shadow:0 .2rem 0 rgba(0,0,0,.25);z-index:1}
-.cooling .cd{display:grid}
+.card:hover,.skill:hover{transform:translateY(-.32rem);filter:brightness(1.05)}
+.card.selected,.skill.selected{transform:translateY(-.2rem);filter:brightness(1.16);outline:max(2px,.19rem) solid #fff7bf;box-shadow:0 0 0 max(1.5px,.19rem) #9c551f,0 0 1.15rem #ffe787}
+.card.poor,.card.cooling,.skill.poor,.skill.cooling{filter:grayscale(.72) brightness(.68)}
+.card.buffed{outline:max(2px,.19rem) solid #d798ff;box-shadow:0 0 1.6rem rgba(199,120,255,.9),0 .56rem 1.25rem rgba(0,0,0,.42)}
+.card.buffed::after{content:"药水强化";position:absolute;left:.32rem;bottom:.32rem;padding:.12rem .32rem;border-radius:.38rem;background:rgba(101,39,145,.9);border:1px solid #e2b3ff;color:#fff;font-size:max(8px,.56rem);font-weight:900;z-index:3}
+
+/* 冷却遮罩：原版样式，从底部按剩余比例升起 + 秒数 */
+.cd{display:none;position:absolute;left:0;right:0;bottom:0;height:calc(var(--p,0) * 100%);background:linear-gradient(rgba(31,23,25,.64),rgba(12,9,13,.86));z-index:1;pointer-events:none}
+.cooling .cd{display:block}
+.cooling::after{content:attr(data-cd);position:absolute;inset:0;display:grid;place-items:center;font:900 max(12px,1.5rem)/1 var(--num-font);color:#fff7cf;text-shadow:0 2px 5px #000;z-index:4;pointer-events:none}
 
 /* ---------- 竖屏提示（仅自适应模式） ---------- */
 #rotate{position:absolute;inset:0;display:none;place-content:center;text-align:center;gap:12px;background:#2b2531;color:#fff;font-size:16px;z-index:5}
@@ -154,7 +157,7 @@ body.fill #stage{border-radius:0;box-shadow:none}
       <div class="plate player panel">
         <div class="crest">♛</div>
         <div class="info">
-          <div class="row"><span>曙光王庭</span><span class="hp" id="pHpText">7000</span></div>
+          <div class="row"><span>曙光王庭</span><span class="hp" id="pHpText">10000</span></div>
           <div class="bar"><i id="pHp"></i></div>
         </div>
       </div>
@@ -162,7 +165,7 @@ body.fill #stage{border-radius:0;box-shadow:none}
       <div class="plate enemy panel">
         <div class="crest">♜</div>
         <div class="info">
-          <div class="row"><span>暮影王庭</span><span class="hp" id="eHpText">7000</span></div>
+          <div class="row"><span>暮影王庭</span><span class="hp" id="eHpText">10000</span></div>
           <div class="bar"><i id="eHp"></i></div>
         </div>
       </div>
@@ -181,13 +184,13 @@ body.fill #stage{border-radius:0;box-shadow:none}
 
     <div id="dock" class="hud">
       <div id="skills">
-        <button class="skill potion panel" data-skill="potion" title="魔力药水：选中后点一张卡牌，强化该卡下一次部署的单位">
+        <button class="skill potion" data-skill="potion" title="魔力药水：选中后点一张卡牌，强化该卡下一次部署的单位">
           <span class="cost">5</span>
           <span class="art">🧪</span><span class="name">魔力药水</span>
           <span class="meta"><span class="count">强化</span></span>
           <span class="cd"></span>
         </button>
-        <button class="skill burst panel" data-skill="burst" title="爆裂炮阵：选中后点一条道路，沿该路连续炮击">
+        <button class="skill burst" data-skill="burst" title="爆裂炮阵：选中后点一条道路，沿该路连续炮击">
           <span class="cost">20</span>
           <span class="art"><svg viewBox="0 0 70 52" aria-hidden="true">
             <ellipse cx="35" cy="47" rx="24" ry="3.5" fill="rgba(91,68,97,.18)"/>
@@ -203,10 +206,10 @@ body.fill #stage{border-radius:0;box-shadow:none}
         </button>
       </div>
       <div id="hand">
-        <div class="coins panel">
-          <div class="top"><span class="coin-ico"></span><b id="coinText">20</b></div>
+        <div class="coins">
+          <b id="coinText">🟡 15.0</b>
           <div class="bar"><i id="coinBar"></i></div>
-          <small>+2 / 秒</small>
+          <small>金币增长：1 / 秒</small>
         </div>
         <button class="card" data-type="snake" title="毒影蛇 · 快速刺客&#10;生命 500 · 攻击 10 · 移速 80 · 射程 60&#10;中毒 2/s×10 秒，可独立叠加"><span class="cost">10</span><span class="art">🐍</span><span class="name">毒影蛇</span><span class="tag">快速刺客</span><span class="cd"></span></button>
         <button class="card" data-type="lion" title="圣鬃狮 · 均衡战士&#10;生命 700 · 攻击 20 · 移速 60 · 射程 70&#10;参与击杀回复 100 生命"><span class="cost">10</span><span class="art">🦁</span><span class="name">圣鬃狮</span><span class="tag">均衡战士</span><span class="cd"></span></button>
@@ -228,7 +231,7 @@ const stage = $('#stage');
 let ratio = 1.7778;
 
 // u = 舞台基准单位（px）。按高度 1%，宽度过窄时收缩，太小时保底以保证手机可读。
-function computeUnit(w, h) { return Math.max(4.8, Math.min(h / 88, w * .0072)); }
+function computeUnit(w, h) { return Math.max(6.5, Math.min(h / 65, w * .0097)); }
 
 function fitStage() {
   const vp = $('#viewport').getBoundingClientRect();
@@ -301,9 +304,10 @@ function bez(out, p0, p1, p2, p3, n) {
 /* ---------- 几何：全部由舞台宽高推导，战场随比例拉伸 ---------- */
 function buildGeometry(w, h) {
   const u = parseFloat(getComputedStyle(document.documentElement).fontSize) || 8;
-  const top = 7.6 * u, bottom = h - 15.8 * u, band = bottom - top, cy = (top + bottom) / 2;
+  const top = 7.4 * u, bottom = h - 14 * u, band = bottom - top, cy = (top + bottom) / 2;
   const s = Math.min(band * .3, w * .16);          // 车道间距
-  const rw = s * .4;                                // 路宽
+  const rw = s * .4;                                // 建筑与单位尺度基准
+  const road = rw * .7;                             // 路面宽
   const S0 = rw / 50;                               // 线宽/细节基准
   const T = rw * 1.2;                               // 城墙厚度
   const m = Math.max(w * .016, rw * .25);           // 城墙到舞台边缘
@@ -320,7 +324,7 @@ function buildGeometry(w, h) {
   const mid = []; for (let i = 0; i <= 12; i++) mid.push({ x: lerp(rs, re, i / 12), y: cy });
   const paths = [cross(ys[0], ys[2]), new Path(mid), cross(ys[2], ys[0])];
   return {
-    w, h, u, top, bottom, cy, cx, s, rw, S0, T, m, x1L, x1R, rs, re, L, ys, paths,
+    w, h, u, top, bottom, cy, cx, s, rw, road, S0, T, m, x1L, x1R, rs, re, L, ys, paths,
     wy0: ys[0] - rw * 1.05, wy1: ys[2] + rw * 1.05,
     unitR: rw * .3,
     k: L / 1070,                                    // 原版道路长 1070 px → 当前像素的换算系数
@@ -330,7 +334,7 @@ function buildGeometry(w, h) {
 
 /* ---------- 静态底图：草地 + 道路 + 平台 + 花丛（缓存为离屏画布） ---------- */
 function farFromRoads(F, x, y, gap) {
-  for (const p of F.paths) if (p.nearest(x, y).d < F.rw / 2 + gap) return false;
+  for (const p of F.paths) if (p.nearest(x, y).d < F.road / 2 + gap) return false;
   return x > F.x1L + F.rw * .9 && x < F.x1R - F.rw * .9;
 }
 function drawBlades(g, x, y, len, S0, color, rnd) {
@@ -357,21 +361,38 @@ function drawBush(g, x, y, r, rnd, S0) {
   for (let i = 0; i < 3; i++) { const b = blobs[i]; drawFlower(g, b.x + (rnd() - .5) * b.r, b.y + (rnd() - .5) * b.r * .6, Math.max(1.1, 1.6 * S0), pet[i % 3], rnd); }
 }
 function roadLayers(F) {
-  const { rw, S0 } = F;
+  const { road, S0 } = F;
   return [
-    { w: rw + 10 * S0, c: 'rgba(78,134,58,.42)' },   // 草地压边：清楚的绿色描边
-    { w: rw + 4 * S0, c: '#dcb677' },                 // 沙土外沿
-    { w: rw, c: '#f4dea4' },                          // 路面
-    { w: rw * .46, c: 'rgba(255,246,216,.6)' }        // 中线提亮
+    { w: road + 10 * S0, c: 'rgba(78,134,58,.42)' },   // 草地压边：清楚的绿色描边
+    { w: road + 4 * S0, c: '#dcb677' },                 // 沙土外沿
+    { w: road, c: '#f4dea4' }                           // 路面
   ];
 }
+// 道路蒙版：先按宽度画出三条路，再模糊后取阈值。凹角（分岔、交汇处）会被填成圆弧，直边基本不动。
+function erf(x) { const t = 1 / (1 + .3275911 * x); return 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - .284496736) * t + .254829592) * t * Math.exp(-x * x); }
+function roadMask(F, width, color, dpr) {
+  const W = Math.round(F.w * dpr), H = Math.round(F.h * dpr);
+  const a = document.createElement('canvas'); a.width = W; a.height = H;
+  const ga = a.getContext('2d'); ga.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ga.strokeStyle = ga.fillStyle = '#fff'; ga.lineWidth = width; ga.lineCap = 'round'; ga.lineJoin = 'round';
+  for (const p of F.paths) { p.trace(ga); ga.stroke(); }
+  circle(ga, F.cx, F.cy, F.road * .62 + (width - F.road) / 2); ga.fill();
+  const b = document.createElement('canvas'); b.width = W; b.height = H;
+  const gb = b.getContext('2d', { willReadFrequently: true });
+  const sigma = F.road * .45, edge = .5 * erf(width / (sigma * Math.SQRT2)) * 255, lo = edge - 3, hi = edge + 3;
+  gb.filter = `blur(${(sigma * dpr).toFixed(1)}px)`; gb.drawImage(a, 0, 0); gb.filter = 'none';
+  const img = gb.getImageData(0, 0, W, H), d = img.data;
+  for (let i = 3; i < d.length; i += 4) { const v = d[i]; d[i] = v <= lo ? 0 : v >= hi ? 255 : (v - lo) / (hi - lo) * 255; d[i - 3] = d[i - 2] = d[i - 1] = 255; }
+  gb.putImageData(img, 0, 0);
+  gb.globalCompositeOperation = 'source-in'; gb.fillStyle = color; gb.fillRect(0, 0, W, H);
+  return b;
+}
 function drawRoads(g, F, rnd) {
-  const { rw, S0, cx, cy } = F;
+  const { road: rw, S0, cx, cy } = F, dpr = g.getTransform().a;
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
   for (const layer of roadLayers(F)) {
-    g.strokeStyle = layer.c; g.fillStyle = layer.c; g.lineWidth = layer.w;
-    for (const p of F.paths) { p.trace(g); g.stroke(); }
-    circle(g, cx, cy, rw * .62 + (layer.w - rw) / 2); g.fill();      // 中央小广场
+    const m = roadMask(F, layer.w, layer.c, dpr);
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(m, 0, 0); g.restore();
   }
   // 广场花砖
   g.strokeStyle = 'rgba(214,170,98,.55)'; g.lineWidth = Math.max(1, 1.6 * S0);
@@ -406,7 +427,7 @@ function drawPlatforms(g, F) {
   const { rw, S0, ys, T } = F;
   for (const side of ['player', 'enemy']) {
     for (const y of ys) {
-      const x0 = side === 'player' ? F.x1L - T * .08 : F.x1R - rw * 1.22, wdt = rw * 1.3, hh = rw * .6;
+      const x0 = side === 'player' ? F.x1L - T * .08 : F.x1R - rw * 1.22, wdt = rw * 1.3, hh = rw * .52;
       g.fillStyle = 'rgba(78,134,58,.35)'; rr(g, x0 - 3 * S0, y - hh - 3 * S0, wdt + 6 * S0, hh * 2 + 6 * S0, rw * .26); g.fill();
       g.fillStyle = '#efe5d1'; g.strokeStyle = 'rgba(150,120,110,.55)'; g.lineWidth = Math.max(1, 1.6 * S0);
       rr(g, x0, y - hh, wdt, hh * 2, rw * .22); g.fill(); g.stroke();
@@ -571,7 +592,7 @@ function drawCannon(g, F, side, st) {
 function highlightLane(g, F, i, color) {
   const p = F.paths[i];
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
-  g.strokeStyle = color; g.globalAlpha = .28; g.lineWidth = F.rw * .9; p.trace(g); g.stroke();
+  g.strokeStyle = color; g.globalAlpha = .28; g.lineWidth = F.road * 1.1; p.trace(g); g.stroke();
   g.globalAlpha = 1; g.lineWidth = Math.max(2, 3.2 * F.S0); g.setLineDash([F.rw * .32, F.rw * .24]); p.trace(g); g.stroke();
   g.restore();
 }
@@ -612,13 +633,13 @@ const UNITS = {
   dragon:   { icon: '🐉', cost: 10, hp: 800,  atk: 20, speed: 50, range: 100, interval: 1,  cd: 5, size: 29, faceLeft: true, ranged: true }
 };
 const SKILLS = { potion: { cost: 5, cd: 20 }, burst: { cost: 20, cd: 20, dmg: 1000, n: 10 } };
-const WALL_HP = 7000, INCOME = 2, CANNON = { interval: 2, windup: .28, dmg: 150, speed: 760 };
+const WALL_HP = 10000, INCOME = 1, CANNON = { interval: 2, windup: .28, dmg: 150, speed: 760 };
 const TYPES = Object.keys(UNITS);
 
 let S;
 function reset() {
   S = {
-    time: 300, coins: { player: 20, enemy: 20 }, hp: { player: WALL_HP, enemy: WALL_HP },
+    time: 300, coins: { player: 15, enemy: 15 }, hp: { player: WALL_HP, enemy: WALL_HP },
     units: [], shots: [], fx: [], nextId: 1, paused: false, over: 0, clock: 0,
     cool: { player: {}, enemy: {} }, skillCool: { player: { potion: 0, burst: 0 }, enemy: { potion: 0, burst: 0 } },
     buffed: { player: null, enemy: null }, selected: null, hover: -1,
@@ -653,7 +674,7 @@ function deploy(side, type, lane) {
   S.coins[side] -= d.cost; S.cool[side][type] = d.cd;
   const buffed = S.buffed[side] === type; if (buffed) S.buffed[side] = null;
   S.units.push({
-    id: S.nextId++, side, type, lane, t: side === 'player' ? 0 : 1, offset: (Math.random() - .5) * .34,
+    id: S.nextId++, side, type, lane, t: side === 'player' ? 0 : 1, offset: 0,
     hp: d.hp * (buffed ? 1.5 : 1), maxHp: d.hp * (buffed ? 1.5 : 1), buffed, clock: .3, bob: Math.random() * TAU, flash: 0, attack: 0, born: .35
   });
   return true;
@@ -942,17 +963,17 @@ function syncHud() {
   $('#eHp').style.width = (S.hp.enemy / WALL_HP * 100).toFixed(1) + '%';
   $('#pHpText').textContent = Math.ceil(S.hp.player); $('#eHpText').textContent = Math.ceil(S.hp.enemy);
   $('#timer').textContent = fmt(Math.ceil(S.time));
-  $('#coinText').textContent = Math.floor(S.coins.player);
+  $('#coinText').textContent = '🟡 ' + S.coins.player.toFixed(1);
   $('#coinBar').style.width = Math.min(100, S.coins.player / 20 * 100).toFixed(1) + '%';
   $$('.card').forEach(el => {
     const t = el.dataset.type, d = UNITS[t], c = S.cool.player[t] || 0;
     el.classList.toggle('poor', S.coins.player < d.cost); el.classList.toggle('cooling', c > 0); el.classList.toggle('buffed', S.buffed.player === t);
-    el.style.setProperty('--p', (c / d.cd).toFixed(3)); el.querySelector('.cd').textContent = c > 0 ? Math.ceil(c) : '';
+    el.style.setProperty('--p', (c / d.cd).toFixed(3)); el.dataset.cd = c > 0 ? c.toFixed(1) : '';
   });
   $$('.skill').forEach(el => {
     const id = el.dataset.skill, sk = SKILLS[id], c = S.skillCool.player[id];
     el.classList.toggle('poor', S.coins.player < sk.cost); el.classList.toggle('cooling', c > 0);
-    el.style.setProperty('--p', (c / sk.cd).toFixed(3)); el.querySelector('.cd').textContent = c > 0 ? Math.ceil(c) : '';
+    el.style.setProperty('--p', (c / sk.cd).toFixed(3)); el.dataset.cd = c > 0 ? c.toFixed(1) : '';
   });
 }
 
