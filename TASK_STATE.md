@@ -86,6 +86,17 @@ Q1 结果：删了 fairy-castle-gate-v1.png、fairy-cannon-barrel-v1.png（含 i
 
 下一步：Q2（改 design/ui-preview.html）。
 
+Q2 参考数据（原版 1080p 实测的最终生效样式，换算 1rem≈16.6px）：
+- #bottomDock 736×203，flex 对齐 stretch，padding 10/13，gap 10，border 4px #a06d9d，圆角 27，底色 #f3dce8；阴影 inset 0 3px #fff, 0 0 0 3px #ffe8a1, 0 6px 0 #7a567d, 0 12px 19px rgba(56,40,61,.4)；::before "🌸"、::after "🌼" 19px，top -13px，left/right 18px。
+- #resourceBox 宽 118，padding 8，gap 5，border 3px #d49b56，圆角 17，底色 #f2cf83，阴影 inset 0 2px #fff, 0 3px #a8683e，文字色 #65403f；#coinText 20px/1000 #593013，text-shadow 0 1px #fff4bd，内容 "🟡 19.4"（toFixed(1)）；#coinBar 高 9，border 2px #6c351c，圆角 99，底色 #5b2f1c；#coinFill 渐变 90deg #f0a918→#fff08d，inset 0 1px #fff7bd；#income 11px/800，透明度 .72，文案“金币增长：1 / 秒”。
+- .card 136×175，padding 1/6，border 3px #fff6d4，圆角 20，居中对齐；阴影 inset 0 2px #fff, 0 0 0 3px #8c6a9c, 0 5px 0 #705179, 0 9px 13px rgba(0,0,0,.27)；渐变 160deg：蛇 #efffd8,#abe88f 56%,#72bf85；狮 #fff4cf,#ffd078 58%,#ed9563；象 #eafdff,#9fdef0 58%,#75aede；龙 #fcecff,#d9a8ef 58%,#a77fcb；::before inset 3px，1px rgba(255,255,255,.48) 描边，圆角 9。
+- .card-art 高 43%，Emoji 46px，背景 radial at 50% 95% rgba(255,255,255,.68)→透明 63%；.cost 34px 圆，top/right 5px，border 2px #fff6b5，radial at 35% 30% #fff9b8, #e9a92c 55%, #86510e 57%，阴影 0 2px #6f3d0e, 0 4px 7px rgba(0,0,0,.4)，16px/1000 #2a1903；.card-name 14px/1000 #492919，text-shadow 0 1px #fff9d0；.card-role 9px/800，透明度 .72。
+- 冷却：.cool-mask 从底部按百分比升高，渐变 rgba(31,23,25,.64)→rgba(12,9,13,.86)；.cool-label 24px/1000 #fff7cf，阴影 0 2px 5px #000，显示 toFixed(1) 秒；不可用/冷却 filter grayscale(.72) brightness(.68)；选中 outline 3px #fff7bf + box-shadow 0 0 0 3px #9c551f, 0 0 18px #ffe787，brightness 1.16，上移 3px；药水强化 .armed outline 3px #d798ff + 紫色辉光 + 左下“药水强化”角标。
+- 技能原版：药水底色 #d7b7e8、炮阵底色 #f3b184，border 3px #fff1c8，圆角 18，阴影 inset 0 2px #fff, 0 0 0 3px #7f5b98, 0 5px #654777, 0 9px 14px rgba(0,0,0,.27)，文字 13px/700 #613b65。
+- 真实数值（展示页要对齐）：城门 10000 血、开局 15 金币、每秒 +1 金币（AGENTS 旧文档写的 7000 血/20 金币/2 每秒是过时数据）。
+
+Q2 实现要点：u = max(6.5, min(h/65, w*.0097))（约为原来的 1.35 倍）；战场安全区 top=7.4u、bottom=h-14.2u；几何新增 R=s*.4（建筑/单位尺度基准），rw=R*.7 只用于路面，单位/城墙/门/平台/炮台/特效都改用 R；道路圆角用“形态学闭运算”：把路面栅格化后做两次 EDT 得到 SDF，再按阈值合成绿色压边、沙土边、路面三层，圆角半径 = rw；去掉白色中线；单位 offset 置 0。
+
 ## 已暂停的任务：项目清理（用户叫停，"已做的不管，没做的搁着"）
 
 已完成：
