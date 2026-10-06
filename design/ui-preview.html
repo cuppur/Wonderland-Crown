@@ -34,8 +34,9 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 #toolbar button{padding:5px 12px;border-radius:999px;background:#443b4d;border:1px solid #5b5066;color:#efe6f4;font-size:12.5px;white-space:nowrap}
 #toolbar button[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#4b3550;font-weight:700}
 #toolbar .size{margin-left:auto;font:12px/1 var(--num-font);opacity:.7;white-space:nowrap}
-body.fill #toolbar{opacity:.18;transition:opacity .2s}
-body.fill #toolbar:hover{opacity:1}
+body.fill #toolbar{display:none}
+#exitFill{display:none}
+body.fill #exitFill{display:flex}
 #viewport{position:fixed;inset:44px 0 0 0;display:grid;place-items:center}
 body.fill #viewport{inset:0}
 
@@ -173,6 +174,7 @@ body.fill #stage{border-radius:0;box-shadow:none}
       <button role="menuitem"><span class="ico">📊</span><span>数值报告</span></button>
       <button role="menuitem"><span class="ico">⛶</span><span>全屏</span></button>
       <button role="menuitem"><span class="ico">🏠</span><span>返回首页</span></button>
+      <button role="menuitem" id="exitFill"><span class="ico">↩️</span><span>退出自适应预览</span></button>
     </div>
 
     <div id="hint" class="hud" aria-live="polite"></div>
@@ -182,7 +184,7 @@ body.fill #stage{border-radius:0;box-shadow:none}
         <button class="skill potion panel" data-skill="potion" title="魔力药水：选中后点一张卡牌，强化该卡下一次部署的单位">
           <span class="cost">5</span>
           <span class="art">🧪</span><span class="name">魔力药水</span>
-          <span class="meta"><span class="count">强化下一只</span></span>
+          <span class="meta"><span class="count">强化</span></span>
           <span class="cd"></span>
         </button>
         <button class="skill burst panel" data-skill="burst" title="爆裂炮阵：选中后点一条道路，沿该路连续炮击">
@@ -196,7 +198,7 @@ body.fill #stage{border-radius:0;box-shadow:none}
             <rect x="8" y="38" width="30" height="7" rx="3.5" fill="#a46a3c"/>
           </svg></span>
           <span class="name">爆裂炮阵</span>
-          <span class="meta"><span class="count">×10 炮</span></span>
+          <span class="meta"><span class="count">×10</span></span>
           <span class="cd"></span>
         </button>
       </div>
@@ -204,7 +206,7 @@ body.fill #stage{border-radius:0;box-shadow:none}
         <div class="coins panel">
           <div class="top"><span class="coin-ico"></span><b id="coinText">20</b></div>
           <div class="bar"><i id="coinBar"></i></div>
-          <small>每秒 +2 金币</small>
+          <small>+2 / 秒</small>
         </div>
         <button class="card" data-type="snake" title="毒影蛇 · 快速刺客&#10;生命 500 · 攻击 10 · 移速 80 · 射程 60&#10;中毒 2/s×10 秒，可独立叠加"><span class="cost">10</span><span class="art">🐍</span><span class="name">毒影蛇</span><span class="tag">快速刺客</span><span class="cd"></span></button>
         <button class="card" data-type="lion" title="圣鬃狮 · 均衡战士&#10;生命 700 · 攻击 20 · 移速 60 · 射程 70&#10;参与击杀回复 100 生命"><span class="cost">10</span><span class="art">🦁</span><span class="name">圣鬃狮</span><span class="tag">均衡战士</span><span class="cd"></span></button>
@@ -226,7 +228,7 @@ const stage = $('#stage');
 let ratio = 1.7778;
 
 // u = 舞台基准单位（px）。按高度 1%，宽度过窄时收缩，太小时保底以保证手机可读。
-function computeUnit(w, h) { return Math.max(4.3, Math.min(h / 100, w * .0072)); }
+function computeUnit(w, h) { return Math.max(4.8, Math.min(h / 88, w * .0072)); }
 
 function fitStage() {
   const vp = $('#viewport').getBoundingClientRect();
@@ -253,6 +255,7 @@ $$('#ratioGroup button').forEach(b => b.addEventListener('click', () => {
 const menuBtn = $('#menuBtn'), menuPop = $('#menuPop');
 menuBtn.addEventListener('click', e => { e.stopPropagation(); const open = !menuPop.classList.contains('open'); menuPop.classList.toggle('open', open); menuBtn.setAttribute('aria-expanded', open); });
 document.addEventListener('click', e => { if (!menuPop.contains(e.target)) { menuPop.classList.remove('open'); menuBtn.setAttribute('aria-expanded', false); } });
+$('#exitFill').addEventListener('click', () => $('#ratioGroup button').click());
 window.addEventListener('resize', fitStage);
 window.QJ = { $, $$, stage, fitStage };
 })();
@@ -394,7 +397,7 @@ function drawRoads(g, F, rnd) {
       const t = (i + rnd()) / n, q = p.at(t), a = p.angle(t), side = rnd() < .5 ? -1 : 1, off = side * (rw * .5 + 3 * S0);
       const x = q.x - Math.sin(a) * off, y = q.y + Math.cos(a) * off;
       if (!farFromRoads(F, x, y, -rw * .05)) continue;
-      drawBlades(g, x, y, 6 * S0, rnd() < .5 ? '#5e9f45' : '#86c561', rnd);
+      drawBlades(g, x, y, 6 * S0, S0, rnd() < .5 ? '#5e9f45' : '#86c561', rnd);
     }
   }
   g.restore();
@@ -430,7 +433,7 @@ function drawGround(g, F) {
   }
   // 笔触草纹
   const n = Math.round(w * h / 650), cols = ['rgba(98,160,72,.5)', 'rgba(132,196,98,.55)', 'rgba(200,238,150,.55)'];
-  for (let i = 0; i < n; i++) drawBlades(g, rnd() * w, rnd() * h, (4 + rnd() * 5) * S0, cols[i % 3], rnd);
+  for (let i = 0; i < n; i++) drawBlades(g, rnd() * w, rnd() * h, (4 + rnd() * 5) * S0, S0, cols[i % 3], rnd);
   // 纸面颗粒
   for (let i = 0; i < n * .6; i++) { g.fillStyle = rnd() < .5 ? 'rgba(255,255,230,.12)' : 'rgba(60,110,50,.08)'; g.fillRect(rnd() * w, rnd() * h, 1.4 * S0, 1.4 * S0); }
   drawRoads(g, F, rnd);
