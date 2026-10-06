@@ -593,8 +593,378 @@ window.addEventListener('stage-resize', e => {
 QJ.field = field;
 })();
 </script>
-<script>/*P3-DEMO*/
+<script>
 QJ.fitStage();
+/* P3：演示逻辑。只为展示 UI 动态效果，数值取自正式版但简化了特殊能力。 */
+(() => {
+'use strict';
+const { $, $$ } = QJ, fd = QJ.field, ctx = fd.ctx;
+const TAU = Math.PI * 2, clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, t) => a + (b - a) * t;
+const EMOJI = '"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+// 数值与正式版 UNIT_DATA 一致（速度/射程单位为原版像素，运行时乘 F.k 换算）
+const UNITS = {
+  snake:    { icon: '🐍', cost: 10, hp: 500,  atk: 10, speed: 80, range: 60,  interval: .2, cd: 5, size: 23, faceLeft: true },
+  lion:     { icon: '🦁', cost: 10, hp: 700,  atk: 20, speed: 60, range: 70,  interval: .5, cd: 5, size: 27, faceLeft: true },
+  elephant: { icon: '🐘', cost: 10, hp: 1000, atk: 15, speed: 40, range: 80,  interval: .8, cd: 5, size: 32, faceLeft: true },
+  dragon:   { icon: '🐉', cost: 10, hp: 800,  atk: 20, speed: 50, range: 100, interval: 1,  cd: 5, size: 29, faceLeft: true, ranged: true }
+};
+const SKILLS = { potion: { cost: 5, cd: 20 }, burst: { cost: 20, cd: 20, dmg: 1000, n: 10 } };
+const WALL_HP = 7000, INCOME = 2, CANNON = { interval: 2, windup: .28, dmg: 150, speed: 760 };
+const TYPES = Object.keys(UNITS);
+
+let S;
+function reset() {
+  S = {
+    time: 300, coins: { player: 20, enemy: 20 }, hp: { player: WALL_HP, enemy: WALL_HP },
+    units: [], shots: [], fx: [], nextId: 1, paused: false, over: 0, clock: 0,
+    cool: { player: {}, enemy: {} }, skillCool: { player: { potion: 0, burst: 0 }, enemy: { potion: 0, burst: 0 } },
+    buffed: { player: null, enemy: null }, selected: null, hover: -1,
+    ai: { player: 1.6, enemy: 1.2 },
+    wall: { player: { shake: 0, flash: 0 }, enemy: { shake: 0, flash: 0 } },
+    gun: {
+      player: { angle: 0, rest: 0, clock: 1, windup: 0, recoil: 0, target: null },
+      enemy:  { angle: Math.PI, rest: Math.PI, clock: 1.5, windup: 0, recoil: 0, target: null }
+    }
+  };
+  setSelected(null); hint('');
+}
+const F = () => fd.F;
+const other = side => side === 'player' ? 'enemy' : 'player';
+const dir = side => side === 'player' ? 1 : -1;
+function unitPos(u) {
+  const p = F().paths[u.lane], q = p.at(u.t), a = p.angle(u.t), off = u.offset * F().rw;
+  return { x: q.x - Math.sin(a) * off, y: q.y + Math.cos(a) * off };
+}
+function unitR(u) { return F().unitR * (UNITS[u.type].size / 27) * (u.buffed ? 1.22 : 1); }
+
+/* ---------- 操作 ---------- */
+let hintTimer = 0;
+function hint(text, sec = 2.2) { const el = $('#hint'); el.textContent = text; el.classList.toggle('show', !!text); hintTimer = text ? sec : 0; }
+function setSelected(sel) {
+  S && (S.selected = sel);
+  $$('.card,.skill').forEach(el => el.classList.toggle('selected', !!sel && (el.dataset.type === sel.id || el.dataset.skill === sel.id)));
+}
+function deploy(side, type, lane) {
+  const d = UNITS[type];
+  if (S.coins[side] < d.cost || (S.cool[side][type] || 0) > 0) return false;
+  S.coins[side] -= d.cost; S.cool[side][type] = d.cd;
+  const buffed = S.buffed[side] === type; if (buffed) S.buffed[side] = null;
+  S.units.push({
+    id: S.nextId++, side, type, lane, t: side === 'player' ? 0 : 1, offset: (Math.random() - .5) * .34,
+    hp: d.hp * (buffed ? 1.5 : 1), maxHp: d.hp * (buffed ? 1.5 : 1), buffed, clock: .3, bob: Math.random() * TAU, flash: 0, attack: 0, born: .35
+  });
+  return true;
+}
+function useBurst(side, lane) {
+  const sk = SKILLS.burst;
+  if (S.coins[side] < sk.cost || S.skillCool[side].burst > 0) return false;
+  S.coins[side] -= sk.cost; S.skillCool[side].burst = sk.cd;
+  for (let i = 0; i < sk.n; i++) {
+    const t = side === 'player' ? .3 + i * .065 : .7 - i * .065;
+    S.fx.push({ kind: 'drop', side, lane, t, delay: .05 + i * .11, life: .42, max: .42 });
+  }
+  return true;
+}
+function usePotion(side, type) {
+  const sk = SKILLS.potion;
+  if (S.coins[side] < sk.cost || S.skillCool[side].potion > 0) return false;
+  S.coins[side] -= sk.cost; S.skillCool[side].potion = sk.cd; S.buffed[side] = type; return true;
+}
+
+$$('.card').forEach(el => el.addEventListener('click', e => {
+  e.stopPropagation(); const type = el.dataset.type;
+  if (S.selected?.id === 'potion') {
+    if (usePotion('player', type)) hint('已强化：下一只' + el.querySelector('.name').textContent); else hint('金币不足或药水冷却中');
+    setSelected(null); return;
+  }
+  if (S.selected?.id === type) { setSelected(null); hint(''); return; }
+  if (S.coins.player < UNITS[type].cost) { hint('金币不足'); return; }
+  if ((S.cool.player[type] || 0) > 0) { hint('卡牌冷却中'); return; }
+  setSelected({ kind: 'card', id: type }); hint('点击任意道路，选择出兵路线', 3);
+}));
+$$('.skill').forEach(el => el.addEventListener('click', e => {
+  e.stopPropagation(); const id = el.dataset.skill, sk = SKILLS[id];
+  if (S.selected?.id === id) { setSelected(null); hint(''); return; }
+  if (S.coins.player < sk.cost || S.skillCool.player[id] > 0) { hint('金币不足或技能冷却中'); return; }
+  setSelected({ kind: 'skill', id }); hint(id === 'potion' ? '点击一张卡牌，强化它的下一只单位' : '点击一条道路，发动连续炮击', 3);
+}));
+const canvas = fd.canvas;
+function pointer(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+canvas.addEventListener('pointermove', e => {
+  if (!S.selected || S.selected.id === 'potion') { S.hover = -1; return; }
+  const p = pointer(e), n = fd.nearestLane(F(), p.x, p.y); S.hover = n.d < F().rw * 1.1 ? n.i : -1;
+});
+canvas.addEventListener('pointerleave', () => { S.hover = -1; });
+canvas.addEventListener('pointerdown', e => {
+  if (!S.selected || S.selected.id === 'potion') return;
+  const p = pointer(e), n = fd.nearestLane(F(), p.x, p.y);
+  if (n.d > F().rw * 1.1) { hint('请点击道路范围内'); return; }
+  const ok = S.selected.kind === 'card' ? deploy('player', S.selected.id, n.i) : useBurst('player', n.i);
+  if (!ok) hint('金币不足或冷却中'); else hint('');
+  setSelected(null); S.hover = -1;
+});
+$('#autoBtn').addEventListener('click', e => { const on = e.currentTarget.getAttribute('aria-pressed') !== 'true'; e.currentTarget.setAttribute('aria-pressed', on); });
+$('#restartBtn').addEventListener('click', reset);
+$('#pauseItem').addEventListener('click', () => { S.paused = !S.paused; $('#pauseItem span:last-child').textContent = S.paused ? '继续对局' : '暂停对局'; hint(S.paused ? '对局已暂停' : '', S.paused ? 1e9 : 0); });
+
+/* ---------- AI（敌方常驻；我方在“自动演示”开启时） ---------- */
+function think(side, dt) {
+  S.ai[side] -= dt; if (S.ai[side] > 0) return;
+  S.ai[side] = 1.8 + Math.random() * 1.6;
+  const foes = S.units.filter(u => u.side !== side);
+  if (S.coins[side] >= 32 && S.skillCool[side].burst <= 0 && foes.length >= 4) {
+    const count = [0, 1, 2].map(i => foes.filter(u => u.lane === i).length);
+    if (useBurst(side, count.indexOf(Math.max(...count)))) return;
+  }
+  const type = TYPES[Math.floor(Math.random() * TYPES.length)];
+  if (S.coins[side] >= 18 && S.skillCool[side].potion <= 0 && Math.random() < .35) usePotion(side, type);
+  deploy(side, type, Math.floor(Math.random() * 3));
+}
+
+/* ---------- 战斗 ---------- */
+function damage(u, v, fromSide) {
+  u.hp -= v; u.flash = .18;
+  if (u.hp <= 0 && !u.dead) { u.dead = true; const p = unitPos(u); S.fx.push({ kind: 'poof', x: p.x, y: p.y, life: .5, max: .5 }); }
+}
+function hitWall(side, v) {
+  S.hp[side] = Math.max(0, S.hp[side] - v);
+  S.wall[side].shake = Math.min(1, S.wall[side].shake + .5); S.wall[side].flash = .2;
+}
+function updateUnits(dt) {
+  const f = F();
+  const pos = new Map(S.units.map(u => [u, unitPos(u)]));
+  for (const u of S.units) {
+    if (u.dead) continue;
+    const d = UNITS[u.type], p = pos.get(u), range = d.range * f.k + f.unitR * .6;
+    u.bob += dt * 7; u.flash = Math.max(0, u.flash - dt); u.attack = Math.max(0, u.attack - dt * 4); u.born = Math.max(0, u.born - dt);
+    u.clock = Math.max(0, u.clock - dt);
+    let target = null, best = Infinity;
+    for (const v of S.units) {
+      if (v.side === u.side || v.dead) continue;
+      const q = pos.get(v), dd = Math.hypot(q.x - p.x, q.y - p.y);
+      if (dd < range && dd < best) { best = dd; target = v; }
+    }
+    const path = f.paths[u.lane], remain = (u.side === 'player' ? 1 - u.t : u.t) * path.length;
+    const atWall = remain <= range * .55 + f.rw * .55;
+    if (target || atWall) {
+      if (u.clock <= 0) {
+        u.clock = d.interval; u.attack = 1;
+        const dmg = d.atk * (u.buffed ? 1.5 : 1);
+        if (target) {
+          const q = pos.get(target);
+          if (d.ranged) S.shots.push({ kind: 'orb', side: u.side, x: p.x, y: p.y - unitR(u) * .3, target, dmg, speed: 520 * f.k });
+          else { damage(target, dmg); if (Math.random() < .35) S.fx.push({ kind: 'clash', x: (p.x + q.x) / 2, y: (p.y + q.y) / 2 - f.unitR * .4, life: .3, max: .3 }); }
+        } else {
+          hitWall(other(u.side), dmg);
+          if (Math.random() < .4) S.fx.push({ kind: 'clash', x: p.x + dir(u.side) * f.unitR, y: p.y - f.unitR * .3, life: .3, max: .3 });
+        }
+      }
+    } else {
+      u.t = clamp(u.t + dir(u.side) * d.speed * f.k * dt / path.length, 0, 1);
+    }
+  }
+  S.units = S.units.filter(u => !u.dead);
+}
+function updateGuns(dt) {
+  const f = F();
+  for (const side of ['player', 'enemy']) {
+    const g = S.gun[side], piv = f.pivot[side], range = f.L * .3;
+    g.clock = Math.max(0, g.clock - dt); g.recoil = Math.max(0, g.recoil - dt * 5);
+    // 目标：射程内最靠近己方城门的敌军
+    let target = null, best = Infinity;
+    for (const u of S.units) {
+      if (u.side === side) continue;
+      const p = unitPos(u), dd = Math.hypot(p.x - piv.x, p.y - piv.y);
+      if (dd < range && dd < best) { best = dd; target = u; }
+    }
+    g.target = target;
+    const aim = target ? (() => { const p = unitPos(target); return Math.atan2(p.y - piv.y, p.x - piv.x); })() : g.rest;
+    g.angle += Math.atan2(Math.sin(aim - g.angle), Math.cos(aim - g.angle)) * clamp(dt * 7, 0, 1);
+    if (g.windup > 0) {
+      g.windup -= dt;
+      if (g.windup <= 0) {
+        if (target) {
+          const m = fd.muzzle(f, side, g.angle), tp = unitPos(target), dist = Math.hypot(tp.x - m.x, tp.y - m.y);
+          S.shots.push({ kind: 'shell', side, sx: m.x, sy: m.y, tx: tp.x, ty: tp.y, t: 0, dur: Math.max(.22, dist / (CANNON.speed * f.k)), target, dmg: CANNON.dmg });
+          S.fx.push({ kind: 'flash', x: m.x, y: m.y, a: g.angle, life: .16, max: .16 });
+          g.recoil = 1;
+        }
+        g.clock = CANNON.interval;
+      }
+    } else if (target && g.clock <= 0) g.windup = CANNON.windup;
+  }
+}
+function updateShots(dt) {
+  const f = F();
+  for (const s of S.shots) {
+    if (s.kind === 'shell') {
+      s.t += dt / s.dur;
+      if (s.target && !s.target.dead) { const p = unitPos(s.target); s.tx = lerp(s.tx, p.x, .25); s.ty = lerp(s.ty, p.y, .25); }
+      if (s.t >= 1) {
+        s.done = true; S.fx.push({ kind: 'boom', x: s.tx, y: s.ty, r: f.rw * .55, life: .38, max: .38 });
+        for (const u of S.units) { if (u.side === s.side) continue; const p = unitPos(u); if (Math.hypot(p.x - s.tx, p.y - s.ty) < f.rw * .55) damage(u, s.dmg); }
+      }
+    } else {
+      if (!s.target || s.target.dead) { s.done = true; continue; }
+      const p = unitPos(s.target), dx = p.x - s.x, dy = p.y - s.y, dd = Math.hypot(dx, dy), step = s.speed * dt;
+      if (dd <= step) { s.done = true; damage(s.target, s.dmg); S.fx.push({ kind: 'spark', x: p.x, y: p.y, life: .3, max: .3 }); }
+      else { s.x += dx / dd * step; s.y += dy / dd * step; }
+    }
+  }
+  S.shots = S.shots.filter(s => !s.done);
+}
+function updateFx(dt) {
+  const f = F();
+  for (const x of S.fx) {
+    if (x.delay > 0) { x.delay -= dt; continue; }
+    x.life -= dt;
+    if (x.kind === 'drop' && x.life <= 0 && !x.hit) {
+      x.hit = true; const q = f.paths[x.lane].at(x.t);
+      S.fx.push({ kind: 'boom', x: q.x, y: q.y, r: f.rw * .75, life: .48, max: .48, big: true });
+      for (const u of S.units) { if (u.side === x.side) continue; const p = unitPos(u); if (Math.hypot(p.x - q.x, p.y - q.y) < f.rw * .8) damage(u, SKILLS.burst.dmg); }
+    }
+  }
+  S.fx = S.fx.filter(x => x.delay > 0 || x.life > 0);
+}
+function update(dt) {
+  if (S.paused) return;
+  if (S.over > 0) { S.over -= dt; if (S.over <= 0) reset(); return; }
+  S.clock += dt; S.time = Math.max(0, S.time - dt);
+  for (const side of ['player', 'enemy']) {
+    S.coins[side] += INCOME * dt;
+    for (const k in S.cool[side]) S.cool[side][k] = Math.max(0, S.cool[side][k] - dt);
+    for (const k in S.skillCool[side]) S.skillCool[side][k] = Math.max(0, S.skillCool[side][k] - dt);
+    S.wall[side].shake = Math.max(0, S.wall[side].shake - dt * 3); S.wall[side].flash = Math.max(0, S.wall[side].flash - dt);
+  }
+  think('enemy', dt);
+  if ($('#autoBtn').getAttribute('aria-pressed') === 'true') think('player', dt);
+  updateUnits(dt); updateGuns(dt); updateShots(dt); updateFx(dt);
+  if (S.hp.player <= 0 || S.hp.enemy <= 0 || S.time <= 0) {
+    const win = S.hp.enemy < S.hp.player;
+    hint(S.hp.enemy === S.hp.player ? '平局！3 秒后重新开始' : win ? '胜利！3 秒后重新开始' : '失败！3 秒后重新开始', 3); S.over = 3;
+  }
+}
+
+/* ---------- 绘制 ---------- */
+function drawUnit(u) {
+  const f = F(), d = UNITS[u.type], p = unitPos(u), r = unitR(u), team = fd.TEAM[u.side];
+  const pop = u.born > 0 ? 1 - u.born / .35 : 1, s = (.4 + .6 * pop) * (1 + u.attack * .12), hop = Math.abs(Math.sin(u.bob)) * r * .12;
+  ctx.save(); ctx.translate(p.x, p.y);
+  ctx.fillStyle = 'rgba(52,80,44,.28)'; ctx.beginPath(); ctx.ellipse(0, r * .78, r * .95 * s, r * .32 * s, 0, 0, TAU); ctx.fill();
+  ctx.translate(0, -hop); ctx.scale(s, s);
+  // 阵营底圈：浅色填充 + 阵营色细环，替代原来的黑色粗圈
+  ctx.fillStyle = u.side === 'player' ? 'rgba(220,238,255,.92)' : 'rgba(255,226,231,.92)';
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, TAU); ctx.fill();
+  ctx.lineWidth = Math.max(1.4, r * .13); ctx.strokeStyle = team.main; ctx.stroke();
+  ctx.lineWidth = Math.max(.8, r * .05); ctx.strokeStyle = 'rgba(91,68,97,.45)'; ctx.beginPath(); ctx.arc(0, 0, r + ctx.lineWidth * 1.6, 0, TAU); ctx.stroke();
+  if (u.buffed) { ctx.strokeStyle = 'rgba(199,155,255,.9)'; ctx.lineWidth = Math.max(1.2, r * .09); ctx.beginPath(); ctx.arc(0, 0, r * 1.18, 0, TAU); ctx.stroke(); }
+  ctx.save();
+  if (d.faceLeft === (u.side === 'player')) ctx.scale(-1, 1);
+  ctx.globalAlpha = u.flash > 0 ? .6 : 1;
+  ctx.font = `${Math.round(r * 1.45)}px ${EMOJI}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(d.icon, 0, r * .08);
+  ctx.restore();
+  if (u.buffed) { ctx.font = `${Math.round(r * .8)}px ${EMOJI}`; ctx.textAlign = 'center'; ctx.fillText('👑', 0, -r * 1.25); }
+  ctx.restore();
+  // 血条
+  if (u.hp < u.maxHp) {
+    const bw = r * 1.7, bh = Math.max(3, r * .17), x = p.x - bw / 2, y = p.y - hop - r * (u.buffed ? 1.75 : 1.38);
+    ctx.fillStyle = 'rgba(255,255,255,.92)'; fd.rr(ctx, x - 1, y - 1, bw + 2, bh + 2, bh); ctx.fill();
+    ctx.fillStyle = u.side === 'player' ? '#4f9de9' : '#ee6779'; fd.rr(ctx, x, y, bw * clamp(u.hp / u.maxHp, 0, 1), bh, bh); ctx.fill();
+  }
+}
+function drawShot(s) {
+  const f = F();
+  if (s.kind === 'shell') {
+    const x = lerp(s.sx, s.tx, s.t), y = lerp(s.sy, s.ty, s.t), lift = Math.sin(s.t * Math.PI) * f.rw * .7, r = f.rw * .1;
+    ctx.fillStyle = 'rgba(52,80,44,.25)'; ctx.beginPath(); ctx.ellipse(x, y, r * 1.1, r * .45, 0, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = r * .9; ctx.lineCap = 'round';
+    const pt = Math.max(0, s.t - .08), px = lerp(s.sx, s.tx, pt), py = lerp(s.sy, s.ty, pt) - Math.sin(pt * Math.PI) * f.rw * .7;
+    ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(x, y - lift); ctx.stroke();
+    ctx.fillStyle = '#4b5060'; ctx.beginPath(); ctx.arc(x, y - lift, r, 0, TAU); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.beginPath(); ctx.arc(x - r * .35, y - lift - r * .35, r * .35, 0, TAU); ctx.fill();
+  } else {
+    const r = f.unitR * .28, g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r * 1.8);
+    g.addColorStop(0, '#fff6c8'); g.addColorStop(.45, s.side === 'player' ? '#a98bff' : '#ff9a6b'); g.addColorStop(1, 'rgba(255,160,120,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(s.x, s.y, r * 1.8, 0, TAU); ctx.fill();
+  }
+}
+function star(x, y, r, n = 5) { ctx.beginPath(); for (let i = 0; i < n * 2; i++) { const a = i * Math.PI / n - Math.PI / 2, rr = i % 2 ? r * .45 : r; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } ctx.closePath(); }
+function drawFx(x) {
+  const f = F();
+  if (x.delay > 0) return;
+  const q = 1 - x.life / x.max;
+  if (x.kind === 'drop') {
+    const p = f.paths[x.lane].at(x.t), r = f.rw * (.25 + q * .45);
+    ctx.fillStyle = `rgba(242,115,80,${.12 + q * .25})`; ctx.beginPath(); ctx.ellipse(p.x, p.y, r, r * .55, 0, 0, TAU); ctx.fill();
+    ctx.strokeStyle = `rgba(242,115,80,${.4 + q * .4})`; ctx.lineWidth = Math.max(1, 2 * f.S0); ctx.setLineDash([4 * f.S0, 3 * f.S0]); ctx.stroke(); ctx.setLineDash([]);
+    const h = (1 - q) * f.rw * 3, sr = f.rw * .14;
+    ctx.fillStyle = '#4b5060'; ctx.beginPath(); ctx.arc(p.x, p.y - h, sr, 0, TAU); ctx.fill();
+  } else if (x.kind === 'boom') {
+    const r = x.r * (.45 + q * .75), a = 1 - q;
+    ctx.fillStyle = `rgba(255,240,170,${a * .85})`; ctx.beginPath(); ctx.arc(x.x, x.y, r * .7, 0, TAU); ctx.fill();
+    ctx.strokeStyle = `rgba(255,170,90,${a})`; ctx.lineWidth = Math.max(1.5, x.r * .12 * a); ctx.beginPath(); ctx.arc(x.x, x.y, r, 0, TAU); ctx.stroke();
+    ctx.fillStyle = `rgba(255,255,255,${a * .9})`;
+    for (let i = 0; i < 6; i++) { const ang = i * TAU / 6 + x.x, d = r * (.6 + q * .5); ctx.beginPath(); ctx.arc(x.x + Math.cos(ang) * d, x.y + Math.sin(ang) * d * .7, x.r * .16 * a + 1, 0, TAU); ctx.fill(); }
+  } else if (x.kind === 'flash') {
+    const r = f.rw * .22 * (1 - q * .5);
+    ctx.fillStyle = `rgba(255,232,140,${1 - q})`; star(x.x + Math.cos(x.a) * r * .6, x.y + Math.sin(x.a) * r * .6, r, 6); ctx.fill();
+  } else if (x.kind === 'clash' || x.kind === 'spark') {
+    const r = f.unitR * (.35 + q * .35);
+    ctx.fillStyle = x.kind === 'clash' ? `rgba(255,248,200,${1 - q})` : `rgba(255,214,140,${1 - q})`;
+    star(x.x, x.y, r); ctx.fill();
+  } else if (x.kind === 'poof') {
+    ctx.fillStyle = `rgba(255,255,255,${(1 - q) * .85})`;
+    for (let i = 0; i < 5; i++) { const ang = i * TAU / 5, d = f.unitR * (.3 + q * .9); ctx.beginPath(); ctx.arc(x.x + Math.cos(ang) * d, x.y + Math.sin(ang) * d, f.unitR * .35 * (1 - q * .5), 0, TAU); ctx.fill(); }
+  }
+}
+function render() {
+  const f = F(); if (!f) return;
+  ctx.clearRect(0, 0, f.w, f.h);
+  ctx.drawImage(fd.bg, 0, 0, f.w, f.h);
+  if (S.hover >= 0 && S.selected) fd.highlightLane(ctx, f, S.hover, S.selected.id === 'burst' ? '#f27350' : '#5aa9f0');
+  for (const side of ['player', 'enemy']) fd.drawWall(ctx, f, side, { hp: S.hp[side] / WALL_HP, shake: S.wall[side].shake, flash: S.wall[side].flash, time: S.clock });
+  for (const side of ['player', 'enemy']) { const g = S.gun[side]; fd.drawCannon(ctx, f, side, { angle: g.angle, recoil: g.recoil, glow: g.windup > 0 ? 1 - g.windup / CANNON.windup : 0 }); }
+  for (const x of S.fx) if (x.kind === 'drop') drawFx(x);
+  const arr = [...S.units].sort((a, b) => unitPos(a).y - unitPos(b).y);
+  for (const u of arr) drawUnit(u);
+  for (const s of S.shots) drawShot(s);
+  for (const x of S.fx) if (x.kind !== 'drop') drawFx(x);
+}
+
+/* ---------- HUD 同步 ---------- */
+const fmt = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+function syncHud() {
+  $('#pHp').style.width = (S.hp.player / WALL_HP * 100).toFixed(1) + '%';
+  $('#eHp').style.width = (S.hp.enemy / WALL_HP * 100).toFixed(1) + '%';
+  $('#pHpText').textContent = Math.ceil(S.hp.player); $('#eHpText').textContent = Math.ceil(S.hp.enemy);
+  $('#timer').textContent = fmt(Math.ceil(S.time));
+  $('#coinText').textContent = Math.floor(S.coins.player);
+  $('#coinBar').style.width = Math.min(100, S.coins.player / 20 * 100).toFixed(1) + '%';
+  $$('.card').forEach(el => {
+    const t = el.dataset.type, d = UNITS[t], c = S.cool.player[t] || 0;
+    el.classList.toggle('poor', S.coins.player < d.cost); el.classList.toggle('cooling', c > 0); el.classList.toggle('buffed', S.buffed.player === t);
+    el.style.setProperty('--p', (c / d.cd).toFixed(3)); el.querySelector('.cd').textContent = c > 0 ? Math.ceil(c) : '';
+  });
+  $$('.skill').forEach(el => {
+    const id = el.dataset.skill, sk = SKILLS[id], c = S.skillCool.player[id];
+    el.classList.toggle('poor', S.coins.player < sk.cost); el.classList.toggle('cooling', c > 0);
+    el.style.setProperty('--p', (c / sk.cd).toFixed(3)); el.querySelector('.cd').textContent = c > 0 ? Math.ceil(c) : '';
+  });
+}
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  if (hintTimer > 0) { hintTimer -= dt; if (hintTimer <= 0) $('#hint').classList.remove('show'); }
+  if (F()) { update(dt); render(); syncHud(); }
+  requestAnimationFrame(frame);
+}
+reset();
+requestAnimationFrame(frame);
+// 测试钩子：截图脚本用来快进
+window.__QJ_DEMO__ = { get state() { return S; }, step(sec) { for (let i = 0; i < sec * 30; i++) update(1 / 30); render(); syncHud(); }, deploy, useBurst };
+})();
 </script>
 </body>
 </html>
