@@ -1,3 +1,15 @@
+# 发布和本机配置完成 — 当前恢复点（2026-10-07）
+
+- 根目录当前为 UI 稳定版；双击「一键启动-普通游戏.cmd」或「一键启动-EVA对战.cmd」。EVA 工作区位于 .claude/worktrees/eva-ai-arena，由启动器自动定位。
+- GitHub 已上传 UI 与 EVA，默认 UI；旧 master 已删除，历史仍由新分支保留。仓库 https://github.com/cuppur/Wonderland-Crown 。
+- 用户两份真实 API 已配置到本机 Windows DPAPI 加密保存，URL/模型/None/JSON/2048/60秒/10秒公平周期自动载入，不用重输。开始比赛自动检查连接。密钥不在 GitHub、浏览器存储、日志或截图中，原 api.txt 未修改。
+- 保存功能 5 项、EVA 快速 31 项、静态 7 组、普通游戏 16 项通过。真实保存→刷新→开始自动连接，双方各 2 次有效决策、2 个出兵、错误与页面异常 0；上一阶段双方各 10 次真实决策报告也保留。
+- 已使用 Lovable 工具更新既有 Wonderland Crown Portal 并正式发布 https://qijing-wangguan.lovable.app 。部署 UI runtime 来源 4eb2ed7；Lovable 内容提交 efbc36f90cb65cc31101bf95a80fd7f21ac155c5。
+- 公网 Playwright 1920×1080/844×390 开局、出兵、菜单通过；8 个运行文件与 UI Git blob 逐字节一致，页面异常、资源失败 0。报告 output/playwright/published/report.json；可运行 python tests/playtest_published.py 复验。
+- 清理旧概念页、二维预览、历史展示截图、旧 UI 工作区文件及 Git 登记。仅保留 UI/EVA 两个分支；属性表、参考图、2.5D 预览和可复现测试保留。旧 UI 目录为空但被 Codex 进程持有，暂不能删目录本身；不为此终止 Codex。
+- 任务已完成；最新提交见 git log。后续以本文顶部为准，下方均为历史阶段记录。
+
+---
 # 根目录入口、API 保存与发布 — 当前恢复点（2026-10-07）
 
 - 用户授权配置并保存 API、将 UI 与 EVA 上传 GitHub、更新已有 Lovable 网站并清理旧版本。
