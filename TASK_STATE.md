@@ -9,6 +9,7 @@
 - 1920×1080、1648×928、844×390、1024×768 配置/战场/日志截图已检查，手机 AI 面板标题与日志入口已修正。浏览器未捕获异常为 0。
 - [x] E3 文档和普通模式回归：`python tests/verify_game.py` 7 组 PASS、`python tests/playtest_game.py` 16 组 PASS。使用说明/协议/已知限制见 `docs/EVA_ARENA.md`，Command JSON Schema 见 `docs/eva-command.schema.json`。
 - 验收证据：`output/playwright/eva-report.json` 和 `eva-*.png`（忽略提交，可重跑生成）。启动：`python tools/eva_server.py --port 8772`，打开 http://127.0.0.1:8772/index.html。
+- E2/E3 验收与文档已提交 `12b7828`；最终清理提交见 git log。
 - 当前任务完成。下一步由用户在游戏内配置真实 Provider 并完成真实服务验收；普通 UI 稳定分支保留，恢复时以此 EVA 工作区和本文顶部为准。
 - 不 push、不改属性表；普通 UI worktree 保持独立。
 

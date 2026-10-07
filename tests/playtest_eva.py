@@ -235,7 +235,7 @@ try:
             mock_result = {"elapsed": page.evaluate("QJWGEngine.clock()"), "towerHp": page.evaluate("__QJWG_TEST__.snapshot().towerHp"), "stats": snap()["stats"]}
             page.screenshot(path=str(OUT / "eva-result-desktop.png"))
             passed("full autonomous Mock battle reaches tower HP zero and EVA result without altering balance")
-    
+
 
         # Live engine command behavior: no mock or LLM scheduler during these deterministic checks.
         fresh(); page.evaluate("EVA.view.start(); EVA.arena.stop()")
