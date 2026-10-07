@@ -50,3 +50,9 @@ pptx_build/
 
 # Reproducible Playwright screenshots and local reports
 output/playwright/
+
+# Local checkouts and encrypted API configuration
+.claude/
+.local-worktrees/
+*.dpapi
+api.txt

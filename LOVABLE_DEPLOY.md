@@ -1,11 +1,11 @@
-# Lovable 公网部署
-https://qijing-wangguan.lovable.app
-项目根目录已经是可直接托管的静态网页结构：`index.html`、`css/`、`assets/`。
+# 奇境王冠发布
 
-1. 将本项目同步到 GitHub 仓库。
-2. 在 Lovable 中导入该仓库。
-3. 将站点入口设为项目根目录的 `index.html`，无需构建命令。
-4. 确认 Lovable 发布产物保留 `assets/images/`、`assets/audio/`、`assets/data/` 的原始目录结构。
-5. 发布后用手机访问 HTTPS 公网地址；首次点击后浏览器才允许播放 BGM。
+稳定分支为 UI，AI 对战分支为 EVA；GitHub 默认分支使用 UI。
+仓库：https://github.com/cuppur/Wonderland-Crown
+公网：https://qijing-wangguan.lovable.app
+Lovable 项目：Wonderland Crown Portal（72e4454c-102f-490a-89bb-af66ac4996be）。
 
-本项目不再生成 ZIP 或内嵌资源版 HTML。所有运行资源通过相对公网路径加载。
+项目为静态游戏，无构建步骤。部署 UI 的 index.html、css/、js/、assets/，必须包括 js/candy-field.js，并保留目录结构。
+已有 Lovable 项目在 public/game/ 中保存原游戏，首页 iframe 加载 /game/index.html。更新时替换其中的游戏文件，保持游戏自身代码；发布后验证 /game/index.html 和所有资源。
+
+本地双击根目录的两个 cmd 启动器。EVA 分支的本地 API 配置使用 Windows 加密保存在项目外；不上传密钥、凭据、日志或本地代理服务。UI 公网部署不包含 EVA 配置。
