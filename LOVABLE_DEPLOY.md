@@ -1,5 +1,5 @@
 # Lovable 公网部署
-
+https://qijing-wangguan.lovable.app
 项目根目录已经是可直接托管的静态网页结构：`index.html`、`css/`、`assets/`。
 
 1. 将本项目同步到 GitHub 仓库。

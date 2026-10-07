@@ -133,6 +133,15 @@ body.fill #stage{border-radius:0;box-shadow:none}
 #hand .skill.burst{margin-right:.45rem}
 #hand .coins{margin-right:.2rem}
 
+/* 糖果风顶栏与托盘 */
+.plate.panel{background:repeating-linear-gradient(90deg,#fffaf0 0 1.1rem,#fff0f4 1.1rem 2.2rem);border-color:#f3b6c8}
+.plate.player.panel{background:repeating-linear-gradient(90deg,#fffaf0 0 1.1rem,#eef6ff 1.1rem 2.2rem);border-color:#a9d3f7}
+.timer{background:linear-gradient(#ff9fbd 0 34%,#fff4cc 34%);border-color:#e98aa6;box-shadow:0 .35rem 0 rgba(196,72,94,.25)}
+.timer b{margin-top:.6rem}
+.timer small{color:#c4485e}
+#hand{border-color:#c98d4a;background:#fbe6ee;box-shadow:inset 0 .19rem 0 #fff,0 0 0 max(1.5px,.25rem) #f2cf83,0 0 0 max(2.5px,.45rem) #c98d4a,0 .55rem 0 #9c6436,0 .95rem 1.2rem rgba(56,40,61,.35)}
+.card{background:radial-gradient(circle at 50% 0,#fffaf2 .5rem,transparent .53rem) 0 -.12rem/1.4rem 1rem repeat-x,var(--card-bg)}
+
 /* ---------- 竖屏提示（仅自适应模式） ---------- */
 #rotate{position:absolute;inset:0;display:none;place-content:center;text-align:center;gap:12px;background:#2b2531;color:#fff;font-size:16px;z-index:5}
 #rotate .ico{font-size:44px;font-family:var(--emoji)}
@@ -329,7 +338,7 @@ function buildGeometry(w, h) {
     wy0: ys[0] - rw * 1.05, wy1: ys[2] + rw * 1.05,
     unitR: rw * .3,
     k: L / 1070,                                    // 原版道路长 1070 px → 当前像素的换算系数
-    pivot: { player: { x: m + T * .7, y: ys[1] + road * .25 - T * (.82 * .38 * .8 + 1.3) }, enemy: { x: w - m - T * .7, y: ys[1] + road * .25 - T * (.82 * .38 * .8 + 1.3) } }
+    pivot: { player: { x: m + T * .56, y: ys[1] - T * .98 }, enemy: { x: w - m - T * .56, y: ys[1] - T * .98 } }
   };
 }
 
@@ -399,7 +408,7 @@ function roadMask(F, width, color, dpr) {
   circle(ga, F.cx, F.cy, F.road * .62 + (width - F.road) / 2); ga.fill();
   const b = document.createElement('canvas'); b.width = W; b.height = H;
   const gb = b.getContext('2d', { willReadFrequently: true });
-  const sigma = F.road * .45, edge = .5 * erf(width / (sigma * Math.SQRT2)) * 255, lo = edge - 3, hi = edge + 3;
+  const sigma = F.road * .8, edge = .5 * erf(width / (sigma * Math.SQRT2)) * 255, lo = edge - 3, hi = edge + 3;
   gb.filter = `blur(${(sigma * dpr).toFixed(1)}px)`; gb.drawImage(a, 0, 0); gb.filter = 'none';
   const img = gb.getImageData(0, 0, W, H), d = img.data;
   for (let i = 3; i < d.length; i += 4) { const v = d[i]; d[i] = v <= lo ? 0 : v >= hi ? 255 : (v - lo) / (hi - lo) * 255; d[i - 3] = d[i - 2] = d[i - 1] = 255; }
@@ -462,6 +471,31 @@ function drawPlatforms(g, F) {
     }
   }
 }
+function drawTree(g, x, y, r, rnd, S0, kind) {
+  const lw = Math.max(1, 1.5 * S0);
+  g.fillStyle = 'rgba(52,96,44,.25)'; g.beginPath(); g.ellipse(x + r * .3, y + r * .08, r * .95, r * .34, 0, 0, TAU); g.fill();
+  if (kind === 'mush') {
+    g.fillStyle = '#fff4e2'; g.strokeStyle = '#a07a5a'; g.lineWidth = lw; rr(g, x - r * .22, y - r * .6, r * .44, r * .62, r * .18); g.fill(); g.stroke();
+    g.fillStyle = '#ff6b7a'; g.strokeStyle = '#a83a4a'; g.beginPath(); g.ellipse(x, y - r * .58, r * .62, r * .46, 0, Math.PI, 0); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = '#fffaf2'; for (const [dx, dy, dr] of [[-.3, -.75, .1], [.12, -.88, .12], [.36, -.68, .08]]) { circle(g, x + dx * r, y + dy * r, dr * r); g.fill(); }
+    return;
+  }
+  if (kind === 'cotton') {
+    g.fillStyle = '#fffaf2'; g.strokeStyle = '#b89a8a'; g.lineWidth = lw; rr(g, x - r * .07, y - r * 1.15, r * .14, r * 1.15, r * .07); g.fill(); g.stroke();
+    const c = rnd() < .5 ? ['#ffc2dc', '#ffe0ee', '#e98aae'] : ['#bfe3ff', '#e2f2ff', '#7cb8e8'];
+    const puffs = [[0, -1.6, .5], [-.38, -1.35, .4], [.4, -1.38, .42], [-.15, -1.25, .4], [.18, -1.82, .34]];
+    for (const [dx, dy, pr] of puffs) { circle(g, x + dx * r, y + dy * r, pr * r + lw); g.fillStyle = c[2]; g.fill(); }
+    for (const [dx, dy, pr] of puffs) { circle(g, x + dx * r, y + dy * r, pr * r); g.fillStyle = c[0]; g.fill(); }
+    for (const [dx, dy, pr] of puffs) { circle(g, x + (dx - .12) * r, y + (dy - .12) * r, pr * r * .45); g.fillStyle = c[1]; g.fill(); }
+    return;
+  }
+  g.fillStyle = '#b07a4a'; g.strokeStyle = '#7a4f2c'; g.lineWidth = lw; rr(g, x - r * .12, y - r * .9, r * .24, r * .92, r * .1); g.fill(); g.stroke();
+  const leaves = [[0, -1.45, .58], [-.42, -1.15, .45], [.42, -1.12, .46], [0, -1.05, .5]];
+  for (const [dx, dy, pr] of leaves) { circle(g, x + dx * r, y + dy * r, pr * r + lw); g.fillStyle = '#3f7f3a'; g.fill(); }
+  for (const [dx, dy, pr] of leaves) { circle(g, x + dx * r, y + dy * r, pr * r); g.fillStyle = '#62ad4c'; g.fill(); }
+  for (const [dx, dy, pr] of leaves) { circle(g, x + (dx - .14) * r, y + (dy - .14) * r, pr * r * .45); g.fillStyle = '#8fd06a'; g.fill(); }
+  g.fillStyle = '#ff6b7a'; for (let k = 0; k < 3; k++) { circle(g, x + (rnd() - .5) * r, y - r * (1.1 + rnd() * .5), r * .07); g.fill(); }
+}
 function drawGround(g, F) {
   const { w, h, rw, S0 } = F, rnd = rng(20261006);
   const base = g.createLinearGradient(0, 0, 0, h);
@@ -492,9 +526,22 @@ function drawGround(g, F) {
   // 上下边缘灌木带（远离三路，压在 HUD 背后）
   const br = rw * .5, step = br * 1.7;
   for (let x = -br * .5; x < w + br; x += step * (.8 + rnd() * .4)) {
-    drawBush(g, x, Math.min(F.ys[0] - rw * 1.45, F.top) - rnd() * br * .5, br * (.75 + rnd() * .35), rnd, S0);
+    drawBush(g, x, Math.min(F.ys[0] - rw * 1.45, F.top) + br * 1.2 - rnd() * br * .3, br * (.75 + rnd() * .35), rnd, S0);
     drawBush(g, x + step * .5, Math.max(F.ys[2] + rw * 1.55, F.bottom - br * .2) + rnd() * br * .6, br * (.8 + rnd() * .35), rnd, S0);
   }
+  // 空白草地点缀：树、棉花糖树、小蘑菇，周围带几朵花；中央交汇区保持干净
+  const deco = [];
+  for (let i = 0; i < 260 && deco.length < 20; i++) {
+    const x = lerp(F.x1L + rw * 1.5, F.x1R - rw * 1.5, rnd()), y = lerp(F.ys[0] - rw * .8, F.ys[2] + rw * 1.3, rnd());
+    if (Math.abs(x - F.cx) < rw * 1.3 || !farFromRoads(F, x, y, rw * .95)) continue;
+    if (deco.some(d => Math.hypot(d.x - x, d.y - y) < rw * 1.15)) continue;
+    deco.push({ x, y, k: rnd() });
+  }
+  deco.sort((a, b) => a.y - b.y).forEach(d => {
+    const kind = d.k < .38 ? 'tree' : d.k < .68 ? 'cotton' : 'mush';
+    for (let j = 0; j < 4; j++) drawFlower(g, d.x + (rnd() - .5) * rw * .9, d.y + rw * (.05 + rnd() * .2), Math.max(1.2, 2.2 * S0), pet[j % pet.length], rnd);
+    drawTree(g, d.x, d.y, rw * (kind === 'mush' ? .34 : .46), rnd, S0, kind);
+  });
   // 交汇区内侧四块草地各一丛
   for (const [fx, fy] of [[.3, -.5], [.7, -.5], [.3, .5], [.7, .5]]) {
     const x = lerp(F.rs, F.re, fx), y = F.cy + fy * F.s;
@@ -531,105 +578,102 @@ function drawRoundTower(g, F, x, y, r, team, flagT) {
   g.fillStyle = team.main; g.strokeStyle = '#fff'; g.lineWidth = Math.max(1, 1.4 * S0);
   g.beginPath(); g.moveTo(x, y - r * .1); g.quadraticCurveTo(x + T * .45, y - r * .3 + wave, x + T * .85, y - r * .45 + wave); g.lineTo(x, y - r * .8); g.closePath(); g.fill(); g.stroke();
 }
-const CAKE_SQUASH = .38;
+const CAKE_SQUASH = .4, CAKE_LINE = '#8a5a3c';
+function cream(g, x, y, r, S0) { circle(g, x, y, r); g.fillStyle = '#fffaf2'; g.fill(); g.strokeStyle = 'rgba(138,90,60,.4)'; g.lineWidth = Math.max(.8, S0); g.stroke(); }
 function cakeTier(g, F, cx, by, rx, h, team, rnd) {
-  const ry = rx * CAKE_SQUASH, S0 = F.S0, lw = Math.max(1.2, 2.2 * S0);
-  // 侧面：海绵蛋糕
-  const side = new Path2D(); side.moveTo(cx - rx, by - h); side.lineTo(cx - rx, by); side.ellipse(cx, by, rx, ry, 0, Math.PI, 0, true); side.lineTo(cx + rx, by - h); side.closePath();
-  const sg = g.createLinearGradient(cx - rx, 0, cx + rx, 0); sg.addColorStop(0, '#e2ad6c'); sg.addColorStop(.42, '#f7d49c'); sg.addColorStop(1, '#d59a5c');
-  g.fillStyle = sg; g.fill(side); g.strokeStyle = INK; g.lineWidth = lw; g.stroke(side);
-  // 果酱夹层
-  g.save(); g.clip(side); g.strokeStyle = team.main; g.globalAlpha = .7; g.lineWidth = h * .13;
-  g.beginPath(); g.ellipse(cx, by - h * .42, rx, ry, 0, 0, Math.PI); g.stroke(); g.restore();
-  // 顶部奶油 + 前侧滴落
+  const ry = rx * CAKE_SQUASH, rt = rx * .92, rty = rt * CAKE_SQUASH, S0 = F.S0, lw = Math.max(1.2, 2 * S0), ty = by - h;
+  const side = new Path2D(); side.moveTo(cx - rt, ty); side.lineTo(cx - rx, by); side.ellipse(cx, by, rx, ry, 0, Math.PI, 0, true); side.lineTo(cx + rt, ty); side.closePath();
+  const sg = g.createLinearGradient(cx - rx, 0, cx + rx, 0); sg.addColorStop(0, '#f8d39c'); sg.addColorStop(.35, '#ffe6b8'); sg.addColorStop(1, '#dea063');
+  g.fillStyle = sg; g.fill(side); g.strokeStyle = CAKE_LINE; g.lineWidth = lw; g.stroke(side);
+  g.save(); g.clip(side); g.strokeStyle = team.main; g.globalAlpha = .55; g.lineWidth = h * .12;
+  g.beginPath(); g.ellipse(cx, by - h * .45, (rx + rt) / 2, ry, 0, 0, Math.PI); g.stroke(); g.restore();
   g.fillStyle = '#fffaf2';
-  g.beginPath(); g.ellipse(cx, by - h, rx * 1.02, ry * 1.02, 0, 0, TAU); g.fill();
-  for (let k = 0; k < 7; k++) {
-    const a = .12 * Math.PI + k / 6 * .76 * Math.PI, x = cx + Math.cos(a) * rx * .98, y = by - h + Math.sin(a) * ry, len = h * (.18 + ((k * 37) % 5) * .05);
-    rr(g, x - rx * .08, y - ry * .2, rx * .16, len + ry * .2, rx * .08); g.fill();
-  }
-  g.strokeStyle = INK; g.lineWidth = lw; g.beginPath(); g.ellipse(cx, by - h, rx * 1.02, ry * 1.02, 0, 0, TAU); g.stroke();
-  // 阵营色糖霜 + 糖粒
-  g.fillStyle = team.light; g.beginPath(); g.ellipse(cx, by - h, rx * .8, ry * .8, 0, 0, TAU); g.fill();
-  g.strokeStyle = team.main; g.lineWidth = Math.max(1, 1.8 * S0); g.stroke();
+  for (let k = 0; k < 8; k++) { const a = .1 * Math.PI + k / 7 * .8 * Math.PI, x = cx + Math.cos(a) * rt, y = ty + Math.sin(a) * rty; rr(g, x - rt * .07, y - rty * .2, rt * .14, h * (.22 + ((k * 37) % 5) * .06), rt * .07); g.fill(); }
+  g.beginPath(); g.ellipse(cx, ty, rt * 1.03, rty * 1.05, 0, 0, TAU); g.fill(); g.strokeStyle = 'rgba(138,90,60,.55)'; g.lineWidth = lw * .8; g.stroke();
+  g.fillStyle = team.light; g.beginPath(); g.ellipse(cx, ty, rt * .74, rty * .74, 0, 0, TAU); g.fill();
   for (let k = 0; k < 9; k++) {
-    const a = rnd() * TAU, d = .25 + rnd() * .45; g.save(); g.translate(cx + Math.cos(a) * rx * d, by - h + Math.sin(a) * ry * d); g.rotate(rnd() * TAU);
-    g.fillStyle = CANDY[k % CANDY.length]; rr(g, -rx * .06, -rx * .018, rx * .12, rx * .036, rx * .018); g.fill(); g.restore();
+    const a = rnd() * TAU, d = .15 + rnd() * .45; g.save(); g.translate(cx + Math.cos(a) * rt * d, ty + Math.sin(a) * rty * d); g.rotate(rnd() * TAU);
+    g.fillStyle = CANDY[k % CANDY.length]; rr(g, -rt * .05, -rt * .016, rt * .1, rt * .032, rt * .016); g.fill(); g.restore();
   }
-  return ry;
+  for (let k = 0; k < 16; k++) { const a = k / 16 * TAU; cream(g, cx + Math.cos(a) * rt * .9, ty + Math.sin(a) * rty * .9 - rt * .03, rt * .1, S0); }
+  return ty;
 }
-function cakeGate(g, F, cx, by, rx, ry, h) {
-  const gx = cx + rx * .6, gb = by + ry * .78, aw = rx * .42, ah = h * .8, S0 = F.S0;
-  const arch = (w, top) => { g.beginPath(); g.moveTo(gx - w / 2, gb); g.lineTo(gx - w / 2, top + w / 2); g.arc(gx, top + w / 2, w / 2, Math.PI, 0); g.lineTo(gx + w / 2, gb); g.closePath(); };
-  arch(aw, gb - ah); g.fillStyle = '#b77a45'; g.fill(); g.strokeStyle = '#fff2d8'; g.lineWidth = Math.max(1.5, 3 * S0); g.stroke();
-  arch(aw * .66, gb - ah * .82); g.fillStyle = '#4a2c1a'; g.fill();
-  g.fillStyle = 'rgba(255,214,140,.28)'; arch(aw * .3, gb - ah * .6); g.fill();
-}
-function cherry(g, F, x, y, r) {
-  g.strokeStyle = '#5f8a3a'; g.lineWidth = Math.max(1.2, 2.2 * F.S0); g.lineCap = 'round';
-  g.beginPath(); g.moveTo(x, y - r * .7); g.quadraticCurveTo(x + r * .2, y - r * 1.6, x + r * .7, y - r * 1.9); g.stroke();
-  circle(g, x, y, r); g.fillStyle = '#e8344a'; g.fill(); g.strokeStyle = INK; g.lineWidth = Math.max(1, 1.6 * F.S0); g.stroke();
-  g.fillStyle = 'rgba(255,255,255,.8)'; g.beginPath(); g.ellipse(x - r * .35, y - r * .35, r * .25, r * .16, -.6, 0, TAU); g.fill();
+function gingerGate(g, F, x, base, w, h, team) {
+  const S0 = F.S0, lw = Math.max(1.5, 2.4 * S0);
+  const arch = (ww, hh) => { g.beginPath(); g.moveTo(x - ww / 2, base); g.lineTo(x - ww / 2, base - hh + ww / 2); g.arc(x, base - hh + ww / 2, ww / 2, Math.PI, 0); g.lineTo(x + ww / 2, base); };
+  g.fillStyle = 'rgba(52,96,44,.28)'; g.beginPath(); g.ellipse(x + w * .2, base, w * .8, w * .22, 0, 0, TAU); g.fill();
+  arch(w, h); g.closePath(); g.fillStyle = '#c47a3c'; g.fill(); g.strokeStyle = '#7a4520'; g.lineWidth = lw; g.stroke();
+  g.fillStyle = 'rgba(255,255,255,.85)'; for (let k = 0; k < 7; k++) { const a = Math.PI + k / 6 * Math.PI; circle(g, x + Math.cos(a) * w * .4, base - h + w / 2 + Math.sin(a) * w * .4, Math.max(1, w * .035)); g.fill(); }
+  arch(w * .6, h * .76); g.closePath(); g.fillStyle = '#5a3420'; g.fill();
+  arch(w * .3, h * .5); g.closePath(); g.fillStyle = 'rgba(255,206,130,.3)'; g.fill();
+  arch(w * 1.06, h * 1.03); g.lineCap = 'butt'; g.lineWidth = w * .13; g.strokeStyle = '#fff'; g.stroke();
+  g.setLineDash([w * .11, w * .11]); g.strokeStyle = '#e8344a'; g.stroke(); g.setLineDash([]);
+  g.lineWidth = Math.max(1, 1.2 * S0); g.strokeStyle = 'rgba(122,69,32,.6)'; arch(w * 1.19, h * 1.07); g.stroke();
+  const ay = base - h * 1.04, aw = w * 1.4;
+  g.beginPath(); g.ellipse(x, ay, aw / 2, w * .3, 0, Math.PI, 0); g.closePath(); g.fillStyle = team.main; g.fill(); g.strokeStyle = team.dark; g.lineWidth = lw * .8; g.stroke();
+  for (let k = 0; k < 5; k++) cream(g, x - aw / 2 + aw * (k + .5) / 5, ay, aw / 10.5, S0);
+  circle(g, x, ay - w * .3, w * .09); g.fillStyle = '#e8344a'; g.fill();
 }
 function drawWall(g, F, side, st) {
-  const { T, ys, S0 } = F, team = TEAM[side], cx = F.m + T * .7, rnd = rng(side === 'player' ? 21 : 37);
+  const { T, ys, S0 } = F, team = TEAM[side], rnd = rng(side === 'player' ? 21 : 37), lw = Math.max(1.2, 2.2 * S0);
   g.save();
   if (side === 'enemy') { g.translate(F.w, 0); g.scale(-1, 1); }
   if (st.shake > 0) g.translate((Math.random() - .5) * 4 * S0 * st.shake, (Math.random() - .5) * 2 * S0 * st.shake);
-  const baseY = (y, rx0) => y + F.road * .25 - rx0 * CAKE_SQUASH * .78;
-  // 身后的威化饼墙
-  const wx = cx - T * .55, ww = T * .7, wh = T * .5, wy0 = ys[0], wy1 = ys[2];
-  g.fillStyle = 'rgba(52,96,44,.2)'; rr(g, wx + T * .1, wy0, ww, wy1 - wy0 + T * .2, T * .15); g.fill();
-  g.fillStyle = '#c98d4a'; rr(g, wx, wy1 - wh, ww, wh, T * .1); g.fill();
-  g.save(); rr(g, wx, wy0 - wh, ww, wy1 - wy0, T * .12); g.fillStyle = '#e9b872'; g.fill(); g.clip();
-  g.strokeStyle = '#c98d4a'; g.lineWidth = Math.max(1, 2 * S0); g.beginPath();
-  for (let k = -20; k < 40; k++) { const o = k * T * .22; g.moveTo(wx, wy0 - wh + o); g.lineTo(wx + ww, wy0 - wh + o + ww); g.moveTo(wx + ww, wy0 - wh + o); g.lineTo(wx, wy0 - wh + o + ww); }
-  g.stroke(); g.restore();
-  rr(g, wx, wy0 - wh, ww, wy1 - wy0, T * .12); g.strokeStyle = INK; g.lineWidth = Math.max(1.2, 2.2 * S0); g.stroke();
-  // 塔：从上到下画，保证前面的塔压住后面的
-  const tower = (i, tiers, top) => {
-    let by = baseY(ys[i], tiers[0][0] * T);
-    g.fillStyle = 'rgba(52,96,44,.25)'; g.beginPath(); g.ellipse(cx + T * .1, by + T * .08, tiers[0][0] * T * 1.12, tiers[0][0] * T * CAKE_SQUASH * 1.25, 0, 0, TAU); g.fill();
-    tiers.forEach(([rf, hf], k) => {
-      const rx = rf * T, h = hf * T, ry = cakeTier(g, F, cx, by, rx, h, team, rnd);
-      if (k === 0) cakeGate(g, F, cx, by, rx, ry, h);
-      by -= h;
-    });
-    if (top === 'cherry') cherry(g, F, cx, by - T * .1, T * .14);
-  };
-  tower(0, [[.62, .5], [.46, .4]], 'cherry');
-  lolly(g, cx + T * .62, (ys[0] + ys[1]) / 2 + T * .25, T * .2, team.main, S0, T * .55);
-  tower(1, [[.82, .5], [.64, .42], [.48, .38]], 'cannon');
-  lolly(g, cx + T * .62, (ys[1] + ys[2]) / 2 + T * .25, T * .2, team.main, S0, T * .55);
-  tower(2, [[.62, .5], [.46, .4]], 'cherry');
-  if (st.flash > 0) { g.globalCompositeOperation = 'lighter'; g.fillStyle = `rgba(255,255,255,${st.flash * .35})`; rr(g, F.m - T * .4, ys[0] - T * 1.4, T * 2.2, ys[2] - ys[0] + T * 1.8, T * .4); g.fill(); }
+  const x0 = F.m, x1 = F.m + T * 1.12, yt0 = ys[0] - T * 1.15, yt1 = ys[2] + T * .05, fh = T * .42, cx = F.m + T * .56, ww = x1 - x0;
+  // 投影（光源左上）
+  g.fillStyle = 'rgba(52,96,44,.26)'; rr(g, x0 + T * .2, yt0 + T * .22, ww, yt1 - yt0 + fh, T * .35); g.fill();
+  // 南侧立面：海绵 + 果酱夹层 + 奶油滴落
+  const face = new Path2D(); face.roundRect(x0, yt1 - T * .3, ww, fh + T * .3, T * .3);
+  const sg = g.createLinearGradient(x0, 0, x1, 0); sg.addColorStop(0, '#f8d39c'); sg.addColorStop(1, '#dea063');
+  g.fillStyle = sg; g.fill(face); g.save(); g.clip(face); g.fillStyle = team.main; g.globalAlpha = .5; g.fillRect(x0, yt1 + fh * .3, ww, fh * .18); g.restore();
+  g.strokeStyle = CAKE_LINE; g.lineWidth = lw; g.stroke(face);
+  // 顶面奶油
+  rr(g, x0, yt0, ww, yt1 - yt0, T * .32); g.fillStyle = '#fffaf2'; g.fill(); g.strokeStyle = CAKE_LINE; g.lineWidth = lw; g.stroke();
+  g.fillStyle = '#fffaf2'; for (let k = 0; k < 5; k++) { rr(g, x0 + ww * (k + .5) / 5 - T * .06, yt1 - T * .06, T * .12, fh * (.35 + (k % 3) * .14), T * .06); g.fill(); }
+  rr(g, x0 + T * .2, yt0 + T * .2, ww - T * .4, yt1 - yt0 - T * .4, T * .2); g.fillStyle = team.light; g.fill(); g.strokeStyle = team.main; g.lineWidth = lw * .8; g.stroke();
+  for (let y = yt0 + T * .22; y < yt1 - T * .05; y += T * .22) { cream(g, x0 + T * .09, y, T * .085, S0); cream(g, x1 - T * .09, y, T * .085, S0); }
+  // 三座塔与三道门，按屏幕 y 从上到下画
+  for (let i = 0; i < 3; i++) {
+    const main = i === 1, tiers = main ? [[.72, .42], [.52, .36]] : [[.55, .42]];
+    let by = ys[i] - T * .2, top = by;
+    g.fillStyle = 'rgba(52,96,44,.18)'; g.beginPath(); g.ellipse(cx + T * .12, by + T * .06, tiers[0][0] * T * 1.08, tiers[0][0] * T * CAKE_SQUASH * 1.2, 0, 0, TAU); g.fill();
+    for (const [rf, hf] of tiers) { top = cakeTier(g, F, cx, by, rf * T, hf * T, team, rnd); by -= hf * T; }
+    if (!main) lolly(g, cx, top + T * .02, T * .27, team.main, S0, T * .62);
+    gingerGate(g, F, F.m + T * 1.34, ys[i] + F.road * .42, T * (main ? .52 : .44), T * (main ? .66 : .56), team);
+  }
+  if (st.flash > 0) { g.globalCompositeOperation = 'lighter'; g.fillStyle = `rgba(255,255,255,${st.flash * .35})`; rr(g, x0 - T * .2, yt0 - T * .8, T * 1.9, yt1 - yt0 + T * 1.4, T * .4); g.fill(); }
   g.restore();
 }
 
 /* ---------- 墙顶主炮 ---------- */
-function cannonDims(F) { return { R: F.rw * .3, bl: F.rw * .56, bw: F.rw * .22 }; }
+function cannonDims(F) { return { R: F.T * .4, bl: F.T * .6, bw: F.T * .24, hb: F.T * .2 }; }
 function muzzle(F, side, angle) {
-  const p = F.pivot[side], { bl, bw } = cannonDims(F);
-  return { x: p.x + Math.cos(angle) * (bl - bw * .1), y: p.y + Math.sin(angle) * (bl - bw * .1) };
+  const p = F.pivot[side], { bl, hb } = cannonDims(F);
+  return { x: p.x + Math.cos(angle) * bl, y: p.y - hb - F.T * .06 + Math.sin(angle) * bl * .55 };
 }
 function drawCannon(g, F, side, st) {
-  const p = F.pivot[side], { R, bl, bw } = cannonDims(F), S0 = F.S0, team = TEAM[side];
+  const p = F.pivot[side], { R, bl, bw, hb } = cannonDims(F), S0 = F.S0, team = TEAM[side], ry = R * .45, lw = Math.max(1, 1.6 * S0);
   g.save(); g.translate(p.x, p.y);
-  g.fillStyle = 'rgba(40,60,40,.25)'; g.beginPath(); g.ellipse(R * .14, R * .22, R * 1.12, R * .95, 0, 0, TAU); g.fill();
-  g.fillStyle = team.main; circle(g, 0, 0, R); g.fill();
-  g.strokeStyle = '#fff'; g.lineWidth = Math.max(1.2, 2.4 * S0); g.stroke();
-  g.strokeStyle = INK; g.lineWidth = Math.max(1, 1.2 * S0); circle(g, 0, 0, R + 1.5 * S0); g.stroke();
-  g.fillStyle = '#f7c94f'; for (let i = 0; i < 4; i++) { const a = i * TAU / 4 + TAU / 8; circle(g, Math.cos(a) * R * .7, Math.sin(a) * R * .7, R * .11); g.fill(); }
-  g.rotate(st.angle); g.translate(-st.recoil * R * .4, 0);
-  g.fillStyle = 'rgba(30,30,40,.2)'; rr(g, -bw * .3, -bw * .5 + 2 * S0, bl, bw, bw * .45); g.fill();
-  g.fillStyle = '#5e6475'; g.strokeStyle = '#3c4050'; g.lineWidth = Math.max(1, 1.5 * S0);
-  rr(g, -bw * .4, -bw / 2, bl, bw, bw * .45); g.fill(); g.stroke();
-  g.fillStyle = 'rgba(255,255,255,.24)'; rr(g, 0, -bw * .32, bl * .72, bw * .17, bw * .08); g.fill();
-  g.fillStyle = '#4b5060'; rr(g, bl - bw * .9, -bw * .62, bw * .48, bw * 1.24, bw * .2); g.fill(); g.stroke();
-  if (st.glow > 0) {
-    g.fillStyle = `rgba(255,214,110,${.25 + st.glow * .5})`; circle(g, bl - bw * .3, 0, bw * (.4 + st.glow * .5)); g.fill();
-  }
-  g.fillStyle = '#7c8296'; circle(g, 0, 0, bw * .42); g.fill(); g.stroke();
+  g.fillStyle = 'rgba(80,60,40,.22)'; g.beginPath(); g.ellipse(R * .2, ry * .5, R * 1.05, ry * 1.05, 0, 0, TAU); g.fill();
+  const disc = (y) => {
+    g.fillStyle = team.dark; g.beginPath(); g.ellipse(0, y + ry * .32, R, ry, 0, 0, TAU); g.fill();
+    g.fillStyle = team.main; g.beginPath(); g.ellipse(0, y, R, ry, 0, 0, TAU); g.fill(); g.strokeStyle = team.dark; g.lineWidth = lw; g.stroke();
+  };
+  disc(0);
+  g.fillStyle = '#fffaf2'; g.beginPath(); g.ellipse(0, -hb * .42, R * .97, ry * .97, 0, 0, TAU); g.fill();
+  disc(-hb * .78);
+  g.fillStyle = 'rgba(255,255,255,.4)'; g.beginPath(); g.ellipse(-R * .32, -hb * .78 - ry * .32, R * .32, ry * .28, 0, 0, TAU); g.fill();
+  const ax = Math.cos(st.angle), ay = Math.sin(st.angle) * .55, len = Math.hypot(ax, ay), nx = -ay / len, ny = ax / len;
+  const rec = st.recoil * R * .3, ox = -ax * rec, oy = -hb - F.T * .06 - ay * rec, ex = ox + ax * bl, ey = oy + ay * bl;
+  const seg = (c, w) => { g.strokeStyle = c; g.lineWidth = w; g.lineCap = 'round'; g.beginPath(); g.moveTo(ox, oy); g.lineTo(ex, ey); g.stroke(); };
+  seg('#8a5a3c', bw + lw * 2); seg('#f2c27a', bw);
+  g.strokeStyle = '#d4904a'; g.lineWidth = bw * .16;
+  for (let k = 1; k <= 4; k++) { const t = k / 5, px = ox + (ex - ox) * t, py = oy + (ey - oy) * t; g.beginPath(); g.moveTo(px - nx * bw * .42 - ax * bw * .12, py - ny * bw * .42 - ay * bw * .12); g.lineTo(px + nx * bw * .42 + ax * bw * .12, py + ny * bw * .42 + ay * bw * .12); g.stroke(); }
+  g.strokeStyle = 'rgba(255,255,255,.45)'; g.lineWidth = bw * .18; g.beginPath(); g.moveTo(ox + nx * bw * .22, oy + ny * bw * .22); g.lineTo(ex + nx * bw * .22, ey + ny * bw * .22); g.stroke();
+  circle(g, ex, ey, bw * .5); g.fillStyle = '#fffaf2'; g.fill(); g.strokeStyle = '#8a5a3c'; g.lineWidth = lw; g.stroke();
+  circle(g, ex, ey, bw * .3); g.fillStyle = '#5a3420'; g.fill();
+  if (st.glow > 0) { circle(g, ex, ey, bw * (.4 + st.glow * .5)); g.fillStyle = `rgba(255,214,110,${.25 + st.glow * .5})`; g.fill(); }
+  circle(g, 0, -hb - F.T * .06, bw * .42); g.fillStyle = '#e8344a'; g.fill(); g.strokeStyle = '#a82434'; g.lineWidth = lw; g.stroke();
   g.restore();
 }
 
