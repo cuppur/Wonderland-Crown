@@ -152,8 +152,8 @@ function roadMask(F, width, color, dpr) {
   gb.globalCompositeOperation = 'source-in'; gb.fillStyle = color; gb.fillRect(0, 0, W, H);
   return b;
 }
-function drawRoads(g, F, rnd) {
-  const { road: rw, S0, cx, cy } = F, dpr = typeof g.getTransform==='function'?g.getTransform().a:1;
+function drawRoads(g, F, rnd, dpr = 1) {
+  const { road: rw, S0, cx, cy } = F;
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
   { const lip = roadMask(F, F.road + 8 * S0, 'rgba(120,88,48,.20)', dpr); g.save(); g.setTransform(1, 0, 0, 1, Math.round(3 * S0 * dpr), Math.round(4 * S0 * dpr)); g.drawImage(lip, 0, 0); g.restore();releaseCanvas(lip); }
   for (const layer of roadLayers(F)) {
@@ -209,7 +209,8 @@ function drawTree(g, x, y, r, rnd, S0, kind) {
   g.fillStyle = 'rgba(52,96,44,.25)'; g.beginPath(); g.ellipse(x + r * .3, y + r * .08, r * .95, r * .34, 0, 0, TAU); g.fill();
   if (kind === 'mush') {
     g.fillStyle = '#fff4e2'; g.strokeStyle = '#a07a5a'; g.lineWidth = lw; rr(g, x - r * .22, y - r * .6, r * .44, r * .62, r * .18); g.fill(); g.stroke();
-    g.fillStyle = '#ff6b7a'; g.strokeStyle = '#a83a4a'; g.beginPath(); g.ellipse(x, y - r * .58, r * .62, r * .46, 0, Math.PI, 0); g.closePath(); g.fill(); g.stroke();
+    const cap = ['#f78091', '#b69de6', '#ffc776'][Math.floor(rnd()*3)];
+    g.fillStyle = cap; g.strokeStyle = '#a07576'; g.beginPath(); g.ellipse(x, y - r * .58, r * .62, r * .46, 0, Math.PI, 0); g.closePath(); g.fill(); g.stroke();
     g.fillStyle = '#fffaf2'; for (const [dx, dy, dr] of [[-.3, -.75, .1], [.12, -.88, .12], [.36, -.68, .08]]) { circle(g, x + dx * r, y + dy * r, dr * r); g.fill(); }
     return;
   }
@@ -228,6 +229,23 @@ function drawTree(g, x, y, r, rnd, S0, kind) {
   for (const [dx, dy, pr] of leaves) { circle(g, x + dx * r, y + dy * r, pr * r); g.fillStyle = '#62ad4c'; g.fill(); }
   for (const [dx, dy, pr] of leaves) { circle(g, x + (dx - .14) * r, y + (dy - .14) * r, pr * r * .45); g.fillStyle = '#8fd06a'; g.fill(); }
   g.fillStyle = '#ff6b7a'; for (let k = 0; k < 3; k++) { circle(g, x + (rnd() - .5) * r, y - r * (1.1 + rnd() * .5), r * .07); g.fill(); }
+}
+function drawMeadowCloud(g, r, S0, rnd) {
+  g.fillStyle='rgba(74,131,67,.14)';g.beginPath();g.ellipse(r*.08,r*.08,r*.95,r*.25,0,0,TAU);g.fill();
+  const puffs=[[-.58,-.38,.43],[0,-.65,.57],[.59,-.36,.42],[.05,-.25,.62]],lw=Math.max(.65,S0);
+  const color=rnd()<.5?'#f5fbff':'#fff4fa';
+  for(const [x,y,size] of puffs){circle(g,x*r,y*r,size*r+lw);g.fillStyle='#aac3cd';g.fill();}
+  for(const [x,y,size] of puffs){circle(g,x*r,y*r,size*r);g.fillStyle=color;g.fill();}
+  g.fillStyle='#ffffff';g.beginPath();g.ellipse(-r*.14,-r*.78,r*.28,r*.13,-.25,0,TAU);g.fill();
+}
+function drawMeadowFlowers(g, r, S0, rnd) {
+  const colors=['#fff7e4','#ffaeca','#d5b8f3','#ffe28d'];
+  for(let i=0;i<3;i++){
+    const x=(i-1)*r*.7,y=-r*(.45+rnd()*.55),size=r*(.32+rnd()*.08);
+    g.strokeStyle='#73a452';g.lineWidth=Math.max(.6,S0);g.beginPath();g.moveTo(x,r*.12);g.quadraticCurveTo(x-r*.14,y*.5,x,y);g.stroke();
+    drawFlower(g,x,y,size,colors[Math.floor(rnd()*colors.length)],rnd);
+  }
+  drawBlades(g,0,r*.1,r*.45,S0,'#78b05a',rnd);
 }
 const CAKE_SQUASH = .4, CAKE_LINE = '#8a5a3c';
 function cream(g, x, y, r, S0) { circle(g, x, y, r); g.fillStyle = '#fffaf2'; g.fill(); g.strokeStyle = 'rgba(138,90,60,.4)'; g.lineWidth = Math.max(.8, S0); g.stroke(); }
@@ -256,11 +274,11 @@ function project(F,x,y) { const k=depth(F,y); return {x:F.cx+(x-F.cx)*k,y,k}; }
 function unproject(F,x,y) { return {x:F.cx+(x-F.cx)/depth(F,y),y}; }
 function atGround(g,F,x,y,paint) { const p=project(F,x,y); g.save();g.translate(p.x,p.y);g.scale(p.k,p.k);paint(p);g.restore(); }
 
-function drawGround(g,F) {
+function drawGround(g,F,dpr=1) {
   const {w,h,rw,S0}=F,rnd=rng(20261007);
   const flat=document.createElement('canvas'), pad=w*.26;
-  flat.width=Math.ceil(w+pad*2);flat.height=Math.ceil(h);
-  const a=flat.getContext('2d');a.translate(pad,0);
+  flat.width=Math.ceil((w+pad*2)*dpr);flat.height=Math.ceil(h*dpr);
+  const a=flat.getContext('2d');a.setTransform(dpr,0,0,dpr,pad*dpr,0);
   const base=a.createLinearGradient(0,0,0,h);base.addColorStop(0,'#bce694');base.addColorStop(1,'#99cf75');
   a.fillStyle=base;a.fillRect(-pad,0,w+pad*2,h);
   for(let i=0;i<28;i++){
@@ -269,19 +287,21 @@ function drawGround(g,F) {
     a.fillStyle=c;a.fillRect(x-r,y-r,r*2,r*2);
   }
   for(let i=0;i<w*h/1000;i++)drawBlades(a,rnd()*w,rnd()*h,(3+rnd()*5)*S0,S0,'rgba(83,147,65,.25)',rnd);
-  // Road masks are built at 1x once per resize, never in the animation loop.
-  const roads=document.createElement('canvas');roads.width=w;roads.height=h;
-  drawRoads(roads.getContext('2d'),F,rnd);a.drawImage(roads,0,0);releaseCanvas(roads);
+  // Use the same backing resolution throughout; never enlarge a 1x ground bitmap.
+  const roads=document.createElement('canvas');roads.width=Math.round(w*dpr);roads.height=Math.round(h*dpr);
+  const roadContext=roads.getContext('2d');roadContext.setTransform(dpr,0,0,dpr,0,0);
+  drawRoads(roadContext,F,rnd,dpr);a.drawImage(roads,0,0,w,h);releaseCanvas(roads);
   drawPlatforms(a,F);
   const flowers=['#fff5df','#ffccde','#e4d5ff','#ffe08e'];
-  for(let i=0;i<120;i++){
+  for(let i=0;i<180;i++){
     const x=rnd()*w,y=rnd()*h;if(!farFromRoads(F,x,y,rw*.35))continue;
-    drawFlower(a,x,y,2.2*S0,flowers[i%4],rnd);
+    drawFlower(a,x,y,Math.max(1,2.8*S0),flowers[i%4],rnd);
   }
   // Row projection includes overscan so the ground fills the entire screen.
-  for(let y=0;y<h;y++){
-    const k=depth(F,y),left=F.cx+(-pad-F.cx)*k;
-    g.drawImage(flat,0,y,flat.width,1,left,y,flat.width*k,1);
+  g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
+  for(let row=0;row<flat.height;row++){
+    const y=row/dpr,k=depth(F,y+.5/dpr),left=F.cx+(-pad-F.cx)*k;
+    g.drawImage(flat,0,row,flat.width,1,left,y,flat.width*k/dpr,1/dpr);
   }
   releaseCanvas(flat);
   // Tall decorations are projected at their feet and retain their silhouettes.
@@ -297,12 +317,19 @@ function drawGround(g,F) {
     }
   }
   const deco=[];
-  for(let i=0;i<220&&deco.length<18;i++){
-    const x=lerp(F.rs+rw*1.6,F.re-rw*1.6,rnd()),y=lerp(F.ys[0],F.ys[2]+rw,rnd());
-    if(!farFromRoads(F,x,y,rw*.9)||deco.some(d=>Math.hypot(d.x-x,d.y-y)<rw*1.4))continue;
-    deco.push({x,y});
+  for(let i=0;i<900&&deco.length<38;i++){
+    const kind=i%3===0?'mush':i%3===1?'cloud':'flowers',r=rw*(kind==='flowers'?.26:.34);
+    const x=lerp(F.rs+rw*1.3,F.re-rw*1.3,rnd()),y=lerp(F.ys[0]-rw*.2,F.ys[2]+rw*.7,rnd());
+    // Keep the whole silhouette off the roads and leave room between clusters.
+    const gap=r*1.25+rw*.16;
+    if(!farFromRoads(F,x,y,gap)||!farFromRoads(F,x,y-r*1.2,gap)||deco.some(d=>Math.hypot(d.x-x,d.y-y)<rw*1.15))continue;
+    deco.push({x,y,r,kind});
   }
-  deco.sort((a,b)=>a.y-b.y).forEach(d=>paintTree(d.x,d.y,rw*.38,rnd()<.6?'mush':'cotton'));
+  deco.sort((a,b)=>a.y-b.y).forEach(d=>atGround(g,F,d.x,d.y,()=>{
+    if(d.kind==='cloud')drawMeadowCloud(g,d.r,S0,rnd);
+    else if(d.kind==='flowers')drawMeadowFlowers(g,d.r,S0,rnd);
+    else drawTree(g,0,0,d.r,rnd,S0,'mush');
+  }));
   if(F.mode==='straight'){
     // Two pairs of candy milestones between lanes, with clear grass buffers.
     for(const t of [1/3,2/3])for(const y of [(F.ys[0]+F.cy)/2,(F.cy+F.ys[2])/2]){
@@ -314,7 +341,7 @@ function drawGround(g,F) {
     }
   }
 }
-function background(F,dpr=1){const c=document.createElement('canvas');c.width=Math.round(F.w*dpr);c.height=Math.round(F.h*dpr);const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);drawGround(g,F);return c;}
+function background(F,dpr=1){const c=document.createElement('canvas');c.width=Math.round(F.w*dpr);c.height=Math.round(F.h*dpr);const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);drawGround(g,F,dpr);return c;}
 
 // A side-view gingerbread portal on the inner facade. Its baseline is the path's y.
 function gingerGate(g,F,x,base,w,h,team){

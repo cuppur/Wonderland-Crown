@@ -116,7 +116,10 @@ try:
                 cream = battlefield_pixels(png)
                 pool = page.evaluate("()=>({live:__MOBILE_CANVASES__.filter(c=>c.width&&c.height).length,pixels:__MOBILE_CANVASES__.reduce((n,c)=>n+c.width*c.height,0),main:gameCanvas.width*gameCanvas.height})")
                 assert pool["live"] == 3 and pool["pixels"] <= pool["main"] * 3, pool
-                record = {"browser": name, "map": mode, "creamPixels": cream, "canvasPool": pool, "timerContinues": True}
+                backing = page.evaluate("()=>({dpr:gameCanvas.width/__QJWG_TEST__.snapshot().scene.width,pixels:gameCanvas.width*gameCanvas.height})")
+                if name != "desktop":
+                    assert 2 <= backing["dpr"] <= 2.51 and backing["pixels"] <= 2205000, backing
+                record = {"browser": name, "map": mode, "creamPixels": cream, "canvasPool": pool, "backing": backing, "timerContinues": True}
                 report["cases"].append(record)
                 report["checks"].append(name + ":" + mode)
                 print(f"[PASS] {name}/{mode}: visible roads/castles, clock, deployment, transient-size recovery, bounded canvas surfaces", flush=True)

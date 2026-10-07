@@ -94,7 +94,7 @@
   </div>
   <div id="mobileGate" aria-live="polite"><div class="mobile-gate-card"><strong>请旋转手机至横屏体验</strong><p>横屏后可完整显示三路战场和触控卡牌。</p><button id="mobileEnterBtn" type="button">进入横屏模式</button></div></div>
 </div>
-<script src="./js/candy-field.js?v=20261007-mobile2"></script>
+<script src="./js/candy-field.js?v=20261007-hd1"></script>
 <script>
 (() => {
 'use strict';
@@ -102,7 +102,8 @@ let W=1280,H=720;
 const MOBILE_INFO={android:/Android/i.test(navigator.userAgent),ios:/iPhone|iPad|iPod/i.test(navigator.userAgent),coarse:matchMedia('(pointer:coarse)').matches,narrow:Math.min(screen.width,screen.height)<=600,handsetViewport:Math.min(innerWidth,innerHeight)<=430&&Math.max(innerWidth,innerHeight)<=950};
 const mobilePerformanceMode=MOBILE_INFO.android||MOBILE_INFO.ios||(MOBILE_INFO.coarse&&MOBILE_INFO.narrow)||MOBILE_INFO.handsetViewport;
 document.documentElement.classList.toggle('mobile-device',mobilePerformanceMode);
-const renderDpr=()=>Math.min(mobilePerformanceMode?1.25:2,window.devicePixelRatio||1);
+// Crisp mobile rendering with a bounded total pixel budget.
+const renderDpr=()=>Math.max(1,Math.min(mobilePerformanceMode?2.5:2,window.devicePixelRatio||1,Math.sqrt((mobilePerformanceMode?2200000:8000000)/Math.max(1,W*H))));
 const canvas=document.getElementById('gameCanvas');let ctx=canvas.getContext('2d');
 const shell=document.getElementById('game-shell');
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];

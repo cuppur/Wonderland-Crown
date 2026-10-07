@@ -90,9 +90,12 @@ try:
                 assert float(game.locator('[data-type="snake"] .cool-label').inner_text()) > 0
                 png = page.screenshot(path=str(OUT / f'{name}-{mode}.png'))
                 cream = visible_field(png)
+                backing = frame.evaluate("()=>{const c=document.getElementById('gameCanvas');return {dpr:c.width/c.clientWidth,pixels:c.width*c.height};}")
+                if name != 'desktop':
+                    assert 2 <= backing['dpr'] <= 2.51 and backing['pixels'] <= 2205000, backing
                 game.locator('#menuBtn').click()
                 assert game.locator('#topButtons').is_visible()
-                report['checks'].append({'browser':name,'map':mode,'creamPixels':cream,'timerContinues':True,'deployment':True})
+                report['checks'].append({'browser':name,'map':mode,'creamPixels':cream,'backing':backing,'timerContinues':True,'deployment':True})
                 print(f'[PASS] published {name}/{mode}: battlefield pixels, timer, deployment, transition recovery and menu', flush=True)
                 page.close()
                 for key in events:
