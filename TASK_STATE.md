@@ -1,4 +1,15 @@
-# UI 手机战场修复 — 当前恢复点（2026-10-07）
+# 安卓手机战场与模型指令清理完成 — 当前恢复点（2026-10-07）
+
+- UI / EVA 两分支的手机绘制修复已完成并本地提交；普通版公网已更新：https://qijing-wangguan.lovable.app 。重新打开网站加载 20261007-mobile2 版本。
+- 发布运行文件来自 UI 8867525；Lovable 内容提交 864513569af54e5ac257e47dbc5aa2a80fdb23ad，部署 ID 55692960-f287-48ac-a658-6df6d2026b72。三个替换文件经 Lovable 源码读取核对，公网八个运行文件与 UI Git blob 逐字节相同。
+- 公网 Playwright 桌面 1920×1080、安卓 UA/触屏/高 DPR、原生 WebKit 触屏 × 双地图共六场景通过：道路/城堡像素、计时、出兵、1×1 暂态尺寸恢复、菜单均正常。已加载游戏的 pageerror / console error / 资源 HTTP 失败为 0；一次初始网络超时重试成功，单独记录于报告，不计作渲染异常。
+- 公网报告 output/playwright/published-mobile/report.json，截图在同目录；复验 python tests/playtest_published_mobile.py，开发网络需要代理时可附加 --proxy。独立下载校验 output/playwright/published-resources/report.json 也确认八文件相同。
+- 本地两分支各十个手机专项场景、UI 普通回归十六项、EVA 快速三十二项与原规则七十六组对照通过；静态七组通过，单位属性表未修改。测试使用浏览器模拟安卓触屏，未直接操作用户手机。
+- EVA 模型仅得到 deploy（动物+兵线）、usePotion（动物）、useBurst（兵线）三条动作及空 commands 等待攒币示例；提示词、Observation 与 Memory 均不再提供已移除的操控方式。已有动物继续按原规则自动行军交战；可有钱也连续等待，再同批药水+出兵+炮阵。
+- 任务完成；两个分支最终本地提交见 git log，下方为历史阶段记录。已打开的 EVA 页面需刷新并新开局加载新提示词。
+
+---
+# UI 手机战场修复 — 阶段恢复点（2026-10-07）
 
 - 用户反馈安卓手机网站入局后只有 HUD/卡牌，要求模型只选择动物、兵线、药水、炮阵，并允许空指令攒金币。
 - 复现全屏/横竖屏过渡容器 1×1：道路半径为负，Canvas ellipse 报错后 RAF 停止。resize 对小于 160×120 的暂态尺寸保留原战场，恢复有效布局后继续同步坐标。

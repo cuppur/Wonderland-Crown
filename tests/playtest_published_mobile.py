@@ -11,10 +11,33 @@ from playwright.sync_api import sync_playwright
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--url', default='https://qijing-wangguan.lovable.app')
+parser.add_argument('--proxy', help='Optional HTTP proxy for the development network')
 args = parser.parse_args()
+network = {'proxy': {'server': args.proxy}} if args.proxy else {}
 OUT = Path(__file__).resolve().parents[1] / 'output/playwright/published-mobile'
 OUT.mkdir(parents=True, exist_ok=True)
-report = {'url': args.url, 'checks': [], 'pageErrors': [], 'consoleErrors': [], 'badResources': []}
+report = {'url': args.url, 'checks': [], 'pageErrors': [], 'consoleErrors': [], 'badResources': [], 'navigationRetries': []}
+
+
+def open_page(context):
+    # Keep transient transport failures separate from errors in a loaded game.
+    for attempt in range(3):
+        page = context.new_page()
+        events = {'pageErrors': [], 'consoleErrors': [], 'badResources': []}
+        page.on('pageerror', lambda e, events=events: events['pageErrors'].append(str(e)))
+        page.on('console', lambda m, events=events: events['consoleErrors'].append(m.text) if m.type == 'error' else None)
+        page.on('response', lambda r, events=events: events['badResources'].append({'url':r.url,'status':r.status}) if '/game/' in r.url and r.status >= 400 else None)
+        try:
+            page.goto(args.url, wait_until='domcontentloaded', timeout=60000)
+            return page, events
+        except Exception as error:
+            if 'net::ERR_TIMED_OUT' not in str(error) or attempt == 2:
+                for key in events:
+                    report[key].extend(events[key])
+                raise
+            report['navigationRetries'].append({'attempt': attempt+1, 'error': str(error), 'events': events})
+            print('[RETRY] public navigation timed out before the game loaded', flush=True)
+            page.close()
 
 
 def visible_field(png):
@@ -37,14 +60,10 @@ try:
         for name, engine, options in scenarios:
             if name == 'android-touch':
                 options['user_agent'] = 'Mozilla/5.0 (Linux; Android 12; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36'
-            browser = engine.launch(headless=True)
+            browser = engine.launch(headless=True, **network)
             context = browser.new_context(**options)
             for mode in ['cross', 'straight']:
-                page = context.new_page()
-                page.on('pageerror', lambda e: report['pageErrors'].append(str(e)))
-                page.on('console', lambda m: report['consoleErrors'].append(m.text) if m.type == 'error' else None)
-                page.on('response', lambda r: report['badResources'].append({'url':r.url,'status':r.status}) if '/game/' in r.url and r.status >= 400 else None)
-                page.goto(args.url, wait_until='load', timeout=60000)
+                page, events = open_page(context)
                 game = page.frame_locator('iframe[title="奇境王冠"]')
                 game.locator('#startBtn').wait_for(timeout=60000)
                 frame = next(f for f in page.frames if '/game/index.html' in f.url)
@@ -59,11 +78,15 @@ try:
                 frame.evaluate("()=>{const s=document.getElementById('game-shell');s.style.width='1px';s.style.height='1px';dispatchEvent(new Event('resize'));}")
                 page.wait_for_timeout(100)
                 frame.evaluate("()=>{const s=document.getElementById('game-shell');s.style.removeProperty('width');s.style.removeProperty('height');dispatchEvent(new Event('resize'));}")
-                page.wait_for_timeout(1500)
+                # Canvas-heavy WebKit can need more than 1.5 wall-clock seconds
+                # to advance a displayed whole second (the game caps each dt).
+                frame.wait_for_function("previous=>document.getElementById('timer').textContent!==previous", arg=timer, timeout=10000)
                 assert game.locator('#timer').inner_text() != timer
                 game.locator('[data-type="snake"]').click()
                 point = frame.evaluate("()=>{const f=CandyField.buildGeometry(innerWidth,innerHeight,'"+mode+"'),p=f.paths[1].at(.75);return CandyField.project(f,p.x,p.y);}")
                 game.locator('#gameCanvas').click(position={'x':point['x'],'y':point['y']})
+                # The public UI refreshes the cooldown on the next animation frame.
+                frame.wait_for_function("Number(document.querySelector('[data-type=\"snake\"] .cool-label').textContent)>0", timeout=5000)
                 assert float(game.locator('[data-type="snake"] .cool-label').inner_text()) > 0
                 png = page.screenshot(path=str(OUT / f'{name}-{mode}.png'))
                 cream = visible_field(png)
@@ -72,8 +95,11 @@ try:
                 report['checks'].append({'browser':name,'map':mode,'creamPixels':cream,'timerContinues':True,'deployment':True})
                 print(f'[PASS] published {name}/{mode}: battlefield pixels, timer, deployment, transition recovery and menu', flush=True)
                 page.close()
+                for key in events:
+                    report[key].extend(events[key])
             browser.close()
-        with p.request.new_context() as request:
+        request = p.request.new_context(**network)
+        try:
             report['resources'] = []
             for name in ['index.html','css/style.css','js/candy-field.js','assets/data/resource-manifest.json','assets/images/poison-status-icon-v1.png','assets/audio/BGM.ogg','assets/audio/cannon1.mp3','assets/audio/explosions.mp3']:
                 response = request.get(args.url.rstrip('/')+'/game/'+name, timeout=60000)
@@ -82,6 +108,8 @@ try:
                 report['resources'].append({'path':name,'http':response.status,'matchesUI':matches})
                 assert matches, name+' does not match UI source'
                 print('[PASS] published source matches UI: '+name, flush=True)
+        finally:
+            request.dispose()
         assert not report['pageErrors'] and not report['consoleErrors'] and not report['badResources'], report
         report['passed'] = True
         print('[PASS] six public browser/map scenarios; no uncaught errors or failed game resources', flush=True)
