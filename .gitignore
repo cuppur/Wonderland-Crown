@@ -47,3 +47,6 @@ Desktop.ini
 # Agent working memory and slide build artifacts (not part of the game)
 .workbuddy/
 pptx_build/
+
+# Reproducible Playwright screenshots and local reports
+output/playwright/

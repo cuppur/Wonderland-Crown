@@ -29,6 +29,24 @@
       "sha256": "DFD25DCB326B8F5057227226566E0F3F8187B45EAA561A98A956AE0DF91F8770",
       "source_reference_count": 1,
       "embedded_in_html": false
+    },
+    {
+      "type": "image",
+      "source": "assets/images/poison-status-icon-v1.png",
+      "publicPath": "assets/images/poison-status-icon-v1.png",
+      "bytes": 714347,
+      "sha256": "C99582EDBEC5D2A64581ACF05BE8DC38255EBBB89ABD407C78EBBBACD22CE21C",
+      "source_reference_count": 1,
+      "embedded_in_html": false
+    },
+    {
+      "type": "script",
+      "source": "js/candy-field.js",
+      "publicPath": "js/candy-field.js",
+      "bytes": 29099,
+      "sha256": "6439F61DFBDABE7E21811AA859D40D48D5C058965349D638091DC71D17274B07",
+      "source_reference_count": 1,
+      "embedded_in_html": false
     }
   ],
   "fonts": [
