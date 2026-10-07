@@ -47,6 +47,15 @@
       "sha256": "4BD38C6EDA445FAE3D686F1DBCDAC73C4BA42A611E462196042C064586110368",
       "source_reference_count": 1,
       "embedded_in_html": false
+    },
+    {
+      "type": "script",
+      "source": "js/ordinary-ai.js",
+      "publicPath": "js/ordinary-ai.js",
+      "bytes": 9151,
+      "sha256": "6471B28C4573DD3C67CF83A222690744FF6DBD7EB3C6E9121CEE38DD0C88E413",
+      "source_reference_count": 1,
+      "embedded_in_html": false
     }
   ],
   "fonts": [

@@ -78,8 +78,7 @@ try:
                 frame.evaluate("()=>{const s=document.getElementById('game-shell');s.style.width='1px';s.style.height='1px';dispatchEvent(new Event('resize'));}")
                 page.wait_for_timeout(100)
                 frame.evaluate("()=>{const s=document.getElementById('game-shell');s.style.removeProperty('width');s.style.removeProperty('height');dispatchEvent(new Event('resize'));}")
-                # Canvas-heavy WebKit can need more than 1.5 wall-clock seconds
-                # to advance a displayed whole second (the game caps each dt).
+                # Allow the first render and transient fullscreen resize to finish.
                 frame.wait_for_function("previous=>document.getElementById('timer').textContent!==previous", arg=timer, timeout=10000)
                 assert game.locator('#timer').inner_text() != timer
                 game.locator('[data-type="snake"]').click()
@@ -104,7 +103,7 @@ try:
         request = p.request.new_context(**network)
         try:
             report['resources'] = []
-            for name in ['index.html','css/style.css','js/candy-field.js','assets/data/resource-manifest.json','assets/images/poison-status-icon-v1.png','assets/audio/BGM.ogg','assets/audio/cannon1.mp3','assets/audio/explosions.mp3']:
+            for name in ['index.html','css/style.css','js/candy-field.js','js/ordinary-ai.js','assets/data/resource-manifest.json','assets/images/poison-status-icon-v1.png','assets/audio/BGM.ogg','assets/audio/cannon1.mp3','assets/audio/explosions.mp3']:
                 response = request.get(args.url.rstrip('/')+'/game/'+name, timeout=60000)
                 expected = subprocess.run(['git','show','UI:'+name], check=True, capture_output=True).stdout
                 matches = response.status == 200 and hashlib.sha256(response.body()).digest() == hashlib.sha256(expected).digest()

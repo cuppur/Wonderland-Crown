@@ -58,6 +58,12 @@ try:
   result=page.evaluate("""()=>{const g=__rules.game;g.start();g.setPause('manual',true);__rules.showReport();__rules.closeReport();const manual=g.state;g.setPause('manual',false);__rules.showReport();g.setPause('portrait',true);__rules.closeReport();const portrait=g.state;g.setPause('portrait',false);return {manual,portrait,restored:g.state}}""")
   assert result=={'manual':'paused','portrait':'paused','restored':'playing'},result
   passed('报告关闭尊重手动暂停与竖屏暂停的独立原因')
+  result=page.evaluate("""()=>{const g=__rules.game;g.duration=1.005;g.start();for(let i=0;i<100;i++)g.update(1/60);return {elapsed:g.elapsed,coins:g.coins.player,state:g.state}}""")
+  assert result['state']=='ended' and abs(result['elapsed']-1.005)<1e-8 and abs(result['coins']-16.005)<1e-8,result
+  passed('非整帧结束时间与最后一帧金币完整结算')
+  result=page.evaluate("""()=>{const g=__rules.game,proto=Object.getPrototypeOf(g);g.updateUnits=proto.updateUnits;g.updateCannons=proto.updateCannons;g.updateProjectiles=proto.updateProjectiles;g.updateFx=proto.updateFx;g.duration=300;const out=[];for(const fps of [10,20,60]){g.start();const u=g.createUnit('player','snake',1,.1);u.hp=400;u.poisons=[{dps:2,t:.8}];g.units=[u];for(let i=0;i<fps;i++)g.update(1/fps);out.push({fps,t:u.t,hp:u.hp,poisons:u.poisons.length})}return out}""")
+  assert all(abs(r['t']-result[0]['t'])<1e-9 and abs(r['hp']-result[0]['hp'])<1e-9 and r['poisons']==0 for r in result),result
+  measurements['physics']=result;passed('低帧率的实际行军、回血、中毒结算与 60 FPS 一致')
   context.close();browser.close()
   browser=pw.webkit.launch(headless=True);context=browser.new_context(viewport={'width':844,'height':390},has_touch=True,is_mobile=True)
   page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)));page.route('**/index.html?test=1',lambda r:r.fulfill(status=200,content_type='text/html',body=html));page.goto(url);page.evaluate('__rules.game.start()')

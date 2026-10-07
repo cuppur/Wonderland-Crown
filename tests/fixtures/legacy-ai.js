@@ -1,0 +1,10 @@
+// Frozen ordinary AI from UI 0a3e81e, for controlled difficulty comparison.
+window.LegacyOrdinaryAI=(()=>{const {potion:POTION,burst:BURST,units:UNIT_DATA}=window.__ai.rules;return function(dt){this.aiClock-=dt;if(this.aiClock>0)return;this.aiClock=.75+Math.random()*1.1;
+  const enemyUnits=this.units.filter(u=>u.side==='enemy'&&!u.dead),playerUnits=this.units.filter(u=>u.side==='player'&&!u.dead);
+  if(!this.potionArmed.enemy&&this.tacticCool.enemy.potion<=0&&this.coins.enemy>=POTION.cost&&Math.random()<.3){const order=['dragon','elephant','lion','snake'];const choice=order.find(k=>this.cool.enemy[k]<=0);if(choice&&this.armPotion('enemy',choice))return;}
+  if(this.tacticCool.enemy.burst<=0&&this.coins.enemy>=BURST.cost){let lane=-1,score=0;for(let i=0;i<3;i++){const s=playerUnits.filter(u=>u.lane===i&&u.t>.47).reduce((z,u)=>z+u.hp/u.maxHp+(u.type==='elephant'?1:0),0);if(s>score){score=s;lane=i;}}if(lane>=0&&score>2.2){this.useBurst('enemy',lane);return;}}
+  const elapsed=this.elapsed;if(elapsed<3||elapsed-this.aiLastDeployAt<2)return;const affordable=Object.keys(UNIT_DATA).filter(k=>this.coins.enemy>=UNIT_DATA[k].cost&&this.cool.enemy[k]<=0);if(!affordable.length)return;
+  let lane=1,best=-1;for(let i=0;i<3;i++){const threat=playerUnits.filter(u=>u.lane===i).reduce((s,u)=>s+u.t*(u.hp/u.maxHp),0)+Math.random()*.3;if(threat>best){best=threat;lane=i;}}
+  const near=playerUnits.filter(u=>u.lane===lane&&u.t>.38);let type;if(this.potionArmed.enemy&&affordable.includes(this.potionArmed.enemy))type=this.potionArmed.enemy;else if(near.filter(u=>Math.abs(u.t-.65)<.18).length>=2&&affordable.includes('dragon'))type='dragon';else if(near.some(u=>u.type==='elephant')&&affordable.includes('dragon'))type='dragon';else if(near.some(u=>u.type==='dragon')&&affordable.includes('snake'))type='snake';else{const weighted=['lion','elephant','snake','lion','dragon'].filter(k=>affordable.includes(k));type=weighted[Math.floor(Math.random()*weighted.length)]||affordable[0];}
+  if(this.deploy('enemy',type,lane))this.aiLastDeployAt=elapsed;
+ };})();

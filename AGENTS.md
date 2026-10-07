@@ -16,6 +16,7 @@
 - 浏览器回归命令：`python tests/playtest_game.py`（需开发环境 Python Playwright；不属于游戏运行依赖）。截图/报告位于 `output/playwright/`。
 - 浏览器检查：用 Playwright 自带 headless Chromium，不要用本机 Edge/Chrome（会触发 IDM 弹窗）。检查 console、`window.__QJWG_TEST__.snapshot()` 和关键交互。
 - 手机专项：`python tests/playtest_mobile.py`（开发环境 Playwright Chromium/WebKit + Pillow）；检查实际战场像素、触屏/DPR、旋转与全屏暂态尺寸、旧 Canvas 接口以及离屏画布释放。只缩窗口尺寸不够。
+- 边界回归：`python tests/playtest_rules.py`；缓存回归：`python tests/playtest_cache.py`；备用启动器：`python tests/verify_launcher.py`；普通困难 AI：`python tests/playtest_ai.py`（包含旧 AI 对照实战）。
 - 测试探针 `window.__QJWG_TEST__` 与隐藏的 `#qjwgTestProbe` 只在 localhost 且 URL 含 `test` 时启用。
 
 ## 3. 目录结构
@@ -24,6 +25,7 @@
 奇境王冠/
 ├─ index.html                 # 正式入口：页面结构 + 战斗/音频/交互 JavaScript
 ├─ css/style.css              # 一套 rem 尺度的正式 HUD/弹窗样式
+├─ js/ordinary-ai.js          # 普通模式困难指挥策略，仅使用正常出兵/药水/炮阵
 ├─ js/candy-field.js           # 预览/正式共用的 2.5D 几何、投影、地面、宫殿、糖果炮
 ├─ assets/
 │  ├─ images/                 # 中毒状态图标（地面/建筑使用程序绘制）
@@ -41,6 +43,7 @@
 
 - 常量与数值：`UNIT_DATA`、`BUFFS`、`POTION`、`BURST`、`GUARD_CANNON`、`FX_TIMING`、`FIELD`、`CASTLE_GEOMETRY`（数值只在 index.html 内维护）。
 - 地图与路径：`Path` 类、`Game.buildPaths()`、`CandyField.buildGeometry()`；两种模式“三路战线”和“交汇战线”。
+- 普通 AI：`OrdinaryCommander`（js/ordinary-ai.js），策略与验证见 ORDINARY_AI.md；EVA 模型决策另行处理。
 - 战斗：`Game` 类（部署、单位更新、攻击、城墙、炮台、AI、渲染）。
 - 卡牌与拖拽：`.card` DOM、`queueDrag()`、`beginDrag()`、`finishDrag()`。
 - 技能：魔力药水（拖到卡牌，强化下一只）、爆裂炮阵（选一路连续 10 炮）。
@@ -53,7 +56,8 @@
 - 单位基础数值不改；移速/射程按各路线 `length/1070` 换算。窗口缩放保留 t/血量/冷却，并同步炮弹位置/拖尾/速度。
 - 守门炮的射程与优先级以基地地面中心计算，绘制炮台坐在中路塔顶；两个位置分别使用，不能让塔顶高度影响上下路防守范围。
 - `CandyField.muzzle()` 是唯一可见炮口计算，Game 转为地面坐标用于炮弹/FX；含转向、0.55 纵向压扁和后坐。不要在发射/绘制中各写一套偏移。
-- 背景（包括模糊道路蒙版）只在尺寸/模式变化时缓存；宫殿按血量百分位缓存，炮台/Emoji/特效实时绘制。手机 DPR ≤2.5，同时按 220 万像素预算限制；道路/草地缓存与主画布保持同一 DPR，投影逐物理像素行绘制。
+- 背景（包括模糊道路蒙版）只在尺寸/模式变化时缓存；宫殿按血量百分位在包围区域内缓存，炮台/Emoji/特效实时绘制。同尺寸/地图/DPR 重开复用背景与完好宫殿。手机 DPR ≤2.5，同时按 220 万像素预算限制；道路/草地缓存与主画布保持同一 DPR，投影逐物理像素行绘制。
+- 战斗按 1/60 秒固定小步累计推进；竖屏、页面隐藏和手动暂停分别记录原因。炮阵延迟伤害在 battleEvents 中，不能被视觉特效裁剪。
 - HUD 统一 rem 基准；原版饱和渐变卡牌外观保留。系统按钮在菜单内，版本仅首页。发布静态文件须同时保留 `index.html`、`css/`、`js/`、`assets/`。
 
 ## 5. UI 长期设计要求

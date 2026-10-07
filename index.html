@@ -94,7 +94,8 @@
   </div>
   <div id="mobileGate" aria-live="polite"><div class="mobile-gate-card"><strong>请旋转手机至横屏体验</strong><p>横屏后可完整显示三路战场和触控卡牌。</p><button id="mobileEnterBtn" type="button">进入横屏模式</button></div></div>
 </div>
-<script src="./js/candy-field.js?v=20261007-hd1"></script>
+<script src="./js/candy-field.js?v=20261007-hard1"></script>
+<script src="./js/ordinary-ai.js?v=20261007-hard1"></script>
 <script>
 (() => {
 'use strict';
@@ -208,7 +209,7 @@ class Game{
  resetTowers(){this.towers={player:this.newTower('player'),enemy:this.newTower('enemy')};}
  newTower(side){return{kind:'tower',side,hp:10000,maxHp:10000,x:side==='player'?FIELD.towerLeft:FIELD.towerRight,y:FIELD.centerY,angle:side==='player'?0:Math.PI,range:this.field.L*(1170/1070)*GUARD_CANNON.rangeFactor,damage:GUARD_CANNON.damage,shotClock:0,windup:0,targetId:null,hitFlash:0,shake:0,recoil:0};}
   start(){
-   audio.stopGame();this.state='playing';this.timeLeft=this.duration;this.elapsed=0;this.accumulator=0;this.last=0;this.pauseReasons.clear();this.units=[];this.projectiles=[];this.fx=[];this.battleEvents=[];this.texts=[];this.spawnHistory=[];this.nextId=1;this.cannonLaunches=0;this.cannonLaunchesBySide={player:0,enemy:0};this.lastCannonShot=null;this.burstUses=0;this.coins={player:15,enemy:15};this.potionArmed={player:null,enemy:null};this.cool={player:{snake:0,lion:0,elephant:0,dragon:0},enemy:{snake:0,lion:0,elephant:0,dragon:0}};this.tacticCool={player:{potion:0,burst:0},enemy:{potion:0,burst:0}};this.aiClock=1.2;this.aiLastDeployAt=-Infinity;this.selected=null;this.buildPaths();this.resetTowers();this.updateHUD();hideAllOverlays();updateSystemButtons();this.hint('拖拽卡牌到任意道路位置部署；药水拖到卡牌强化下一只');audio.start(true);syncEnvironmentPause();
+   audio.stopGame();this.state='playing';this.timeLeft=this.duration;this.elapsed=0;this.accumulator=0;this.last=0;this.pauseReasons.clear();this.units=[];this.projectiles=[];this.fx=[];this.battleEvents=[];this.texts=[];this.spawnHistory=[];this.nextId=1;this.cannonLaunches=0;this.cannonLaunchesBySide={player:0,enemy:0};this.lastCannonShot=null;this.burstUses=0;this.coins={player:15,enemy:15};this.potionArmed={player:null,enemy:null};this.cool={player:{snake:0,lion:0,elephant:0,dragon:0},enemy:{snake:0,lion:0,elephant:0,dragon:0}};this.tacticCool={player:{potion:0,burst:0},enemy:{potion:0,burst:0}};this.aiClock=1.2;this.aiLastDeployAt=-Infinity;this.aiCommander=null;this.selected=null;this.buildPaths();this.resetTowers();this.updateHUD();hideAllOverlays();updateSystemButtons();this.hint('拖拽卡牌到任意道路位置部署；药水拖到卡牌强化下一只');audio.start(true);syncEnvironmentPause();
  }
  end(reason='时间结束'){
   if(this.state!=='playing')return;this.state='ended';cleanupDrag();this.battleEvents=[];this.fx=this.fx.filter(f=>f.kind!=='burstPending');this.accumulator=0;this.pauseReasons.clear();let win;if(this.towers.enemy.hp<=0&&this.towers.player.hp<=0)win='draw';else if(this.towers.enemy.hp<=0)win='player';else if(this.towers.player.hp<=0)win='enemy';else if(this.towers.player.hp===this.towers.enemy.hp)win='draw';else win=this.towers.player.hp>this.towers.enemy.hp?'player':'enemy';
@@ -234,9 +235,10 @@ class Game{
  }
  nearestLanePoint(p){let best={i:0,t:0,d:Infinity};for(let i=0;i<this.paths.length;i++){const n=this.paths[i].nearestT(p);if(n.d<best.d)best={i,t:n.t,d:n.d};}return best;}
  nearestLane(p){return this.nearestLanePoint(p).i;}
- setPause(reason,active){
+ setPause(reason,active){this.setPauses({[reason]:active});}
+ setPauses(changes){
   if(!['playing','paused'].includes(this.state))return;
-  if(active)this.pauseReasons.add(reason);else this.pauseReasons.delete(reason);
+  for(const [reason,active] of Object.entries(changes)){if(active)this.pauseReasons.add(reason);else this.pauseReasons.delete(reason);}
   const next=this.pauseReasons.size?'paused':'playing';
   if(next!==this.state){this.state=next;this.accumulator=0;this.last=0;if(next==='paused'){cleanupDrag();audio.pauseGame();}else audio.resumeGame();}
   updateSystemButtons();
@@ -249,8 +251,9 @@ class Game{
   this.accumulator+=dt;const step=1/60;
   while(this.accumulator+1e-9>=step&&this.state==='playing'){this.accumulator=Math.max(0,this.accumulator-step);this.simulate(step);}
  }
- simulate(dt){if(this.state!=='playing')return;this.elapsed+=dt;if(Number.isFinite(this.duration)){this.timeLeft-=dt;if(this.timeLeft<=0){this.timeLeft=0;this.end('时间结束');return;}}
+ simulate(dt){if(this.state!=='playing')return;if(Number.isFinite(this.duration))dt=Math.min(dt,Math.max(0,this.timeLeft));this.elapsed+=dt;if(Number.isFinite(this.duration))this.timeLeft=Math.max(0,this.timeLeft-dt);
   this.coins.player+=1*dt;this.coins.enemy+=1*dt;
+  if(Number.isFinite(this.duration)&&this.timeLeft<=1e-9){this.timeLeft=0;this.end('时间结束');return;}
   for(const side of ['player','enemy']){for(const k in this.cool[side])this.cool[side][k]=Math.max(0,this.cool[side][k]-dt);for(const k in this.tacticCool[side])this.tacticCool[side][k]=Math.max(0,this.tacticCool[side][k]-dt);}
   this.updateUnits(dt);this.updateCannons(dt);this.updateProjectiles(dt);this.updateBattleEvents(dt);this.updateFx(dt);this.updateAI(dt);this.updateHUD();
   const low=Math.min(this.towers.player.hp/this.towers.player.maxHp,this.towers.enemy.hp/this.towers.enemy.maxHp),time=Number.isFinite(this.duration)?1-this.timeLeft/this.duration:0;this.intensity=clamp((1-low)*.65+time*.45,0,1);
@@ -306,15 +309,8 @@ class Game{
  }
  updateFx(dt){for(const f of this.fx)f.t-=dt;this.fx=this.fx.filter(f=>f.t>0);for(const t of this.texts)t.t-=dt;this.texts=this.texts.filter(t=>t.t>0);}
 
- updateAI(dt){this.aiClock-=dt;if(this.aiClock>0)return;this.aiClock=.75+Math.random()*1.1;
-  const enemyUnits=this.units.filter(u=>u.side==='enemy'&&!u.dead),playerUnits=this.units.filter(u=>u.side==='player'&&!u.dead);
-  if(!this.potionArmed.enemy&&this.tacticCool.enemy.potion<=0&&this.coins.enemy>=POTION.cost&&Math.random()<.3){const order=['dragon','elephant','lion','snake'];const choice=order.find(k=>this.cool.enemy[k]<=0);if(choice&&this.armPotion('enemy',choice))return;}
-  if(this.tacticCool.enemy.burst<=0&&this.coins.enemy>=BURST.cost){let lane=-1,score=0;for(let i=0;i<3;i++){const s=playerUnits.filter(u=>u.lane===i&&u.t>.47).reduce((z,u)=>z+u.hp/u.maxHp+(u.type==='elephant'?1:0),0);if(s>score){score=s;lane=i;}}if(lane>=0&&score>2.2){this.useBurst('enemy',lane);return;}}
-  const elapsed=this.elapsed;if(elapsed<3||elapsed-this.aiLastDeployAt<2)return;const affordable=Object.keys(UNIT_DATA).filter(k=>this.coins.enemy>=UNIT_DATA[k].cost&&this.cool.enemy[k]<=0);if(!affordable.length)return;
-  let lane=1,best=-1;for(let i=0;i<3;i++){const threat=playerUnits.filter(u=>u.lane===i).reduce((s,u)=>s+u.t*(u.hp/u.maxHp),0)+Math.random()*.3;if(threat>best){best=threat;lane=i;}}
-  const near=playerUnits.filter(u=>u.lane===lane&&u.t>.38);let type;if(this.potionArmed.enemy&&affordable.includes(this.potionArmed.enemy))type=this.potionArmed.enemy;else if(near.filter(u=>Math.abs(u.t-.65)<.18).length>=2&&affordable.includes('dragon'))type='dragon';else if(near.some(u=>u.type==='elephant')&&affordable.includes('dragon'))type='dragon';else if(near.some(u=>u.type==='dragon')&&affordable.includes('snake'))type='snake';else{const weighted=['lion','elephant','snake','lion','dragon'].filter(k=>affordable.includes(k));type=weighted[Math.floor(Math.random()*weighted.length)]||affordable[0];}
-  if(this.deploy('enemy',type,lane))this.aiLastDeployAt=elapsed;
- }
+ updateAI(dt){this.aiCommander ||= new OrdinaryCommander('enemy',{units:UNIT_DATA,buffs:BUFFS,potion:POTION,burst:BURST,fxTiming:FX_TIMING});this.aiCommander.update(this);this.aiLastDeployAt=this.aiCommander.lastDeploy;}
+
  updateHUD(){const pt=this.towers.player,et=this.towers.enemy;$('#playerHpFill').style.width=`${pt.hp/pt.maxHp*100}%`;$('#enemyHpFill').style.width=`${et.hp/et.maxHp*100}%`;$('#playerHpText').textContent=`${Math.ceil(pt.hp)} / ${pt.maxHp}`;$('#enemyHpText').textContent=`${Math.ceil(et.hp)} / ${et.maxHp}`;if(Number.isFinite(this.timeLeft)){const m=Math.floor(this.timeLeft/60),s=Math.floor(this.timeLeft%60);$('#timer').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}else $('#timer').textContent='∞';$('#modeLabel').textContent=this.mode==='cross'?'交汇战线':'三路战线';$('#coinText').textContent=`🟡 ${this.coins.player.toFixed(1)}`;$('#coinFill').style.width=`${clamp(this.coins.player/20*100,0,100)}%`;
   for(const [type,d] of Object.entries(UNIT_DATA)){const el=$(`.card[data-type="${type}"]`),cd=this.cool.player[type]||0;el.classList.toggle('disabled',this.coins.player<d.cost||cd>0);el.classList.toggle('armed',this.potionArmed.player===type);el.querySelector('.cool-mask').style.height=`${cd/d.cooldown*100}%`;el.querySelector('.cool-label').textContent=cd>0?cd.toFixed(1):'';}
   this.updateTacticDom($('#potionBtn'),this.tacticCool.player.potion,POTION.cooldown,this.coins.player<POTION.cost||!!this.potionArmed.player);this.updateTacticDom($('#burstBtn'),this.tacticCool.player.burst,BURST.cooldown,this.coins.player<BURST.cost);updateSystemButtons();
@@ -406,7 +402,7 @@ function seedTestCannonTargets(){for(let lane=0;lane<3;lane++){for(const [side,t
 function seedTestTowerAttackers(){for(let lane=0;lane<3;lane++){for(const [side,t] of [['player',.982],['enemy',.018]])game.units.push(game.createUnit(side,'snake',lane,t));}}
 if(TEST_MODE){testProbe=document.createElement('output');testProbe.id='qjwgTestProbe';testProbe.hidden=true;document.body.appendChild(testProbe);spawnProbe=document.createElement('output');spawnProbe.id='qjwgSpawnProbe';spawnProbe.hidden=true;document.body.appendChild(spawnProbe);const seedBtn=document.createElement('button');seedBtn.id='qjwgSeedCannonTargets';seedBtn.type='button';seedBtn.setAttribute('aria-label','测试双方炮台');seedBtn.style.cssText='position:fixed;left:0;top:0;width:20px;height:20px;opacity:.01;z-index:9999';seedBtn.addEventListener('click',seedTestCannonTargets);document.body.appendChild(seedBtn);const towerBtn=document.createElement('button');towerBtn.id='qjwgSeedTowerAttackers';towerBtn.type='button';towerBtn.setAttribute('aria-label','测试三路攻击城墙');towerBtn.style.cssText='position:fixed;left:22px;top:0;width:20px;height:20px;opacity:.01;z-index:9999';towerBtn.addEventListener('click',seedTestTowerAttackers);document.body.appendChild(towerBtn);window.__QJWG_TEST__={snapshot:getTestPayload,config:()=>getTestPayload().config,spawnHistory:getTestSpawnHistory,step(seconds){for(let i=0;i<Math.ceil(Math.min(600,Math.max(0,seconds))*60);i++)game.update(1/60);game.render();}};}
 
-function syncEnvironmentPause(){game.setPause('portrait',mobilePerformanceMode&&innerHeight>innerWidth);game.setPause('hidden',document.hidden);}
+function syncEnvironmentPause(){game.setPauses({portrait:mobilePerformanceMode&&innerHeight>innerWidth,hidden:document.hidden});}
 function updateMobileLayout(){if(mobilePerformanceMode){const portrait=innerHeight>innerWidth;document.documentElement.classList.toggle('portrait-mode',portrait);document.documentElement.classList.toggle('fullscreen-active',!!document.fullscreenElement);}syncEnvironmentPause();}
 document.addEventListener('visibilitychange',()=>{syncEnvironmentPause();game.last=0;});
 async function enterMobileMode(){if(!mobilePerformanceMode)return;audio.ensureContext();if(game.state==='playing'&&!audio.muted&&audio.bgm.paused)audio.playBgm(false);try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen()}catch(_){ }try{if(screen.orientation?.lock)await screen.orientation.lock('landscape')}catch(_){ }updateMobileLayout();}

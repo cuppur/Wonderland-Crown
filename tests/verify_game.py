@@ -50,7 +50,7 @@ if table_hash not in EXPECTED_TABLE_SHA256:
     fail(f"{latest.name} 内容已变化；请重新读取并同步属性")
 
 html_source = HTML.read_text(encoding="utf-8")
-source = html_source + "\n" + STYLE.read_text(encoding="utf-8") + "\n" + (ROOT / "js/candy-field.js").read_text(encoding="utf-8")
+source = html_source + "\n" + STYLE.read_text(encoding="utf-8") + "\n" + (ROOT / "js/candy-field.js").read_text(encoding="utf-8") + "\n" + (ROOT / "js/ordinary-ai.js").read_text(encoding="utf-8")
 
 required = {
     "程序背景缓存": "this.staticBg=CandyField.background(this.field,renderDpr())",
@@ -81,15 +81,15 @@ required = {
     "狮击杀回血": "const h=100*(lion.buffed?(lion.buff.killHeal||1):1)",
     "狮击杀回血特效事件": "this.fx.push({kind:'lionHeal',x:lion.x,y:lion.y,t:.75,max:.75})",
     "狮击杀回血特效绘制": "else if(f.kind==='lionHeal')",
-    "AI五金币购买药水": "this.coins.enemy>=POTION.cost&&Math.random()<.3",
-    "AI开局三秒禁出兵": "if(elapsed<3||elapsed-this.aiLastDeployAt<2)return",
-    "AI出兵至少间隔两秒": "if(this.deploy('enemy',type,lane))this.aiLastDeployAt=elapsed",
+    "AI药水预留出兵费用": "coins>=this.rules.potion.cost+10",
+    "AI开局三秒禁出兵": "game.elapsed<3||game.elapsed-this.lastDeploy<2",
+    "AI出兵至少间隔两秒": "this.aiLastDeployAt=this.aiCommander.lastDeploy",
     "AI出兵时间测试记录": "at:this.elapsed",
     "默认五分钟": "<option value=\"300\" selected>5 分钟</option>",
     "无限制时长选项": "<option value=\"unlimited\">无限制</option>",
     "无限制计时显示": "else $('#timer').textContent='∞'",
-    "无限制不触发时间结束": "if(Number.isFinite(this.duration)){this.timeLeft-=dt",
-    "无限制仍记录经过时间": "const elapsed=this.elapsed",
+    "无限制不触发时间结束": "if(Number.isFinite(this.duration))this.timeLeft=Math.max(0,this.timeLeft-dt)",
+    "无限制仍记录经过时间": "this.elapsed+=dt",
     "单位对拼剑击事件": "kind:'clash'",
     "单位对拼剑击动效": "else if(f.kind==='clash')",
     "象三秒重击": "if(u.type==='elephant'&&u.charge>=3)u.heavyReady=true",
