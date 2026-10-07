@@ -1,3 +1,13 @@
+# EVA AI Arena — 当前恢复点（2026-10-07）
+
+- UI 微调已在 UI 分支提交 `996c6f6`；当前独立分支 feature/eva-ai-arena，独立 worktree eva-ai-arena。
+- E1 核心闭环和页面已实现：稳定结构化 observation、9 类校验命令（换路仅交汇）、双方 Mock、Provider adapters、记忆、单请求控制、日志、配置和结算。
+- 已启动本地代理 localhost:8772；API key 仅页面内存。用户已确认本轮搭框架，由用户在游戏内输入 URL/key，因此不进行真实付费 API 验收。
+- 静态回归已全 PASS，初次 Mock 浏览器对战已自主出兵/用药水/炮阵，零页面异常；1920×1080 配置/战场已截图检查。完整比赛和异常/协议测试正在补齐。
+- 下一步：完整 E2E、Provider HTTP fixtures、非法命令/公平/取消竞态/移动命令验证，再更新文档提交。
+- 不 push、不改属性表；普通 UI worktree 保持独立。
+
+---
 # 新任务：UI 微调 → EVA AI Arena（2026-10-07）
 
 - UI 微调已完成：静态回归全 PASS、普通游戏 Playwright 16 组 PASS，1920×1080 与 844×390 截图已检查。下一步创建独立 EVA worktree 和分支。

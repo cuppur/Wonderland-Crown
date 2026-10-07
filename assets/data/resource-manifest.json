@@ -43,8 +43,8 @@
       "type": "script",
       "source": "js/candy-field.js",
       "publicPath": "js/candy-field.js",
-      "bytes": 29099,
-      "sha256": "6439F61DFBDABE7E21811AA859D40D48D5C058965349D638091DC71D17274B07",
+      "bytes": 29102,
+      "sha256": "744B39922F0AD7C6242B8DC11753AFD74BDBFBAC289B585CCDE52EC779874B44",
       "source_reference_count": 1,
       "embedded_in_html": false
     }
