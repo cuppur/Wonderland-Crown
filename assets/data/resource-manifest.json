@@ -4,15 +4,6 @@
   "self_contained_entry": false,
   "resources": [
     {
-      "type": "image",
-      "source": "源代码/assets/fairy-road-stone-texture-v1.png",
-      "publicPath": "assets/images/fairy-road-stone-texture-v1.png",
-      "bytes": 1928308,
-      "sha256": "8279B6481DAFB24885D9F06F244718500F8BD15C5C1125FEAF544503BFF6A1B9",
-      "source_reference_count": 12,
-      "embedded_in_html": false
-    },
-    {
       "type": "audio",
       "source": "音效/BGM/BGM .ogg",
       "publicPath": "assets/audio/BGM.ogg",

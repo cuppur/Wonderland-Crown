@@ -50,9 +50,17 @@ if table_hash not in EXPECTED_TABLE_SHA256:
     fail(f"{latest.name} 内容已变化；请重新读取并同步属性")
 
 html_source = HTML.read_text(encoding="utf-8")
-source = html_source + "\n" + STYLE.read_text(encoding="utf-8")
+source = html_source + "\n" + STYLE.read_text(encoding="utf-8") + "\n" + (ROOT / "js/candy-field.js").read_text(encoding="utf-8")
 
 required = {
+    "程序背景缓存": "this.staticBg=CandyField.background(this.field,renderDpr())",
+    "轻度透视": ".8+.2*(y-F.ys[0])/(F.ys[2]-F.ys[0])",
+    "输入反投影": "return CandyField.unproject(game.field",
+    "共享糖果炮口": "CandyField.muzzle(this.field,t.side,t.angle,recoil)",
+    "按路径换算移速": "u.speed*this.laneScale(u.lane)",
+    "按路径换算射程": "u.range*this.laneScale(u.lane)",
+    "平行地图": "mode === 'straight' ? ys.map",
+    "侧向城门": "g.transform(.48,-.16,0,1,0,0)",
     "游戏标题": "<title>奇境王冠</title>",
     "外部样式入口": '<link rel="stylesheet" href="./css/style.css" />',
     "微软 Emoji 字体": 'font-family:"Segoe UI Emoji"',
@@ -95,27 +103,16 @@ required = {
     "城门血量": "kind:'tower',side,hp:10000,maxHp:10000",
     "金币增长": "this.coins.player+=1*dt;this.coins.enemy+=1*dt;",
     "初始金币": "this.coins={player:15,enemy:15}",
-    "正式道路范围": "roadStart:105,roadEnd:1175",
-    "按单位尺寸计算出生距离": "const distance=UNIT_DATA[type].size+CASTLE_GEOMETRY.spawnGap",
+    '正式道路范围': 'roadStart:f.rs,roadEnd:f.re',
+    '按单位尺寸计算出生距离': 'const distance=(UNIT_DATA[type].size*UNIT_BASE_VISUAL_SCALE+CASTLE_GEOMETRY.spawnGap)*this.unitScale()',
     "双方镜像出生参数": "return side==='player'?distance/path.length:1-distance/path.length;",
-    "童话基地几何": "const CASTLE_GEOMETRY={wallHalfWidth:46,wallTop:198,wallBottom:522,gateHalfHeights:[23,34,23]",
-    "城墙中部炮台几何": "const CANNON_GEOMETRY={mountOffsetY:0,barrelLength:38,baseRadius:20,recoilDistance:4};",
+    '童话基地几何': 'const CASTLE_GEOMETRY={spawnGap:18}',
+    '城墙中部炮台几何': 'CandyField.drawCannon(ctx,this.field',
     "共享炮口计算": "const muzzle=this.cannonMuzzle(t)",
     "炮口闪光绘制": "else if(f.kind==='muzzle')",
     "炮口烟雾绘制": "else if(f.kind==='smoke')",
-    "炮弹短拖尾": "ctx.moveTo(p.x-dx/d*18,p.y-dy/d*18)",
-    "恢复旧版连续交汇路面": "ctx.fill(outer,'evenodd')",
-    "恢复旧版交汇几何": "centerTop=292+inset,centerBottom=428-inset",
-    "生成道路纹理": "./assets/images/fairy-road-stone-texture-v1.png",
+    '炮弹短拖尾': 'ctx.moveTo(q.x-dx/d*18*scale,q.y-dy/d*18*scale)',
     "透明中毒图标": "./assets/images/poison-status-icon-v1.png",
-    "道路纹理蒙版": "const pattern=this.roadPattern()",
-    "统一道路视觉配置": "const ROAD_VISUAL={",
-    "柔和道路中心色": "centerColor:'#F3DDA4'",
-    "柔和道路边缘色": "sideColor:'#EFD6A0'",
-    "道路纹理透明度": "textureAlpha:.22",
-    "道路纹理放大": "textureTileSize:288",
-    "柔和边缘过渡": "transitionColor:'rgba(151,174,91,.16)'",
-    "两地图共享道路参数": "ROAD_VISUAL.crossInsets",
     "底部卡牌与金币": "#bottomDock{top:auto;bottom:1.2%",
     "左下战术键": "#tactical{top:auto;left:1.2%;right:auto;bottom:1.4%",
     "精简药水按钮": "🧪 魔力药水 · ${POTION.cost}G",
@@ -139,7 +136,7 @@ required = {
     "中毒绿色视觉": "ctx.fillStyle='rgba(80,190,82,.24)'",
     "图片中毒标识": "ctx.drawImage(poisonStatusIcon,-size/2,-size/2,size,size)",
     "中毒图标缩小至60%": "size=s*1.35",
-    "中毒图标移到棋子外侧": "u.size+12/vs,-u.size-10/vs",
+    '中毒图标移到棋子外侧': 'this.drawPoisonMark(r*1.1,-r*1.8,16)',
     "中毒标识呼吸动画": "const phase=performance.now()/900*TAU,pulse=1+Math.sin(phase)*.08",
     "燃烧单位火焰": "if(u.burn>0){const flicker=",
     "双倍龙火焰弹": "ctx.arc(0,0,18,0,TAU)",
@@ -150,7 +147,7 @@ required = {
     "炮阵点击仅允许道路": "if(target.d>DEPLOY_SNAP_RADIUS){this.hint('请点击道路范围内');return;}if(this.useBurst('player',target.i))",
     "炮阵拖离道路自动取消": "if(target.d>DEPLOY_SNAP_RADIUS)game.hint('已取消爆裂炮阵');else if(!game.useBurst('player',target.i))",
     "单位淡蓝色道路引导": "'rgba(133,218,255,.95)'",
-    "道路吸附半径": "const DEPLOY_SNAP_RADIUS=46;",
+    '道路吸附半径': 'DEPLOY_SNAP_RADIUS=f.road*.7',
     "按可见门口端点攻击城墙": "gate=this.paths[u.lane].at(u.side==='player'?1:0),td=Math.hypot(gate.x-u.x,gate.y-u.y);",
     "连发元数据竞态兜底": "this.burstVoice.fallbackDuration=11.740862",
     "移动端禁止缩放 viewport": "maximum-scale=1, user-scalable=no, viewport-fit=cover",
@@ -212,7 +209,6 @@ for asset in assets:
         fail(f"音频资源无效：{asset}")
 
 png_assets = {
-    ROOT / "assets" / "images" / "fairy-road-stone-texture-v1.png": (512, 512, False),
     ROOT / "assets" / "images" / "poison-status-icon-v1.png": (512, 512, True),
 }
 for asset, (min_w, min_h, needs_alpha) in png_assets.items():
@@ -252,10 +248,21 @@ for script in (ROOT / "js").glob("*.js"):
     if checked.returncode:
         fail(f"外部 JavaScript 语法错误：{script.name} {checked.stderr}")
 
+# Missing local image/script paths must fail here, before a browser 404.
+import re
+import json
+for relative in set(re.findall(r'(?:src|href)="(\./(?:assets|js|css)/[^"?]+)"', html_source)):
+    if not (ROOT / relative).is_file():
+        fail(f"正式入口引用不存在的文件：{relative}")
+manifest = json.loads((ROOT / "assets/data/resource-manifest.json").read_text(encoding="utf-8"))
+for resource in manifest["resources"]:
+    if not (ROOT / resource["publicPath"]).is_file():
+        fail(f"manifest 引用不存在的文件：{resource['publicPath']}")
+
 print("[PASS] 最新属性表未被修改，且仍为 20260730.xlsx")
 print("[PASS] 四单位、药水、城门、金币、爆裂炮和守门炮静态配置已同步")
 print("[PASS] 底部卡牌、左下战术键、双地图道路与系统按钮契约存在")
 print("[PASS] BGM、单发炮、连发炮资源存在，音画限时逻辑存在")
-print("[PASS] 道路纹理和中毒图标 PNG 有效并已接入")
+print("[PASS] 中毒图标 PNG 有效，背景/宫殿/糖果炮使用缓存程序绘制")
 print("[PASS] 点击与拖拽均允许在整条道路任意位置部署")
 print("[PASS] HTML 内联 JavaScript 语法检查通过")
