@@ -78,6 +78,7 @@
 - 入口仍是 index.html；新增 `js/ai/` 纯状态协议/Mock/Provider/Agent/日志/UI 与 `css/eva.css`。详细协议、文件职责和限制见 `docs/EVA_ARENA.md`。
 - 启动 EVA 本地代理：`python tools/eva_server.py --port 8772`。原静态启动也可跑普通游戏/Mock；真实 API 直连需服务支持 CORS。Python 代理不是正式普通游戏的必需依赖。
 - 新增验收：`python tests/playtest_eva.py`，Bundled Chromium + 本地 HTTP fixtures，无真实付费 API；保留原 verify_game/playtest_game。
+- 模型列表诊断专项：`python tests/playtest_eva_models.py`。保留实际 HTTP/网络错误原因并脱敏；不要统一覆盖为“模型列表不可用”。本地代理启动探测须在发送凭据之前完成；第三方 Endpoint 提示不能自动改地址或转发密钥。
 - AI 只从 QJWGEngine.readState → ObservationBuilder 取结构化底层状态，不读 Canvas/像素/截图/Vision/OCR/DOM 战场。UI/Playwright 可使用 DOM/截图展示与验收。
 - Game 内不调用 API；模型只返回 v1 JSON，经 CommandValidator 使用当前状态和批内预算执行。所有单位属性与技能费用/冷却仍由原常量维护。
 - EVA 开启时禁用原随机 AI 和玩家部署，两方完全对等。交汇地图红方 top/middle/bottom 对应世界路线 2/1/0；平行地图 0/1/2；不得把原世界路线编号直接暴露给单方。

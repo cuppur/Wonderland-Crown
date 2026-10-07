@@ -9,6 +9,7 @@ import argparse
 import json
 import re
 import socket
+import ssl
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -71,7 +72,7 @@ class EvaHandler(SimpleHTTPRequestHandler):
         origin = self.headers.get("Origin")
         port = self.server.server_port
         if not self.allowed_host() or origin not in {f"http://127.0.0.1:{port}", f"http://localhost:{port}"}:
-            self.reply(403, {"error": "Same-origin local requests only"})
+            self.reply(403, {"error": "Same-origin local requests only", "code": "RELAY_ORIGIN"})
             return
         if self.path != "/eva/api/proxy":
             self.reply(404, {"error": "Not found"})
@@ -106,14 +107,19 @@ class EvaHandler(SimpleHTTPRequestHandler):
                 raw = response.read(MAX_BYTES + 1)
                 if len(raw) > MAX_BYTES:
                     raise ValueError("Response size")
-                result = json.loads(raw)
+                try:
+                    result = json.loads(raw)
+                except json.JSONDecodeError:
+                    self.reply(502, {"error": "Upstream response is not JSON", "code": "UPSTREAM_JSON"})
+                    return
             self.reply(200, result)
         except HTTPError as error:
-            self.reply(error.code if 400 <= error.code <= 599 else 502, {"error": "Upstream HTTP error"})
+            self.reply(error.code if 400 <= error.code <= 599 else 502, {"error": "Upstream HTTP error", "code": "UPSTREAM_REDIRECT" if 300 <= error.code < 400 else "UPSTREAM_HTTP"})
         except (TimeoutError, socket.timeout):
             self.reply(504, {"error": "Upstream timeout"})
         except URLError as error:
-            self.reply(504 if isinstance(error.reason, (TimeoutError, socket.timeout)) else 502, {"error": "Upstream unavailable"})
+            code = "UPSTREAM_TLS" if isinstance(error.reason, ssl.SSLError) else "UPSTREAM_DNS" if isinstance(error.reason, socket.gaierror) else "UPSTREAM_NETWORK"
+            self.reply(504 if isinstance(error.reason, (TimeoutError, socket.timeout)) else 502, {"error": "Upstream unavailable", "code": code})
         except (ValueError, KeyError, TypeError, UnicodeError):
             self.reply(400, {"error": "Invalid relay request or upstream JSON"})
         except OSError:

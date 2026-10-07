@@ -21,7 +21,13 @@ python tools/eva_server.py --port 8772
 5. 测试双方当前配置的连接。测试会发送一次短的文本模型请求；没有通过测试的非 Mock 配置不能开始比赛。
 6. 开始比赛。普通卡牌作为观战信息保留，EVA 中不接受玩家部署，双方都由 AI 指挥。
 
+模型列表查询失败会显示具体 HTTP 状态、超时、代理未启动、网络/DNS/证书或返回非 JSON 等原因。普通静态服务器不提供 EVA 代理，页面会在发送密钥前给出启动说明；也可按服务的 CORS 支持情况选择直连。列表返回空时不会标记查询成功。
+
+Packy 用户请核对控制台“数据看板”中的 API Endpoint。[官方快速开始](https://docs.packyapi.com/docs/register/#api-端点说明) 当前的 OpenAI 兼容主站示例是 `https://cf.api.fan/v1`。填写 `www.packyapi.ai` / `www.packyapi.com` 时页面显示核对提示，地址由用户自行确认和修改。
+
 默认决策周期三秒，可选 2/3/5/10 秒。“公平周期”同步双方周期；关闭后可分别设置。周期从上一轮完成后算起，网络延迟期间游戏继续。请求选项还可设置 10/20/30/60 秒超时、单次 token 上限、JSON 模式和连接方式。高推理档位可能需要更多 token；输出达到上限时会报告截断错误。
+
+“公平周期”以蓝方周期为准锁定红方，不能抵消双方模型的响应速度差异。“调试面板 · EVA DEBUG”只增加诊断入口，不改变 AI 策略；打开后可查看 Observation、公开回复、解析命令和校验结果，平时观战可关闭。
 
 本地代理与页面同源，解决服务端不允许浏览器 CORS 的情况。服务器仅监听 `127.0.0.1`，验证 Host/Origin、接口路径、请求大小和请求头，不跟随携带凭据的重定向；远端 URL 要求 HTTPS，HTTP 仅允许 loopback 本地模型。它不记录/落盘密钥，也不把上游错误正文回传。普通静态托管仍可用 Mock；真实 API 可选“浏览器直连”，但服务必须允许 CORS。Python 代理不是静态托管平台可自动运行的服务。
 
@@ -168,6 +174,7 @@ API Key 在密码输入框、当前 Agent config 和 adapter 的页面内存里�
 python tests/verify_game.py
 python tests/playtest_game.py
 python tests/playtest_eva.py
+python tests/playtest_eva_models.py
 ```
 
 均使用 Playwright 自带 headless Chromium，不调用 Edge/Chrome 系统浏览器。测试脚本启动并关闭临时 HTTP 服务器，截图和报告在 `output/playwright/`，可重建且 gitignore。
@@ -181,3 +188,5 @@ EVA 测试通过页面完成首页/普通对局/配置/连接测试/双 Mock 自
 当前限制：仅单机；Custom 要求 Chat Completions 兼容；非流式；无真实账户验收；未知模型推理能力需 Auto 或手动协议；日志滚动保存而非无限持久化；直连依赖 CORS；代理只供本机使用，未做公网多用户服务；平行地图不支持换路；手机观战面板收起摘要/命令，完整信息通过日志弹窗查看。没有账号、排行、ELO、训练、数据库或多人系统。
 
 下一阶段建议：先用玩家的真实配置完成双方各十轮以上验收，记录延迟/非法命令率；再根据实际战斗评估 Observation 的规则体积、推理档位和 token 上限，优化提示词和策略。后续可扩展可信价格配置、比赛日志归档/回放及更多 Custom 协议。
+
+2026-10-07 模型列表修复回归：专项 17 组、EVA 快速回归 31 组、静态 7 组全部通过。专项截图/报告位于 `output/playwright/model-list/`；原完整比赛报告保留在 `output/playwright/eva-report-full.json`。

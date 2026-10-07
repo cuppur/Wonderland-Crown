@@ -1,3 +1,15 @@
+# 模型列表问题修复 — 当前恢复点（2026-10-07）
+
+- 分支 feature/eva-ai-arena；本轮排查截图中的模型列表查询和公平周期/Debug 含义。
+- 已修复查询异常被统一覆盖的问题：展示具体 HTTP 状态、代理未启动、网络/DNS/TLS、非 JSON、空列表和取消/超时原因；所有错误仍脱敏。查询模型不要求预先输入模型 ID。
+- 发送凭据前探测 EVA 本地代理，缺少代理时显示启动命令；支持对象/字符串模型列表；不会自动跟随重定向携带凭据。
+- Packy 官方当前 OpenAI 兼容主站示例为 https://cf.api.fan/v1（见 docs/EVA_ARENA.md 引用）；截图的控制台域名会显示核对 Endpoint 提示，地址由用户自己确认，密钥不自动转发到其他域名。
+- 公平周期和调试面板已增加常驻说明。1920×1080 与 844×390 截图在 output/playwright/model-list/。
+- 静态回归 7 组、模型列表专项 17 组、EVA 快速回归 31 组全部 PASS；页面异常为 0。修复已完成，本地提交见 git log。
+- 原完整比赛报告保留为 output/playwright/eva-report-full.json；本轮报告为 eva-report.json 和 model-list/report.json。
+- 没有使用真实密钥；公开地址探测只验证主站可达/返回认证响应，不代表用户账户通过验证。
+
+---
 # EVA AI Arena — 当前恢复点（2026-10-07）
 
 - UI 微调已在 UI 分支提交 `996c6f6`；当前独立分支 feature/eva-ai-arena，独立 worktree eva-ai-arena。

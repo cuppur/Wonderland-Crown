@@ -361,10 +361,12 @@ try:
 
         # Abort/deadline test and concurrent protection. Test-only short deadline avoids a 10s real wait.
         modes["compatible"] = None; fresh(); settings("player"); config_op("player", "test"); start(); simulate(1)
+        page.wait_for_function("!EVA.arena.agents.player.isThinking")
         modes["compatible"] = "slow"
         page.evaluate("EVA.arena.agents.player.config.timeout=.15;EVA.arena.agents.player.nextAt=QJWGEngine.readState().elapsed")
-        for _ in range(3):
-            simulate(.25); page.wait_for_timeout(300); simulate(3.5)
+        for expected in range(1, 4):
+            simulate(3.5)
+            page.wait_for_function("count => EVA.arena.agents.player.errors >= count || QJWGEngine.state() === 'paused'", arg=expected, timeout=5000)
         assert page.evaluate("QJWGEngine.state()") == "paused"
         assert snap()["stats"]["player"]["errors"] >= 3
         assert "TIMEOUT" in snap()["agents"]["player"]["summary"]

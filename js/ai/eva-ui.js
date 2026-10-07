@@ -14,6 +14,7 @@
     <div class="eva-columns">${sides.map(side => `<section class="eva-side-config ${side}" data-side="${side}"><h3>${side === 'player' ? '曙光王庭 · 蓝方 AI' : '暮影王庭 · 红方 AI'}</h3>
       <label>API Provider<select data-field="provider">${Object.entries(labels).map(([value, name]) => `<option value="${value}">${name}</option>`).join('')}</select></label>
       <label>Base URL<input data-field="baseUrl" type="url" autocomplete="off" spellcheck="false" placeholder="https://your-service.example/v1"></label>
+      <div class="eva-note" data-info="baseUrl"></div>
       <label>API Key<input data-field="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="仅保存在当前页面内存"></label>
       <div class="eva-tools"><button data-op="test">测试连接</button><button data-op="models">获取模型列表</button><button data-op="clear">清除密钥</button></div>
       <label>模型 ID<input data-field="model" list="evaModels-${side}" autocomplete="off" spellcheck="false" placeholder="查询后选择，或手动输入模型 ID"><datalist id="evaModels-${side}"><option value="aggressive-mock"></option><option value="defensive-mock"></option></datalist></label>
@@ -24,7 +25,8 @@
       <div class="eva-field-pair"><label>请求超时<select data-field="timeout"><option value="10">10 秒</option><option value="20" selected>20 秒</option><option value="30">30 秒</option><option value="60">60 秒</option></select></label><label>单次 token 上限<select data-field="maxTokens"><option value="2048">2048</option><option value="4096" selected>4096</option><option value="8192">8192</option><option value="16384">16384</option><option value="32768">32768</option></select></label></div>
       <label>JSON 模式<select data-field="jsonMode"><option value="false">仅提示 JSON · 兼容性较好</option><option value="true">请求 JSON 格式 · 需服务支持</option></select></label></details>
       <p class="eva-connection" data-info="connection" role="status">Mock 不消耗 API，可直接开始。</p></section>`).join('')}</div>
-    <div class="eva-options"><label>地图<select id="evaMap"><option value="cross">交汇战线</option><option value="straight">三路战线</option></select></label><label>时长<select id="evaDuration"><option value="unlimited">无限制</option><option value="180">3 分钟</option><option value="300">5 分钟</option></select></label><label><input id="evaFair" type="checkbox" checked>公平周期</label><label><input id="evaDebugEnabled" type="checkbox">EVA DEBUG</label><label><input id="evaRemember" type="checkbox">记住非敏感配置</label></div>
+    <div class="eva-options"><label>地图<select id="evaMap"><option value="cross">交汇战线</option><option value="straight">三路战线</option></select></label><label>时长<select id="evaDuration"><option value="unlimited">无限制</option><option value="180">3 分钟</option><option value="300">5 分钟</option></select></label><label title="以蓝方设置为准，同步双方的决策间隔；网络响应时间仍各自计算"><input id="evaFair" type="checkbox" checked>公平周期 · 同步间隔</label><label title="查看 AI 输入、公开回复、命令和校验结果；不改变 AI 策略"><input id="evaDebugEnabled" type="checkbox">调试面板 · EVA DEBUG</label><label><input id="evaRemember" type="checkbox">记住非敏感配置</label></div>
+    <div class="eva-note">公平周期：同步双方决策间隔，以蓝方设置为准，模型响应速度仍可能不同。调试面板：查看战场数据、公开回复和命令校验，平时可关闭。</div>
     <div class="eva-note">密钥仅在当前页面内存中，刷新后清除。测试连接会发送一次短请求。模型列表不可用时可手动输入 ID。使用本地代理请通过 EVA 启动器打开；普通静态站点可选择直连。</div>
     <div class="eva-footer"><button id="evaStartBtn" class="primary">开始比赛</button></div><p id="evaConfigMessage" class="eva-connection" role="status"></p>
   </section>`;
@@ -53,11 +55,19 @@
   const signature = c => { const { modelMetadata, ...values } = c; return JSON.stringify(values); }; // memory only; never saved or exported
   function status(side, message, good = null) { const p = form(side).querySelector('[data-info="connection"]'); p.textContent = message; p.className = 'eva-connection' + (good === true ? ' ok' : good === false ? ' bad' : ''); }
   function reasoning(side) { const c = readConfig(side), cap = E.Providers.reasoningCapability(c), select = field(side, 'reasoning'), previous = select.value; select.replaceChildren(...cap.levels.map(l => { const o = el('option', '', l === 'auto' ? 'Auto · 服务默认' : l[0].toUpperCase() + l.slice(1)); o.value = l; return o; })); select.value = cap.levels.includes(previous) ? previous : 'auto'; select.disabled = cap.levels.length === 1; form(side).querySelector('[data-info="reasoning"]').textContent = cap.note; }
+  function baseUrlHint(side) {
+    const hint = form(side).querySelector('[data-info="baseUrl"]'), value = field(side, 'baseUrl').value.trim();
+    hint.replaceChildren();
+    if (/^https:\/\/(?:www\.)?packyapi\.(?:ai|com)(?:\/|$)/i.test(value)) {
+      hint.append(document.createTextNode('请核对 Packy 数据看板中的 API Endpoint。官方当前主站示例：https://cf.api.fan/v1。'));
+      const link = el('a', '', '查看官方说明'); link.href = 'https://docs.packyapi.com/docs/register/#api-端点说明'; link.target = '_blank'; link.rel = 'noopener noreferrer'; hint.append(link);
+    } else if (field(side, 'provider').value !== 'mock') hint.textContent = '填写服务商的 API Endpoint，包含版本路径；不包含 /models 或 /chat/completions。';
+  }
   function providerChanged(side, keep = false) {
     const provider = field(side, 'provider').value, mock = provider === 'mock';
     field(side, 'baseUrl').disabled = mock; field(side, 'apiKey').disabled = mock; field(side, 'reasoningProtocol').disabled = !['compatible', 'custom'].includes(provider);
     if (!keep) { field(side, 'apiKey').value = ''; field(side, 'baseUrl').value = E.Providers.defaults[provider]; field(side, 'model').value = mock ? (side === 'player' ? 'aggressive-mock' : 'defensive-mock') : ''; metadata[side] = []; $(`#evaModels-${side}`).replaceChildren(); }
-    tested[side] = null; reasoning(side); status(side, mock ? 'Mock 不消耗 API，可直接开始。' : '填入配置后，点击测试连接。');
+    tested[side] = null; reasoning(side); baseUrlHint(side); status(side, mock ? 'Mock 不消耗 API，可直接开始。' : '填入配置后，点击测试连接。');
   }
   function syncFair() { field('enemy', 'interval').disabled = $('#evaFair').checked; if ($('#evaFair').checked) field('enemy', 'interval').value = field('player', 'interval').value; }
   const ensureConfig = c => { if (!c.model) throw new Error('请输入模型 ID'); if (c.provider !== 'mock' && !c.baseUrl) throw new Error('请输入 Base URL'); if (!['mock', 'compatible', 'custom'].includes(c.provider) && !c.apiKey) throw new Error('请输入 API Key'); };
@@ -82,7 +92,10 @@
         if (signature(c) === signature(readConfig(side))) { tested[side] = signature(c); status(side, '连接测试通过，模型已返回结构化 JSON。', true); }
         else status(side, '配置已变更，请重新测试连接。');
       }
-    } catch (err) { status(side, op === 'models' ? '模型列表不可用，可手动输入模型 ID。' : controller.signal.reason === 'timeout' ? '连接超时，请检查服务或调整请求超时。' : E.Providers.scrub(err.message, c.apiKey), false); }
+    } catch (err) {
+      const message = controller.signal.reason === 'timeout' ? '请求超时，请检查服务或调整请求超时。' : controller.signal.aborted ? '请求已取消，可重新查询。' : E.Providers.scrub(err.message, c.apiKey);
+      status(side, op === 'models' ? `获取模型列表失败：${message}。确认连接可用后，也可手动输入模型 ID。` : message, false);
+    }
     finally { clearTimeout(timer); configRequests[side] = null; buttons.forEach(b => b.disabled = false); }
   }
   const commandText = c => ({ deploy: `↓ ${unitLabels[c.unit] || c.unit} → ${laneLabels[c.lane]}`, usePotion: `🧪 药水 → ${unitLabels[c.unit]}`, useBurst: `大炮 ×10 → ${laneLabels[c.lane]}`, advance: `前进 → ${laneLabels[c.lane]}`, hold: `驻守 → ${laneLabels[c.lane]}`, retreat: `撤退 → ${laneLabels[c.lane]}`, focusTarget: `集火 → ${c.targetId}`, switchLane: `换路 → ${laneLabels[c.toLane]}`, setRallyPoint: `集结 → ${laneLabels[c.lane]} ${Math.round(c.progress * 100)}%` })[c.action] || c.action;
@@ -146,7 +159,7 @@
   E.arena = new E.Arena(engine, () => view.paint(), side => view.failed(side));
   for (const side of sides) {
     providerChanged(side);
-    form(side).addEventListener('input', ev => { if (!ev.target.dataset.field) return; tested[side] = null; if (ev.target.dataset.field === 'provider') providerChanged(side); else { if (['model', 'reasoningProtocol'].includes(ev.target.dataset.field)) reasoning(side); status(side, '配置已更新，请测试当前连接。'); } if (side === 'player' && ev.target.dataset.field === 'interval') { tested.enemy = null; syncFair(); } });
+    form(side).addEventListener('input', ev => { if (!ev.target.dataset.field) return; tested[side] = null; if (ev.target.dataset.field === 'provider') providerChanged(side); else { if (ev.target.dataset.field === 'baseUrl') baseUrlHint(side); if (['model', 'reasoningProtocol'].includes(ev.target.dataset.field)) reasoning(side); status(side, '配置已更新，请测试当前连接。'); } if (side === 'player' && ev.target.dataset.field === 'interval') { tested.enemy = null; syncFair(); } });
     form(side).querySelectorAll('[data-op]').forEach(b => b.addEventListener('click', () => { if (b.dataset.op === 'clear') { field(side, 'apiKey').value = ''; tested[side] = null; status(side, '密钥已清除。'); } else void configOperation(side, b.dataset.op); }));
   }
   try { const stored = JSON.parse(localStorage.getItem('qjwg-eva-settings-v1')); if (stored) { for (const side of sides) { for (const [name, value] of Object.entries(stored[side] || {})) { if (name !== 'apiKey' && field(side, name)) field(side, name).value = String(value); } providerChanged(side, true); } $('#evaRemember').checked = true; } } catch (_) {}

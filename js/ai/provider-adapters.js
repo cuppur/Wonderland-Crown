@@ -67,12 +67,21 @@
   }
   class ProviderAdapter {
     constructor(config) { this.config = { ...config }; }
+    async checkRelay(signal) {
+      if (this.relayChecked) return;
+      let healthy = false;
+      try { const res = await fetch('/eva/api/health', { signal, cache: 'no-store' }); healthy = res.ok && (await res.json()).relay === true; }
+      catch (err) { if (signal?.aborted) throw err; }
+      if (!healthy) throw new Error('RELAY_UNAVAILABLE: 当前页面没有 EVA 本地代理。请用 python tools/eva_server.py --port 8772 启动，或在请求选项选择浏览器直连。');
+      this.relayChecked = true;
+    }
     async request(path, body, signal) {
       const c = this.config;
       let base;
       try { base = new URL(c.baseUrl.trim()); } catch (_) { throw new Error('CONFIG: Base URL 无效'); }
       if (!['http:', 'https:'].includes(base.protocol) || base.username || base.password || base.search || base.hash) throw new Error('CONFIG: Base URL 须为不含密钥/查询参数的 HTTP(S) 地址');
       const url = base.href.replace(/\/$/, '') + path;
+      if (c.transport === 'relay') await this.checkRelay(signal);
       const headers = { 'Content-Type': 'application/json' };
       if (c.provider === 'anthropic') { headers['x-api-key'] = c.apiKey; headers['anthropic-version'] = '2023-06-01'; if (c.transport === 'direct') headers['anthropic-dangerous-direct-browser-access'] = 'true'; }
       else if (c.provider === 'gemini') headers['x-goog-api-key'] = c.apiKey;
@@ -83,21 +92,27 @@
           ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url, method: body ? 'POST' : 'GET', headers, body, timeout: c.timeout || 20 }), signal }
           : { method: body ? 'POST' : 'GET', headers, ...(body ? { body: JSON.stringify(body) } : {}), signal });
       } catch (err) { if (signal?.aborted) throw err; throw new Error('NETWORK: 无法连接服务，请检查 URL 或使用本地代理'); }
-      if (!res.ok) throw new Error(res.status === 504 ? 'TIMEOUT: API 请求超时' : `HTTP_${res.status}: ${({ 401: '密钥无效', 403: '访问被拒绝', 429: '请求限流', 500: '服务端错误', 502: '网络或上游服务错误' })[res.status] || 'API 请求失败'}`);
+      if (!res.ok) {
+        let code = '';
+        if (c.transport === 'relay') { try { code = (await res.json()).code || ''; } catch (_) {} }
+        const relayErrors = { UPSTREAM_REDIRECT: '服务返回重定向；请填写服务商实际的 API Base URL', UPSTREAM_JSON: '服务返回的不是 JSON；请检查 Base URL 是否误填为网站首页或登录页', UPSTREAM_TLS: '本机无法验证服务的 HTTPS 证书；请检查服务地址、证书或系统代理', UPSTREAM_DNS: '本机无法解析服务域名；请检查地址和网络', UPSTREAM_NETWORK: '本地代理无法连接该服务；请检查网络或系统代理，也可尝试浏览器直连', RELAY_ORIGIN: '本地代理拒绝了当前页面来源；请从 127.0.0.1 的 EVA 地址打开' };
+        throw new Error(res.status === 504 ? 'TIMEOUT: API 请求超时' : `HTTP_${res.status}: ${relayErrors[code] || ({ 401: '密钥无效或未填写，请检查该服务的 API Key', 403: '服务拒绝访问，请检查权限或网络限制', 404: '接口不存在，请检查 Base URL 是否为 API 地址并包含正确的版本路径', 429: '请求限流，请稍后重试', 500: '服务端错误', 502: '网络或上游服务错误' })[res.status] || 'API 请求失败'}`);
+      }
       const text = await res.text();
       if (text.length > 2000000) throw new Error('JSON_PARSE: API response too large');
-      try { return JSON.parse(text); } catch (_) { throw new Error('JSON_PARSE: API response is not JSON'); }
+      try { return JSON.parse(text); } catch (_) { throw new Error('JSON_PARSE: 服务返回的不是 JSON，请检查 Base URL 是否误填为网站首页或登录页'); }
     }
     async listModels(signal) {
       let path = '/models', result = [];
       for (let page = 0; page < 10; page++) {
         const data = await this.request(path, null, signal), models = data.data || data.models;
         if (!Array.isArray(models)) throw new Error('MODELS_UNSUPPORTED: 请手动输入模型 ID');
-        result.push(...models.filter(m => this.config.provider !== 'gemini' || !m.supportedGenerationMethods || m.supportedGenerationMethods.includes('generateContent')).map(m => ({ ...m, id: (m.id || m.name || '').replace(/^models\//, '') })).filter(m => m.id));
+        result.push(...models.filter(m => m && (this.config.provider !== 'gemini' || !m.supportedGenerationMethods || m.supportedGenerationMethods.includes('generateContent'))).map(m => typeof m === 'string' ? { id: m } : { ...m, id: String(m.id || m.name || '').replace(/^models\//, '') }).filter(m => m.id));
         if (data.nextPageToken) path = '/models?pageToken=' + encodeURIComponent(data.nextPageToken);
         else if (data.has_more && data.last_id) path = '/models?after_id=' + encodeURIComponent(data.last_id);
         else break;
       }
+      if (!result.length) throw new Error('MODELS_EMPTY: 服务返回空的模型列表，请检查密钥的模型权限或手动输入模型 ID');
       return result;
     }
     async decide(observation, memory, signal) {
