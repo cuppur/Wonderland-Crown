@@ -29,11 +29,23 @@ def checkout(mode):
             return Path(next(line[9:] for line in lines if line.startswith('worktree ')))
     common = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', '--path-format=absolute', '--git-common-dir'], capture_output=True, text=True, encoding='utf-8', check=True).stdout.strip()
     destination = Path(common).parent / '.local-worktrees' / mode
+    # Resolve every time: a detached fallback must follow the selected branch.
+    ref = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', expected], capture_output=True, text=True)
+    target = expected if ref.returncode == 0 else 'origin/' + expected
+    target_sha = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', target + '^{commit}'], capture_output=True, text=True, check=True).stdout.strip()
     if not (destination / 'index.html').is_file():
-        ref = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', '--verify', expected], capture_output=True, text=True)
-        target = expected if ref.returncode == 0 else 'origin/' + expected
         destination.parent.mkdir(parents=True, exist_ok=True)
-        subprocess.run(['git', '-C', str(ROOT), 'worktree', 'add', '--detach', str(destination), target], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(ROOT), 'worktree', 'add', '--detach', str(destination), target_sha], check=True, capture_output=True)
+    else:
+        actual_root = subprocess.run(['git', '-C', str(destination), 'rev-parse', '--show-toplevel'], capture_output=True, text=True, check=True).stdout.strip()
+        if Path(actual_root).resolve() != destination.resolve():
+            raise RuntimeError('备用目录不是独立 Git 工作区，请保留文件并检查：' + str(destination))
+        current = subprocess.run(['git', '-C', str(destination), 'rev-parse', 'HEAD'], capture_output=True, text=True, check=True).stdout.strip()
+        if current != target_sha:
+            dirty = subprocess.run(['git', '-C', str(destination), 'status', '--porcelain', '--untracked-files=all'], capture_output=True, text=True, check=True).stdout.strip()
+            if dirty:
+                raise RuntimeError('备用工作区有未提交改动，已保留，无法自动更新：' + str(destination))
+            subprocess.run(['git', '-C', str(destination), 'checkout', '--detach', target_sha], check=True, capture_output=True)
     return destination
 
 

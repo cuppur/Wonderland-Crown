@@ -361,6 +361,15 @@ function gingerGate(g,F,x,base,w,h,team){
   g.fillStyle=team.main;g.fill();g.strokeStyle=team.dark;g.lineWidth=lw;g.stroke();
   for(let i=0;i<4;i++)cream(g,x+w*(.1+i*.15),base-h*(.86-i*.012),w*.085,F.S0);
 }
+// Conservative screen bounds include cake tiers, lollipops, gates and shadows.
+// Pixel-aligned origins keep the cropped cache at the same sampling phase.
+function wallBounds(F,side,dpr=1){
+  const xs=[F.m-F.T*.4,F.x1L+F.T*.65],ys=[F.ys[0]-F.T*.5,F.ys[2]+F.T*.7],points=[];
+  for(const x of xs)for(const y of ys)points.push(project(F,side==='enemy'?F.w-x:x,y));
+  const pad=Math.max(3,F.S0*6),left=Math.max(0,Math.floor((Math.min(...points.map(p=>p.x))-pad)*dpr)),right=Math.min(Math.round(F.w*dpr),Math.ceil((Math.max(...points.map(p=>p.x))+pad)*dpr));
+  const top=Math.max(0,Math.floor((F.ys[0]-F.T*2.1-pad)*dpr)),bottom=Math.min(Math.round(F.h*dpr),Math.ceil((F.ys[2]+F.T*.75+pad)*dpr));
+  return{x:left/dpr,y:top/dpr,width:Math.max(1,right-left),height:Math.max(1,bottom-top)};
+}
 function drawWall(g,F,side,st={}){
   const {T,ys,S0}=F,team=TEAM[side],enemy=side==='enemy',rnd=rng(21),height=T*.48;
   const x0=F.m,x1=F.x1L,y0=ys[0]-T*.44,y1=ys[2]+T*.5;
@@ -439,6 +448,6 @@ function highlightLane(g,F,i,color){
   for(let j=0;j<=160;j++){const q=F.paths[i].at(j/160),p=project(F,q.x,q.y);j?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y);}g.stroke();g.restore();
 }
 function nearestLane(F,x,y){let best={i:0,d:Infinity,t:0};F.paths.forEach((p,i)=>{const n=p.nearest(x,y);if(n.d<best.d)best={i,d:n.d,t:n.t};});return best;}
-window.CandyField={TEAM,INK,rr,circle,rng,releaseCanvas,Path,buildGeometry,depth,project,unproject,atGround,drawGround,background,drawWall,drawCannon,cannonPose,cannonDims,muzzle,highlightLane,nearestLane};
+window.CandyField={TEAM,INK,rr,circle,rng,releaseCanvas,Path,buildGeometry,depth,project,unproject,atGround,drawGround,background,wallBounds,drawWall,drawCannon,cannonPose,cannonDims,muzzle,highlightLane,nearestLane};
 
 })();

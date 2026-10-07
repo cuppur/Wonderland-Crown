@@ -193,6 +193,7 @@ class Game{
  constructor(){this.state='menu';this.mode='cross';this.duration=300;this.timeLeft=300;this.elapsed=0;this.paths=[];this.units=[];this.projectiles=[];this.fx=[];this.battleEvents=[];this.accumulator=0;this.pauseReasons=new Set();this.texts=[];this.spawnHistory=[];this.nextId=1;this.selected=null;this.hoverLane=-1;this.coins={player:15,enemy:15};this.potionArmed={player:null,enemy:null};this.cool={player:{},enemy:{}};this.tacticCool={player:{potion:0,burst:0},enemy:{potion:0,burst:0}};this.towers={};this.aiClock=1;this.aiLastDeployAt=-Infinity;this.last=0;this.grass=[];this.intensity=0;this.pointer={x:0,y:0};this.cannonLaunches=0;this.cannonLaunchesBySide={player:0,enemy:0};this.lastCannonShot=null;this.burstUses=0;this.staticBg=null;this.staticBgDpr=0;this.makeGrass();this.buildPaths();this.resetTowers();}
  makeGrass(){let seed=14591;const rnd=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646},count=mobilePerformanceMode?190:430;for(let i=0;i<count;i++)this.grass.push({x:rnd()*W,y:rnd()*H,r:rnd()*1.7+.3,a:rnd()*.22+.05});}
  buildPaths(){
+  const key=[W,H,this.mode,renderDpr()].join(':');if(this.geometryKey===key)return;this.geometryKey=key;
   this.field=CandyField.buildGeometry(W,H,this.mode);
   this.paths=this.field.paths.map(p=>new Path(p.pts));
   const f=this.field;
@@ -326,10 +327,10 @@ class Game{
  drawTower(t){
   // Cache the palace once per health bucket. Cannon recoil/aim remains live.
   this.wallCache ||= {};
-  const key=Math.floor(t.hp/t.maxHp*100),cache=this.wallCache[t.side];
-  if(!cache||cache.key!==key){CandyField.releaseCanvas(cache?.canvas);const c=document.createElement('canvas'),dpr=renderDpr();c.width=Math.round(W*dpr);c.height=Math.round(H*dpr);const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);CandyField.drawWall(g,this.field,t.side,{hp:t.hp/t.maxHp});this.wallCache[t.side]={key,canvas:c};}
-  const shake=t.shake>0?(Math.random()-.5)*3*this.unitScale():0;
-  ctx.drawImage(this.wallCache[t.side].canvas,shake,0,W,H);
+  const key=Math.floor(t.hp/t.maxHp*100),cache=this.wallCache[t.side],dpr=renderDpr();
+  if(!cache||cache.key!==key||cache.dpr!==dpr){CandyField.releaseCanvas(cache?.canvas);const b=CandyField.wallBounds(this.field,t.side,dpr),c=document.createElement('canvas');c.width=b.width;c.height=b.height;const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,-b.x*dpr,-b.y*dpr);CandyField.drawWall(g,this.field,t.side,{hp:t.hp/t.maxHp});this.wallCache[t.side]={key,dpr,bounds:b,canvas:c};}
+  const shake=t.shake>0?(Math.random()-.5)*3*this.unitScale():0,c=this.wallCache[t.side];
+  ctx.drawImage(c.canvas,c.bounds.x+shake,c.bounds.y,c.canvas.width/dpr,c.canvas.height/dpr);
   if(t.hitFlash>0)CandyField.drawWall(ctx,this.field,t.side,{hp:t.hp/t.maxHp,flash:t.hitFlash});
   this.drawTowerCannon(t);
  }
@@ -417,7 +418,7 @@ document.addEventListener('contextmenu',e=>{if(mobilePerformanceMode)e.preventDe
 if(mobilePerformanceMode){updateMobileLayout();setTimeout(()=>enterMobileMode(),0);}
 
 function resize(){
- const r=shell.getBoundingClientRect();
+ const r=shell.getBoundingClientRect();updateMobileLayout();
  // Mobile fullscreen/orientation transitions can briefly report an unusable viewport.
  if(r.width<160||r.height<120)return;
  const old=game.field;W=Math.round(r.width);H=Math.round(r.height);
