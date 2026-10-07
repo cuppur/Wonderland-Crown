@@ -8,7 +8,15 @@ const TEAM = {
   enemy:  { main: '#f27384', dark: '#c4485e', light: '#ffd1d8' }
 };
 function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-function rr(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, Math.max(0, Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2))); }
+function releaseCanvas(c) { if(c){c.width=0;c.height=0;} }
+function rr(g, x, y, w, h, r) {
+  r=Math.max(0,Math.min(r,Math.abs(w)/2,Math.abs(h)/2));g.beginPath();
+  if(typeof g.roundRect==='function'){g.roundRect(x,y,w,h,r);return;}
+  g.moveTo(x+r,y);g.lineTo(x+w-r,y);g.quadraticCurveTo(x+w,y,x+w,y+r);
+  g.lineTo(x+w,y+h-r);g.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  g.lineTo(x+r,y+h);g.quadraticCurveTo(x,y+h,x,y+h-r);
+  g.lineTo(x,y+r);g.quadraticCurveTo(x,y,x+r,y);g.closePath();
+}
 function circle(g, x, y, r) { g.beginPath(); g.arc(x, y, Math.max(0, r), 0, TAU); }
 
 class Path {
@@ -133,21 +141,24 @@ function roadMask(F, width, color, dpr) {
   }
   const b = document.createElement('canvas'); b.width = W; b.height = H;
   const gb = b.getContext('2d', { willReadFrequently: true });
+  const simple=()=>{releaseCanvas(b);ga.globalCompositeOperation='source-in';ga.fillStyle=color;ga.fillRect(0,0,F.w,F.h);return a;};
+  if(!gb||!('filter' in gb)||typeof gb.getImageData!=='function')return simple();
   const sigma = F.road * .8, edge = .5 * erf(width / (sigma * Math.SQRT2)) * 255, lo = edge - 3, hi = edge + 3;
   gb.filter = `blur(${(sigma * dpr).toFixed(1)}px)`; gb.drawImage(a, 0, 0); gb.filter = 'none';
-  const img = gb.getImageData(0, 0, W, H), d = img.data;
+  let img;try{img=gb.getImageData(0,0,W,H);}catch(_){return simple();}
+  releaseCanvas(a);const d=img.data;
   for (let i = 3; i < d.length; i += 4) { const v = d[i]; d[i] = v <= lo ? 0 : v >= hi ? 255 : (v - lo) / (hi - lo) * 255; d[i - 3] = d[i - 2] = d[i - 1] = 255; }
   gb.putImageData(img, 0, 0);
   gb.globalCompositeOperation = 'source-in'; gb.fillStyle = color; gb.fillRect(0, 0, W, H);
   return b;
 }
 function drawRoads(g, F, rnd) {
-  const { road: rw, S0, cx, cy } = F, dpr = g.getTransform().a;
+  const { road: rw, S0, cx, cy } = F, dpr = typeof g.getTransform==='function'?g.getTransform().a:1;
   g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
-  { const lip = roadMask(F, F.road + 8 * S0, 'rgba(120,88,48,.20)', dpr); g.save(); g.setTransform(1, 0, 0, 1, Math.round(3 * S0 * dpr), Math.round(4 * S0 * dpr)); g.drawImage(lip, 0, 0); g.restore(); }
+  { const lip = roadMask(F, F.road + 8 * S0, 'rgba(120,88,48,.20)', dpr); g.save(); g.setTransform(1, 0, 0, 1, Math.round(3 * S0 * dpr), Math.round(4 * S0 * dpr)); g.drawImage(lip, 0, 0); g.restore();releaseCanvas(lip); }
   for (const layer of roadLayers(F)) {
     const m = roadMask(F, layer.w, layer.c, dpr);
-    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(m, 0, 0); g.restore();
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(m, 0, 0); g.restore();releaseCanvas(m);
   }
   if (F.mode === 'cross') {
   // 广场花砖
@@ -260,7 +271,7 @@ function drawGround(g,F) {
   for(let i=0;i<w*h/1000;i++)drawBlades(a,rnd()*w,rnd()*h,(3+rnd()*5)*S0,S0,'rgba(83,147,65,.25)',rnd);
   // Road masks are built at 1x once per resize, never in the animation loop.
   const roads=document.createElement('canvas');roads.width=w;roads.height=h;
-  drawRoads(roads.getContext('2d'),F,rnd);a.drawImage(roads,0,0);
+  drawRoads(roads.getContext('2d'),F,rnd);a.drawImage(roads,0,0);releaseCanvas(roads);
   drawPlatforms(a,F);
   const flowers=['#fff5df','#ffccde','#e4d5ff','#ffe08e'];
   for(let i=0;i<120;i++){
@@ -272,6 +283,7 @@ function drawGround(g,F) {
     const k=depth(F,y),left=F.cx+(-pad-F.cx)*k;
     g.drawImage(flat,0,y,flat.width,1,left,y,flat.width*k,1);
   }
+  releaseCanvas(flat);
   // Tall decorations are projected at their feet and retain their silhouettes.
   const paintTree=(x,y,r,kind)=>atGround(g,F,x,y,()=>drawTree(g,0,0,r,rnd,S0,kind));
   const edgeR=rw*.52;
@@ -400,6 +412,6 @@ function highlightLane(g,F,i,color){
   for(let j=0;j<=160;j++){const q=F.paths[i].at(j/160),p=project(F,q.x,q.y);j?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y);}g.stroke();g.restore();
 }
 function nearestLane(F,x,y){let best={i:0,d:Infinity,t:0};F.paths.forEach((p,i)=>{const n=p.nearest(x,y);if(n.d<best.d)best={i,d:n.d,t:n.t};});return best;}
-window.CandyField={TEAM,INK,rr,circle,rng,Path,buildGeometry,depth,project,unproject,atGround,drawGround,background,drawWall,drawCannon,cannonPose,cannonDims,muzzle,highlightLane,nearestLane};
+window.CandyField={TEAM,INK,rr,circle,rng,releaseCanvas,Path,buildGeometry,depth,project,unproject,atGround,drawGround,background,drawWall,drawCannon,cannonPose,cannonDims,muzzle,highlightLane,nearestLane};
 
 })();

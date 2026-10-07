@@ -94,7 +94,7 @@
   </div>
   <div id="mobileGate" aria-live="polite"><div class="mobile-gate-card"><strong>请旋转手机至横屏体验</strong><p>横屏后可完整显示三路战场和触控卡牌。</p><button id="mobileEnterBtn" type="button">进入横屏模式</button></div></div>
 </div>
-<script src="./js/candy-field.js"></script>
+<script src="./js/candy-field.js?v=20261007-mobile2"></script>
 <script>
 (() => {
 'use strict';
@@ -197,7 +197,7 @@ class Game{
   const f=this.field;
   Object.assign(FIELD,{roadStart:f.rs,roadEnd:f.re,towerLeft:f.pivot.player.x,towerRight:f.pivot.enemy.x,centerX:f.cx,centerY:f.cy,laneY:f.ys});
   DEPLOY_SNAP_RADIUS=f.road*.7;
-  this.staticBg=null;this.wallCache=null;
+  CandyField.releaseCanvas(this.staticBg);for(const cache of Object.values(this.wallCache||{}))CandyField.releaseCanvas(cache.canvas);this.staticBg=null;this.wallCache=null;
  }
  laneScale(lane){return this.paths[lane].length/1070;}
  unitScale(){return this.field.rw/50;}
@@ -297,7 +297,7 @@ class Game{
   this.updateTacticDom($('#potionBtn'),this.tacticCool.player.potion,POTION.cooldown,this.coins.player<POTION.cost||!!this.potionArmed.player);this.updateTacticDom($('#burstBtn'),this.tacticCool.player.burst,BURST.cooldown,this.coins.player<BURST.cost);updateSystemButtons();
  }
  updateTacticDom(el,cd,max,poor){el.style.filter=poor||cd>0?'grayscale(.55) brightness(.7)':'';el.querySelector('.cool-mask').style.height=`${cd/max*100}%`;el.querySelector('.cool-label').textContent=cd>0?cd.toFixed(1):'';}
- rebuildStaticBackground(){this.staticBg=CandyField.background(this.field,renderDpr());this.staticBgDpr=renderDpr();}
+ rebuildStaticBackground(){CandyField.releaseCanvas(this.staticBg);this.staticBg=CandyField.background(this.field,renderDpr());this.staticBgDpr=renderDpr();}
  render(){const dpr=renderDpr();if(!this.staticBg||this.staticBgDpr!==dpr)this.rebuildStaticBackground();ctx.clearRect(0,0,W,H);ctx.drawImage(this.staticBg,0,0,W,H);this.drawBases();this.drawSelection();for(const f of this.fx)if(f.kind==='burstPending')this.drawFx(f);const arr=[...this.units].sort((a,b)=>a.y-b.y);for(const u of arr)this.drawUnit(u);for(const p of this.projectiles)this.drawProjectile(p);for(const f of this.fx)if(f.kind!=='burstPending')this.drawFx(f);for(const t of this.texts)this.drawText(t);}
 
  drawBases(){this.drawTower(this.towers.player);this.drawTower(this.towers.enemy);}
@@ -305,7 +305,7 @@ class Game{
   // Cache the palace once per health bucket. Cannon recoil/aim remains live.
   this.wallCache ||= {};
   const key=Math.floor(t.hp/t.maxHp*100),cache=this.wallCache[t.side];
-  if(!cache||cache.key!==key){const c=document.createElement('canvas'),dpr=renderDpr();c.width=Math.round(W*dpr);c.height=Math.round(H*dpr);const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);CandyField.drawWall(g,this.field,t.side,{hp:t.hp/t.maxHp});this.wallCache[t.side]={key,canvas:c};}
+  if(!cache||cache.key!==key){CandyField.releaseCanvas(cache?.canvas);const c=document.createElement('canvas'),dpr=renderDpr();c.width=Math.round(W*dpr);c.height=Math.round(H*dpr);const g=c.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);CandyField.drawWall(g,this.field,t.side,{hp:t.hp/t.maxHp});this.wallCache[t.side]={key,canvas:c};}
   const shake=t.shake>0?(Math.random()-.5)*3*this.unitScale():0;
   ctx.drawImage(this.wallCache[t.side].canvas,shake,0,W,H);
   if(t.hitFlash>0)CandyField.drawWall(ctx,this.field,t.side,{hp:t.hp/t.maxHp,flash:t.hitFlash});
@@ -336,7 +336,7 @@ class Game{
  drawUnitBars(u){
   if(u.hp>=u.maxHp&&!u.poisons.length&&u.burn<=0)return;
   const p=CandyField.project(this.field,u.x,u.y),s=(u.visualScale||1)*this.unitScale()*p.k,w=u.size*1.9*s,h=Math.max(2,4*s),x=p.x-w/2,y=p.y-u.size*(u.buffed?2.7:2.15)*s;
-  ctx.fillStyle='#fff8ed';ctx.beginPath();ctx.roundRect(x-1,y-1,w+2,h+2,h);ctx.fill();
+  ctx.fillStyle='#fff8ed';CandyField.rr(ctx,x-1,y-1,w+2,h+2,h);ctx.fill();
   ctx.fillStyle=CandyField.TEAM[u.side].main;ctx.fillRect(x,y,w*u.hp/u.maxHp,h);
   if(u.poisons.length){ctx.fillStyle='#61c965';ctx.fillRect(x,y+h+2,Math.min(w,u.poisons.length*3*s),2*s);}if(u.burn>0){ctx.fillStyle='#ff9a52';ctx.fillRect(x,y+h+2,w*clamp(u.burn/3,0,1),2*s);}
  }
@@ -371,7 +371,7 @@ const game=new Game();
 syncStaticUI();
 for(const option of $$('.mode-option')){
  const c=option.querySelector('canvas'),g=c.getContext('2d'),f=CandyField.buildGeometry(c.width,c.height,option.dataset.mode,2.7);
- g.drawImage(CandyField.background(f),0,0);for(const side of ['player','enemy']){CandyField.drawWall(g,f,side,{hp:1});CandyField.drawCannon(g,f,side,{angle:side==='player'?0:Math.PI,recoil:0,glow:0});}
+ const thumbnail=CandyField.background(f);g.drawImage(thumbnail,0,0);CandyField.releaseCanvas(thumbnail);for(const side of ['player','enemy']){CandyField.drawWall(g,f,side,{hp:1});CandyField.drawCannon(g,f,side,{angle:side==='player'?0:Math.PI,recoil:0,glow:0});}
  option.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();option.click();}});
 }
 const TEST_MODE=['127.0.0.1','localhost'].includes(location.hostname)&&new URLSearchParams(location.search).has('test');
@@ -393,7 +393,10 @@ document.addEventListener('contextmenu',e=>{if(mobilePerformanceMode)e.preventDe
 if(mobilePerformanceMode){updateMobileLayout();setTimeout(()=>enterMobileMode(),0);}
 
 function resize(){
- const r=shell.getBoundingClientRect(),old=game.field;W=Math.max(1,Math.round(r.width));H=Math.max(1,Math.round(r.height));
+ const r=shell.getBoundingClientRect();
+ // Mobile fullscreen/orientation transitions can briefly report an unusable viewport.
+ if(r.width<160||r.height<120)return;
+ const old=game.field;W=Math.round(r.width);H=Math.round(r.height);
  const dpr=renderDpr();canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
  game.buildPaths();const f=game.field;
  // Preserve progress, health and cooldowns through resize and orientation changes.
