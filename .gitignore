@@ -55,3 +55,9 @@ output/playwright/
 .env
 .env.*
 !.env.example
+
+# Local checkouts and encrypted API configuration
+.claude/
+.local-worktrees/
+*.dpapi
+api.txt

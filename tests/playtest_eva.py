@@ -238,7 +238,7 @@ try:
 
 
         # Live engine command behavior: no mock or LLM scheduler during these deterministic checks.
-        fresh(); page.evaluate("EVA.view.start(); EVA.arena.stop()")
+        fresh(); page.evaluate("async () => { await EVA.view.start(); EVA.arena.stop(); }")
         def submit(commands, side="player"):
             return page.evaluate("({commands,side})=>__EVA_TEST__.submit(side,{schemaVersion:1,summary:'test',commands})", {"side": side, "commands": commands})
         invalid = submit([{ "action": "deploy", "unit": "toString", "lane": "top" }, {"action": "focusTarget", "lane": "middle", "targetId": 99999}, {"action": "deploy", "unit": "snake", "lane": "invalid"}, {"action": "setRallyPoint", "lane": "top", "progress": -1}, {"action": "hack", "lane": "top"}])
@@ -262,7 +262,7 @@ try:
         o = page.evaluate("__EVA_TEST__.observation('player')")
         assert next(u for u in o["units"] if u["owner"] == "self")["lane"] == "bottom"
         # Symmetric observations from equal own-gate deployments, including cross lane mapping.
-        fresh(); page.evaluate("EVA.view.start(); EVA.arena.stop()")
+        fresh(); page.evaluate("async () => { await EVA.view.start(); EVA.arena.stop(); }")
         page.evaluate("['player','enemy'].forEach(side=>__EVA_TEST__.submit(side,{schemaVersion:1,commands:[{action:'deploy',unit:'elephant',lane:'top'}]}))")
         observations = page.evaluate("['player','enemy'].map(s=>__EVA_TEST__.observation(s))")
         for o in observations:

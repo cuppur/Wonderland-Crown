@@ -1,7 +1,7 @@
 """Loopback-only static server + optional text API relay. No third-party dependencies.
 
 Run: python tools/eva_server.py --port 8772
-Keys arrive in request memory only and are never stored or logged.
+Keys are never logged. Explicitly saved settings use Windows account encryption.
 """
 from __future__ import annotations
 
@@ -10,6 +10,8 @@ import json
 import re
 import socket
 import ssl
+import sys
+import os
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -18,6 +20,8 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_BYTES = 2_000_000
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from eva_settings import LocalSettings, default_settings_file
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -53,7 +57,7 @@ class EvaHandler(SimpleHTTPRequestHandler):
             self.reply(421, {"error": "Invalid host"})
             return
         if self.path == "/eva/api/health":
-            self.reply(200, {"relay": True, "schemaVersion": 1})
+            self.reply(200, {"relay": True, "schemaVersion": 1, "settingsStorage": "windows-dpapi" if self.server.settings is not None else None})
             return
         # Only ship public game files, never agent metadata, spreadsheets, tests, or secrets.
         path = unquote(urlsplit(self.path).path)
@@ -73,6 +77,29 @@ class EvaHandler(SimpleHTTPRequestHandler):
         port = self.server.server_port
         if not self.allowed_host() or origin not in {f"http://127.0.0.1:{port}", f"http://localhost:{port}"}:
             self.reply(403, {"error": "Same-origin local requests only", "code": "RELAY_ORIGIN"})
+            return
+        if self.path in {"/eva/api/settings/load", "/eva/api/settings/save", "/eva/api/settings/clear"}:
+            if self.server.settings is None:
+                self.reply(503, {"error": "Encrypted local settings unavailable"})
+                return
+            try:
+                length = int(self.headers.get('Content-Length', '0'))
+                if not 0 < length <= 64_000:
+                    raise ValueError('Settings size')
+                data = json.loads(self.rfile.read(length))
+                if self.path.endswith('/load'):
+                    settings = self.server.settings.load()
+                    self.reply(200, {"saved": settings is not None, "settings": settings})
+                elif self.path.endswith('/save'):
+                    self.server.settings.save(data)
+                    self.reply(200, {"saved": True})
+                else:
+                    self.server.settings.clear()
+                    self.reply(200, {"saved": False})
+            except (ValueError, TypeError, UnicodeError):
+                self.reply(400, {"error": "Invalid saved configuration"})
+            except OSError:
+                self.reply(500, {"error": "Could not access Windows encrypted settings"})
             return
         if self.path != "/eva/api/proxy":
             self.reply(404, {"error": "Not found"})
@@ -126,15 +153,17 @@ class EvaHandler(SimpleHTTPRequestHandler):
             self.reply(502, {"error": "Upstream network failure"})
 
 
-def make_server(port=8772):
-    return ThreadingHTTPServer(("127.0.0.1", port), EvaHandler)
+def make_server(port=8772, settings_file=None):
+    server = ThreadingHTTPServer(("127.0.0.1", port), EvaHandler)
+    server.settings = LocalSettings(settings_file) if settings_file is not None and os.name == 'nt' else None
+    return server
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=8772)
     args = parser.parse_args()
-    server = make_server(args.port)
+    server = make_server(args.port, default_settings_file())
     print(f"EVA Arena: http://127.0.0.1:{server.server_port}/index.html", flush=True)
     try:
         server.serve_forever()

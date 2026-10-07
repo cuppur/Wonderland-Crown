@@ -15,8 +15,8 @@
       <label>API Provider<select data-field="provider">${Object.entries(labels).map(([value, name]) => `<option value="${value}">${name}</option>`).join('')}</select></label>
       <label>Base URL<input data-field="baseUrl" type="url" autocomplete="off" spellcheck="false" placeholder="https://your-service.example/v1"></label>
       <div class="eva-note" data-info="baseUrl"></div>
-      <label>API Key<input data-field="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="仅保存在当前页面内存"></label>
-      <div class="eva-tools"><button data-op="test">测试连接</button><button data-op="models">获取模型列表</button><button data-op="clear">清除密钥</button></div>
+      <label>API Key<input data-field="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="点击保存后，在本机加密保存"></label>
+      <div class="eva-tools"><button data-op="test">测试连接</button><button data-op="models">获取模型列表</button><button data-op="clear">清空输入</button></div>
       <label>模型 ID<input data-field="model" list="evaModels-${side}" autocomplete="off" spellcheck="false" placeholder="查询后选择，或手动输入模型 ID"><datalist id="evaModels-${side}"><option value="aggressive-mock"></option><option value="defensive-mock"></option></datalist></label>
       <div class="eva-field-pair"><label>推理强度<select data-field="reasoning"><option value="auto">Auto</option></select></label><label>AI 决策周期<select data-field="interval"><option value="2">2 秒</option><option value="3" selected>3 秒</option><option value="5">5 秒</option><option value="10">10 秒</option></select></label></div>
       <div class="eva-note" data-info="reasoning"></div>
@@ -27,8 +27,9 @@
       <p class="eva-connection" data-info="connection" role="status">Mock 不消耗 API，可直接开始。</p></section>`).join('')}</div>
     <div class="eva-options"><label>地图<select id="evaMap"><option value="cross">交汇战线</option><option value="straight">三路战线</option></select></label><label>时长<select id="evaDuration"><option value="unlimited">无限制</option><option value="180">3 分钟</option><option value="300">5 分钟</option></select></label><label title="以蓝方设置为准，同步双方的决策间隔；网络响应时间仍各自计算"><input id="evaFair" type="checkbox" checked>公平周期 · 同步间隔</label><label title="查看 AI 输入、公开回复、命令和校验结果；不改变 AI 策略"><input id="evaDebugEnabled" type="checkbox">调试面板 · EVA DEBUG</label><label><input id="evaRemember" type="checkbox">记住非敏感配置</label></div>
     <div class="eva-note">公平周期：同步双方决策间隔，以蓝方设置为准，模型响应速度仍可能不同。调试面板：查看战场数据、公开回复和命令校验，平时可关闭。</div>
-    <div class="eva-note">密钥仅在当前页面内存中，刷新后清除。测试连接会发送一次短请求。模型列表不可用时可手动输入 ID。使用本地代理请通过 EVA 启动器打开；普通静态站点可选择直连。</div>
-    <div class="eva-footer"><button id="evaStartBtn" class="primary">开始比赛</button></div><p id="evaConfigMessage" class="eva-connection" role="status"></p>
+    <div class="eva-note">点击「保存 API 配置」后，下次打开自动填入双方配置和密钥；配置使用 Windows 本机账户加密。测试连接会发送一次短请求，开始比赛时也会自动检查未测试的连接。</div>
+    <p id="evaStorageMessage" class="eva-note" role="status">正在检查本机保存功能…</p>
+    <div class="eva-footer"><button id="evaDeleteSettings" class="eva-small-btn" disabled>删除已保存配置</button><button id="evaSaveSettings" class="secondary" disabled>保存 API 配置</button><button id="evaStartBtn" class="primary">开始比赛</button></div><p id="evaConfigMessage" class="eva-connection" role="status"></p>
   </section>`;
   $('#game-shell').append(configOverlay);
   const agents = {};
@@ -53,6 +54,43 @@
     c.modelMetadata = metadata[side].find(m => m.id === c.model) || null; return c;
   };
   const signature = c => { const { modelMetadata, ...values } = c; return JSON.stringify(values); }; // memory only; never saved or exported
+  let storageAvailable = false, configEdited = false;
+  async function settingsRequest(action, data = {}) {
+    const response = await fetch('/eva/api/settings/' + action, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data), cache: 'no-store', signal: AbortSignal.timeout(5000) });
+    if (!response.ok) throw new Error('本机配置保存失败，请从根目录的一键启动 EVA 入口打开。');
+    return response.json();
+  }
+  function applySavedSettings(settings) {
+    for (const side of sides) {
+      for (const [name, value] of Object.entries(settings[side] || {})) if (field(side, name) && name !== 'reasoning') field(side, name).value = String(value);
+      providerChanged(side, true); field(side, 'reasoning').value = settings[side].reasoning;
+      status(side, '已载入保存的配置；开始比赛时自动测试连接。');
+    }
+    const options = settings.options || {};
+    $('#evaMap').value = options.map || 'cross'; $('#evaDuration').value = options.duration || 'unlimited'; $('#evaFair').checked = options.fair !== false; $('#evaDebugEnabled').checked = options.debug === true; syncFair();
+  }
+  async function restoreSavedSettings() {
+    try {
+      if (!['localhost', '127.0.0.1'].includes(location.hostname)) throw new Error('local-only');
+      const response = await fetch('/eva/api/health', { cache: 'no-store', signal: AbortSignal.timeout(3000) });
+      if (!response.ok || (await response.json()).settingsStorage !== 'windows-dpapi') throw new Error('no-storage');
+      storageAvailable = true; $('#evaSaveSettings').disabled = false; $('#evaDeleteSettings').disabled = false;
+      const result = await settingsRequest('load');
+      if (result.saved && !configEdited) { applySavedSettings(result.settings); $('#evaStorageMessage').textContent = '已自动载入本机加密保存的 API 配置。修改后请再次点击保存。'; }
+      else $('#evaStorageMessage').textContent = '支持本机加密保存；点击保存后，下次打开无需重新输入。';
+    } catch (_) { $('#evaStorageMessage').textContent = '保存密钥需要根目录「一键启动 EVA」；静态网页仅记住非敏感配置。'; }
+  }
+  async function saveSettings() {
+    await settingsReady;
+    if (!storageAvailable) return;
+    const button = $('#evaSaveSettings'); button.disabled = true;
+    try {
+      syncFair(); const data = { schemaVersion: 1, ...Object.fromEntries(sides.map(side => [side, readConfig(side)])), options: { map: $('#evaMap').value, duration: $('#evaDuration').value, fair: $('#evaFair').checked, debug: $('#evaDebugEnabled').checked } };
+      for (const side of sides) ensureConfig(data[side]);
+      await settingsRequest('save', data); $('#evaStorageMessage').textContent = 'API 配置已加密保存到本机，下次打开自动载入。';
+    } catch (err) { $('#evaStorageMessage').textContent = err.message; }
+    finally { button.disabled = false; }
+  }
   function status(side, message, good = null) { const p = form(side).querySelector('[data-info="connection"]'); p.textContent = message; p.className = 'eva-connection' + (good === true ? ' ok' : good === false ? ' bad' : ''); }
   function reasoning(side) { const c = readConfig(side), cap = E.Providers.reasoningCapability(c), select = field(side, 'reasoning'), previous = select.value; select.replaceChildren(...cap.levels.map(l => { const o = el('option', '', l === 'auto' ? 'Auto · 服务默认' : l === 'none' ? 'None · 关闭推理' : l[0].toUpperCase() + l.slice(1)); o.value = l; return o; })); select.value = cap.levels.includes(previous) ? previous : 'auto'; select.disabled = cap.levels.length === 1; form(side).querySelector('[data-info="reasoning"]').textContent = cap.note; }
   function baseUrlHint(side) {
@@ -103,10 +141,15 @@
     configs: null, logPaused: false, debug: false, lastPaint: 0, reconfiguring: false,
     openConfig(reconfigure = false) { this.reconfiguring = reconfigure; $('#evaMap').disabled = reconfigure; $('#evaDuration').disabled = reconfigure; $('#evaStartBtn').textContent = reconfigure ? '继续比赛' : '开始比赛'; hide(failureOverlay); show(configOverlay); $('#evaConfigMessage').textContent = ''; field('player', 'provider').focus(); },
     closeConfig() { hide(configOverlay); Object.values(configRequests).forEach(c => c?.abort()); if (this.reconfiguring && E.arena.failedSide) show(failureOverlay); },
-    start() {
+    async start() {
+      const button = $('#evaStartBtn'); button.disabled = true;
       try {
+        await settingsReady;
         syncFair(); const configs = Object.fromEntries(sides.map(side => [side, readConfig(side)]));
-        for (const side of sides) { ensureConfig(configs[side]); if (configRequests[side]) throw new Error('请等待连接测试完成'); if (configs[side].provider !== 'mock' && tested[side] !== signature(configs[side])) throw new Error((side === 'player' ? '蓝方' : '红方') + '请先测试当前配置的连接'); }
+        for (const side of sides) { ensureConfig(configs[side]); if (configRequests[side]) throw new Error('请等待连接测试完成'); }
+        const untested = sides.filter(side => configs[side].provider !== 'mock' && tested[side] !== signature(configs[side]));
+        if (untested.length) { $('#evaConfigMessage').textContent = '正在检查双方 API 连接…'; await Promise.all(untested.map(side => configOperation(side, 'test'))); }
+        for (const side of sides) { if (signature(configs[side]) !== signature(readConfig(side))) throw new Error('配置已更改，请重新开始比赛'); if (configs[side].provider !== 'mock' && tested[side] !== signature(configs[side])) throw new Error((side === 'player' ? '蓝方' : '红方') + '连接未通过，请查看上方具体原因'); }
         this.configs = configs; this.debug = $('#evaDebugEnabled').checked;
         try { if ($('#evaRemember').checked) localStorage.setItem('qjwg-eva-settings-v1', JSON.stringify(Object.fromEntries(sides.map(side => { const { apiKey, modelMetadata, ...safe } = configs[side]; return [side, safe]; })))); else localStorage.removeItem('qjwg-eva-settings-v1'); } catch (_) { $('#evaRemember').checked = false; }
         hide(configOverlay); $('#game-shell').classList.add('eva-match'); agents.player.classList.remove('eva-hidden'); agents.enemy.classList.remove('eva-hidden'); debugBtn.classList.toggle('eva-hidden', !this.debug); $('#evaDebugTab').classList.toggle('eva-hidden', !this.debug); result.replaceChildren(); $('#resultOverlay').classList.add('eva-result');
@@ -114,6 +157,7 @@
         else { E.arena.stop(); engine.start({ mode: $('#evaMap').value, duration: $('#evaDuration').value }); E.arena.start(configs); }
         this.reconfiguring = false; this.paint();
       } catch (err) { $('#evaConfigMessage').textContent = err.message; }
+      finally { button.disabled = false; }
     },
     restart() { E.arena.stop(); result.replaceChildren(); engine.start({ mode: $('#evaMap').value, duration: $('#evaDuration').value }); E.arena.start(this.configs); this.paint(); },
     leave() { E.arena.stop(); hide(configOverlay); hide(logsOverlay); hide(failureOverlay); Object.values(configRequests).forEach(c => c?.abort()); agents.player.classList.add('eva-hidden'); agents.enemy.classList.add('eva-hidden'); debugBtn.classList.add('eva-hidden'); $('#game-shell').classList.remove('eva-match'); $('#resultOverlay').classList.remove('eva-result'); result.replaceChildren(); this.logPaused = false; },
@@ -163,8 +207,17 @@
     form(side).querySelectorAll('[data-op]').forEach(b => b.addEventListener('click', () => { if (b.dataset.op === 'clear') { field(side, 'apiKey').value = ''; tested[side] = null; status(side, '密钥已清除。'); } else void configOperation(side, b.dataset.op); }));
   }
   try { const stored = JSON.parse(localStorage.getItem('qjwg-eva-settings-v1')); if (stored) { for (const side of sides) { for (const [name, value] of Object.entries(stored[side] || {})) { if (name !== 'apiKey' && field(side, name)) field(side, name).value = String(value); } providerChanged(side, true); } $('#evaRemember').checked = true; } } catch (_) {}
+  configOverlay.addEventListener('input', () => { configEdited = true; });
+  const settingsReady = restoreSavedSettings();
+  $('#evaSaveSettings').addEventListener('click', () => void saveSettings());
+  $('#evaDeleteSettings').addEventListener('click', async () => {
+    await settingsReady;
+    try { await settingsRequest('clear'); for (const side of sides) { field(side, 'apiKey').value = ''; tested[side] = null; } $('#evaStorageMessage').textContent = '已删除本机保存的配置，并清空当前密钥输入。'; }
+    catch (err) { $('#evaStorageMessage').textContent = err.message; }
+  });
   syncFair(); $('#evaFair').addEventListener('change', () => { syncFair(); tested.enemy = null; });
   $('#evaEnterBtn').addEventListener('click', () => view.openConfig()); $('#evaConfigBack').addEventListener('click', () => view.closeConfig()); $('#evaStartBtn').addEventListener('click', () => view.start());
+  if (new URLSearchParams(location.search).get('eva') === '1') void settingsReady.then(() => view.openConfig());
   $('#evaLogsClose').addEventListener('click', () => view.closeLogs()); $('#evaLogSide').addEventListener('change', () => view.paintLogs()); $('#evaLogTab').addEventListener('click', () => { $('#evaLogBody').classList.remove('eva-hidden'); $('#evaDebugBody').classList.add('eva-hidden'); view.paintLogs(); });
   $('#evaDebugTab').addEventListener('click', () => { $('#evaLogBody').classList.add('eva-hidden'); $('#evaDebugBody').classList.remove('eva-hidden'); view.paintLogs(); }); debugBtn.addEventListener('click', () => view.openLogs('player', true));
   $('#evaRetry').addEventListener('click', () => { hide(failureOverlay); E.arena.retry(); }); $('#evaReconfigure').addEventListener('click', () => view.openConfig(true)); $('#evaForfeit').addEventListener('click', () => { const side = E.arena.failedSide; hide(failureOverlay); E.arena.failedSide = null; engine.forfeit(side); });

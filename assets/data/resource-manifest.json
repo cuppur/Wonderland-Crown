@@ -72,8 +72,8 @@
       "publicPath": "js/ai/eva-ui.js",
       "source_reference_count": 1,
       "embedded_in_html": false,
-      "bytes": 27344,
-      "sha256": "7A949298E0D1D5A3D3DE6861BB5FDE5DFAB10D543D0BCD90379199811D589CDD"
+      "bytes": 31909,
+      "sha256": "4DA30C6137B4797E025A1F5BBD2FCD627797AAA62CE7B3C653725A9123695530"
     },
     {
       "type": "script",

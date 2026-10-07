@@ -1,10 +1,10 @@
 # 奇境王冠 · EVA AI Arena
 
-本阶段在 `feature/eva-ai-arena` 独立分支上增加 AI 对战模式。普通游戏和 UI 稳定版本仍保留在 `UI` 分支。双方 URL、密钥、模型由玩家在游戏内输入。框架开发先使用 Mock/fixtures，随后用户提供外部凭据并授权真实 API 验收，结果见本文末尾。
+本阶段在 `EVA` 独立分支（原 feature/eva-ai-arena）上增加 AI 对战模式。普通游戏和 UI 稳定版本仍保留在 `UI` 分支。双方 URL、密钥、模型由玩家在游戏内输入。框架开发先使用 Mock/fixtures，随后用户提供外部凭据并授权真实 API 验收，结果见本文末尾。
 
 ## 启动与使用
 
-无需安装运行依赖；在此分支工作区执行：
+根目录双击「一键启动-EVA对战.cmd」，自动启动本地代理并打开配置页。需要 Python 3.10+，无需第三方运行依赖；也可在此分支工作区执行：
 
 ```powershell
 python tools/eva_server.py --port 8772
@@ -18,7 +18,7 @@ python tools/eva_server.py --port 8772
 2. 输入各自的 API Key。兼容/本地服务允许空 Key，其他服务要求输入。
 3. 获取模型列表，选择或手动输入模型 ID。`/models` 不存在时仍可手动输入。
 4. 选择支持的推理强度，或使用 Auto。模型能力未知时保持 Auto；兼容服务可在“请求选项”明确选择 `reasoning_effort` 协议。
-5. 测试双方当前配置的连接。测试会发送一次短的文本模型请求；没有通过测试的非 Mock 配置不能开始比赛。
+5. 可点击测试连接检查配置；点击开始比赛也会自动检查尚未测试的真实连接。每次连接测试发送一次短的文本模型请求。可点击「保存 API 配置」，下次打开自动载入，无需重新输入。
 6. 开始比赛。普通卡牌作为观战信息保留，EVA 中不接受玩家部署，双方都由 AI 指挥。
 
 模型列表查询失败会显示具体 HTTP 状态、超时、代理未启动、网络/DNS/证书或返回非 JSON 等原因。普通静态服务器不提供 EVA 代理，页面会在发送密钥前给出启动说明；也可按服务的 CORS 支持情况选择直连。列表返回空时不会标记查询成功。
@@ -29,7 +29,7 @@ Packy 用户请核对控制台“数据看板”中的 API Endpoint。[官方快
 
 “公平周期”以蓝方周期为准锁定红方，不能抵消双方模型的响应速度差异。“调试面板 · EVA DEBUG”只增加诊断入口，不改变 AI 策略；打开后可查看 Observation、公开回复、解析命令和校验结果，平时观战可关闭。
 
-本地代理与页面同源，解决服务端不允许浏览器 CORS 的情况。服务器仅监听 `127.0.0.1`，验证 Host/Origin、接口路径、请求大小和请求头，不跟随携带凭据的重定向；远端 URL 要求 HTTPS，HTTP 仅允许 loopback 本地模型。它不记录/落盘密钥，也不把上游错误正文回传。普通静态托管仍可用 Mock；真实 API 可选“浏览器直连”，但服务必须允许 CORS。Python 代理不是静态托管平台可自动运行的服务。
+本地代理与页面同源，解决服务端不允许浏览器 CORS 的情况。服务器仅监听 `127.0.0.1`，验证 Host/Origin、接口路径、请求大小和请求头，不跟随携带凭据的重定向；远端 URL 要求 HTTPS，HTTP 仅允许 loopback 本地模型。它不记录密钥或回传上游错误正文。玩家明确保存后，配置由 Windows 当前账户加密写到项目外，不作为静态资源提供。普通静态托管仍可用 Mock；真实 API 可选“浏览器直连”，但服务必须允许 CORS。Python 代理不是静态托管平台可自动运行的服务。
 
 ## 文件与职责
 
@@ -43,6 +43,9 @@ Packy 用户请核对控制台“数据看板”中的 API Endpoint。[官方快
 | `js/ai/battle-logger.js` | 滚动日志与完整累计统计、未知费用标记 |
 | `js/ai/eva-ui.js` | 首页入口、双方配置、侧边观战面板、日志/Debug、异常恢复、结算 |
 | `css/eva.css` | EVA 专用淡蓝/淡粉/奶油界面与手机/平板规则 |
+| `tools/eva_settings.py` | 用户明确保存时加密持久化，加载/删除和白名单验证 |
+| `tools/launch_game.py` | 双分支一键入口，版本检查、loopback 服务与浏览器打开 |
+| `tests/playtest_eva_save.py` | 隔离保存、重启恢复、自动连接、删除与安全边界回归 |
 | `tools/eva_server.py` | 可选本地 API 代理及公开静态文件服务，无第三方 Python 依赖 |
 | `tests/playtest_eva.py` | 浏览器完整比赛、真实 HTTP fixture adapter/异常/交互验收 |
 | `tests/playtest_eva_live.py` | 明确授权后使用外部凭据文件，跑实际模型查询、连接与双方决策；不复制/落盘密钥 |
@@ -165,7 +168,7 @@ HTTP 401/403/429/500、网络故障、请求超时、JSON 格式错误、非法�
 
 ## 密钥与日志
 
-API Key 在密码输入框、当前 Agent config 和 adapter 的页面内存里；不写文件、不写 localStorage/sessionStorage、不提交 Git、不导出到战斗日志。刷新清除，切换 Provider 自动清空该方密钥，有单独“清除密钥”按钮。仅在玩家显式勾选时保存非敏感配置（Provider/URL/模型/周期等）；不保存连接测试通过状态。
+API Key 使用密码输入框。明确点击「保存 API 配置」后，双方配置和密钥使用 Windows DPAPI 加密到 %LOCALAPPDATA%/WonderlandCrown/eva-settings.dpapi，下次启动自动载入；不写浏览器 localStorage/sessionStorage、Git、日志或截图。此文件在项目目录外，仅当前 Windows 账户能解密。加载/保存/删除使用同源 loopback POST，静态 GET 无法访问；非 Windows 或普通静态服务器不能保存密钥，只保留原非敏感配置功能。「清空输入」只清当前页面，「删除已保存配置」会删除本机加密文件并清空当前密钥。连接测试通过状态不保存，开始比赛会自动检查真实连接。
 
 日志包含 timestamp、side、provider、model、observationId、decisionId、publicSummary、commandsRequested/Accepted/Rejected、latency、input/output/reasoning tokens（存在时）、estimatedCost、error、retryCount。取消的请求也留记录。最近 1000 轮留在内存，日志表显示最近 200 轮，累计统计不受窗口截断影响，可导出 JSON。`retryCount` 表示该请求之前的连续失败数。没有可信价格时 estimatedCost 始终 null；不显示估算费用。Token 未报告的响应/取消会标记统计不完整。
 
@@ -217,3 +220,9 @@ EVA 测试通过页面完成首页/普通对局/配置/连接测试/双 Mock 自
 ```powershell
 python tests/playtest_eva_live.py --credentials-file C:/path/api.txt
 ```
+
+## 保存与一键启动验收（2026-10-07）
+
+用户授权将既有两份 API 直接配置好并保存。使用项目外 Windows DPAPI 文件保存 Packy / DeepSeek、deepseek-flash、None、JSON、2048 token、60 秒超时、10 秒公平周期。Playwright 验证真实配置 Save→刷新自动恢复→点击开始自动测试连接→双方各 2 次有效决策并出兵，错误/页面异常为 0；报告 output/playwright/saved-live/report.json。
+
+隔离 fixture 保存回归 5 项、EVA 快速回归 31 项通过，覆盖新服务器端口/新页面恢复、密文不含明文 Key、浏览器存储无 Key、跨站与 GET 拒绝、删除后刷新不恢复、手机可访问保存按钮。两根目录 cmd 入口已验证，最终分支名为 UI 与 EVA。

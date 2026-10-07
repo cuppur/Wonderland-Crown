@@ -74,7 +74,7 @@
 
 ## 7. EVA 独立分支（2026-10-07）
 
-- 当前分支 `feature/eva-ai-arena`，从 UI 的 `996c6f6` 建立独立 worktree；UI 工作区仍是普通游戏稳定版本。
+- 当前分支 `EVA`（原 feature/eva-ai-arena），从 UI 的 `996c6f6` 建立独立 worktree；UI 工作区仍是普通游戏稳定版本。
 - 入口仍是 index.html；新增 `js/ai/` 纯状态协议/Mock/Provider/Agent/日志/UI 与 `css/eva.css`。详细协议、文件职责和限制见 `docs/EVA_ARENA.md`。
 - 启动 EVA 本地代理：`python tools/eva_server.py --port 8772`。原静态启动也可跑普通游戏/Mock；真实 API 直连需服务支持 CORS。Python 代理不是正式普通游戏的必需依赖。
 - 新增验收：`python tests/playtest_eva.py`，Bundled Chromium + 本地 HTTP fixtures，无真实付费 API；保留原 verify_game/playtest_game。
@@ -83,7 +83,9 @@
 - Game 内不调用 API；模型只返回 v1 JSON，经 CommandValidator 使用当前状态和批内预算执行。所有单位属性与技能费用/冷却仍由原常量维护。
 - EVA 开启时禁用原随机 AI 和玩家部署，两方完全对等。交汇地图红方 top/middle/bottom 对应世界路线 2/1/0；平行地图 0/1/2；不得把原世界路线编号直接暴露给单方。
 - 每方最多一个在途请求。暂停/返回/结算取消并更新 epoch，迟到响应不可执行；连续三错暂停，重试/重新配置保留战局，重开清理。
-- URL/Key/模型由用户游戏内输入。Key 仅当前页面内存，不写 env/localStorage/sessionStorage/日志/截图/Git；只可显式保存非敏感配置。未知价格不估算费用。
+- 用户已明确授权配置并保存 API。仅通过明确的「保存 API 配置」或用户授权的本机初始化，将配置用 Windows DPAPI 加密保存到 %LOCALAPPDATA%/WonderlandCrown/eva-settings.dpapi；密钥不写 env/localStorage/sessionStorage/日志/截图/Git，不在静态目录中提供。加载/保存/删除仅允许同源 loopback POST。未知价格不估算费用。
 - 不展示隐藏思维链，Debug 原始响应也必须先过滤 thought/thinking/reasoning_content 和密钥。
 - 框架阶段使用 fixtures；用户随后提供外部凭据文件并授权真实 API 实测。可用 `tests/playtest_eva_live.py --credentials-file <外部文件>` 复测对应服务；只在明确授权的任务内调用真实 API，不能把 fixtures 通过描述为真实账户验证。
 - DeepSeek 原生或兼容服务的已知 flash/v4 型号支持 None（thinking.disabled）与 Low/High/Max。真实验收使用 None、JSON 模式、2048 token、60 秒超时，双方各 10 次决策通过。SYSTEM 提示必须展示含 action 字段的扁平 JSON 示例，不能只用模糊的动作名/参数伪代码。
+
+- 保存功能验收：python tests/playtest_eva_save.py（隔离临时 DPAPI 文件，保存、重启恢复、自动连接、删除、同源保护与移动端）。实际个人配置已另行验证自动载入并双方各 2 次有效决策；不要用测试覆盖或删除真实用户保存文件。
