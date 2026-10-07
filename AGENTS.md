@@ -10,7 +10,8 @@
 
 ## 2. 运行与测试
 
-- 启动：项目根目录执行 `python -m http.server 8765 --bind 127.0.0.1`，打开 `http://127.0.0.1:8765/index.html?test=1`。
+- 一键启动：根目录「一键启动-普通游戏.cmd」与「一键启动-EVA对战.cmd」，由 tools/launch_game.py 定位 UI / EVA 分支并启动本地服务。
+- 开发启动：项目根目录执行 `python -m http.server 8765 --bind 127.0.0.1`，打开 `http://127.0.0.1:8765/index.html?test=1`。
 - 测试：`python tests/verify_game.py`（静态契约、资源、属性表哈希、JS 语法），必须全部 PASS。
 - 浏览器回归命令：`python tests/playtest_game.py`（需开发环境 Python Playwright；不属于游戏运行依赖）。截图/报告位于 `output/playwright/`。
 - 浏览器检查：用 Playwright 自带 headless Chromium，不要用本机 Edge/Chrome（会触发 IDM 弹窗）。检查 console、`window.__QJWG_TEST__.snapshot()` 和关键交互。
