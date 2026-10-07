@@ -106,7 +106,6 @@ required = {
     "炮弹短拖尾": "ctx.moveTo(p.x-dx/d*18,p.y-dy/d*18)",
     "恢复旧版连续交汇路面": "ctx.fill(outer,'evenodd')",
     "恢复旧版交汇几何": "centerTop=292+inset,centerBottom=428-inset",
-    "生成花园背景": "./assets/images/fairy-garden-battlefield-v1.png",
     "生成道路纹理": "./assets/images/fairy-road-stone-texture-v1.png",
     "透明中毒图标": "./assets/images/poison-status-icon-v1.png",
     "道路纹理蒙版": "const pattern=this.roadPattern()",
@@ -213,7 +212,6 @@ for asset in assets:
         fail(f"音频资源无效：{asset}")
 
 png_assets = {
-    ROOT / "assets" / "images" / "fairy-garden-battlefield-v1.png": (1200, 675, False),
     ROOT / "assets" / "images" / "fairy-road-stone-texture-v1.png": (512, 512, False),
     ROOT / "assets" / "images" / "poison-status-icon-v1.png": (512, 512, True),
 }
@@ -249,10 +247,15 @@ result = subprocess.run(
 if result.returncode != 0:
     fail(f"JavaScript 语法错误：{result.stderr.strip()}")
 
+for script in (ROOT / "js").glob("*.js"):
+    checked = subprocess.run([node, "--check", str(script)], text=True, capture_output=True)
+    if checked.returncode:
+        fail(f"外部 JavaScript 语法错误：{script.name} {checked.stderr}")
+
 print("[PASS] 最新属性表未被修改，且仍为 20260730.xlsx")
 print("[PASS] 四单位、药水、城门、金币、爆裂炮和守门炮静态配置已同步")
 print("[PASS] 底部卡牌、左下战术键、双地图道路与系统按钮契约存在")
 print("[PASS] BGM、单发炮、连发炮资源存在，音画限时逻辑存在")
-print("[PASS] 花园背景、道路纹理和中毒图标 PNG 有效并已接入")
+print("[PASS] 道路纹理和中毒图标 PNG 有效并已接入")
 print("[PASS] 点击与拖拽均允许在整条道路任意位置部署")
 print("[PASS] HTML 内联 JavaScript 语法检查通过")

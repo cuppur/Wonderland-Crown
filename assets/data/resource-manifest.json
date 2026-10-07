@@ -5,15 +5,6 @@
   "resources": [
     {
       "type": "image",
-      "source": "源代码/assets/fairy-garden-battlefield-v1.png",
-      "publicPath": "assets/images/fairy-garden-battlefield-v1.png",
-      "bytes": 2274510,
-      "sha256": "286D8177D9DEB350737A4AA859FB6E659A83386757279353FAAD6F5A10E876B2",
-      "source_reference_count": 1,
-      "embedded_in_html": false
-    },
-    {
-      "type": "image",
       "source": "源代码/assets/fairy-road-stone-texture-v1.png",
       "publicPath": "assets/images/fairy-road-stone-texture-v1.png",
       "bytes": 1928308,

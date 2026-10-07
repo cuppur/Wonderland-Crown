@@ -7,7 +7,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <title>奇境王冠</title>
-<link rel="preload" href="./assets/images/fairy-garden-battlefield-v1.png" as="image" />
 <link rel="preload" href="./assets/images/fairy-road-stone-texture-v1.png" as="image" />
 <!-- UI decision: pastel fairy-tale HUD with cards/coins below, tactics at lower left, and all controls outside the road-safe battle zone. -->
 <link rel="stylesheet" href="./css/style.css" />
@@ -112,8 +111,7 @@ const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const shortestAngleDelta=(from,to)=>Math.atan2(Math.sin(to-from),Math.cos(to-from));
 const TAU=Math.PI*2;
 const UNIT_ICONS={snake:'🐍',lion:'🦁',elephant:'🐘',dragon:'🐉'};
-const SCENE_BACKGROUND_URL='./assets/images/fairy-garden-battlefield-v1.png';
-const sceneBackground=new Image();sceneBackground.decoding='async';sceneBackground.src=SCENE_BACKGROUND_URL;
+const sceneBackground=new Image(); // Legacy fallback until the shared candy renderer is connected.
 const ROAD_TEXTURE_URL='./assets/images/fairy-road-stone-texture-v1.png';
 const roadTexture=new Image();roadTexture.decoding='async';roadTexture.src=ROAD_TEXTURE_URL;
 const ROAD_VISUAL={

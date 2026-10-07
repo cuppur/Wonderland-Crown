@@ -52,7 +52,7 @@ body.fill #stage{border-radius:0;box-shadow:none}
 
 /* ---------- 顶部细条：双方血条 + 倒计时 + 菜单 ---------- */
 #topbar{left:1.2rem;right:1.2rem;top:.9rem;height:5.6rem;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;align-items:center;gap:1.2rem}
-.plate{height:5rem;border-radius:2.5rem;display:flex;align-items:center;gap:1rem;padding:0 1.6rem 0 .5rem;min-width:0}
+.plate{position:relative;height:5rem;border-radius:.8rem;display:flex;align-items:center;gap:1rem;padding:0 1.6rem 0 .5rem;min-width:0}
 .plate.enemy{flex-direction:row-reverse;padding:0 .5rem 0 1.6rem}
 .crest{flex:none;width:4rem;height:4rem;border-radius:50%;display:grid;place-items:center;font-size:2.1rem;color:#fff;background:var(--blue);border:.25rem solid #fff;box-shadow:0 0 0 max(1px,.16rem) var(--blue-d)}
 .enemy .crest{background:var(--red);box-shadow:0 0 0 max(1px,.16rem) var(--red-d)}
@@ -64,7 +64,7 @@ body.fill #stage{border-radius:0;box-shadow:none}
 .bar i{display:block;height:100%;width:100%;border-radius:inherit;background:linear-gradient(#86caff,#4f9de9);transition:width .25s}
 .enemy .bar{transform:scaleX(-1)}
 .enemy .bar i{background:linear-gradient(#ffa2ae,#ee6779)}
-.timer{min-width:13rem;height:5.6rem;padding:0 2.2rem;border-radius:2.8rem;display:grid;place-content:center;text-align:center;background:linear-gradient(#fff4cc,#ffe08c);border:max(1.5px,.24rem) solid #efc25b;box-shadow:0 .35rem 0 rgba(170,115,30,.22)}
+.timer{position:relative;min-width:13rem;height:5.6rem;padding:0 2.2rem;border-radius:2.8rem;display:grid;place-content:center;text-align:center;background:linear-gradient(#fff4cc,#ffe08c);border:max(1.5px,.24rem) solid #efc25b;box-shadow:0 .35rem 0 rgba(170,115,30,.22)}
 .timer b{font:800 max(15px,2.8rem)/1 var(--num-font);font-variant-numeric:tabular-nums;color:#7b4a2a;letter-spacing:.05em}
 .timer small{display:block;margin-top:.25rem;font-size:max(9px,1.1rem);font-weight:700;color:#a87445}
 .round-btn{width:5rem;height:5rem;border-radius:50%;display:grid;place-items:center;font-size:2.2rem;background:var(--cream);border:max(1.5px,.22rem) solid var(--line);box-shadow:0 .35rem 0 var(--ink-soft)}
@@ -77,6 +77,17 @@ body.fill #stage{border-radius:0;box-shadow:none}
 #menuPop button:hover{background:var(--cream-2)}
 #menuPop .ico{font-family:var(--emoji);font-size:max(12px,1.8rem);width:2.4rem;text-align:center}
 
+/* Ribbon tails and a cream cake clock, sharing the team's own darker outline. */
+.plate::before,.plate::after{content:"";position:absolute;top:.5rem;bottom:.5rem;width:1.8rem;background:var(--blue-l);z-index:-1}
+.plate::before{left:-.8rem;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,35% 50%)}
+.plate::after{right:-.8rem;clip-path:polygon(0 0,100% 0,65% 50%,100% 100%,0 100%)}
+.plate.enemy::before,.plate.enemy::after{background:var(--red-l)}
+.plate.player{background:linear-gradient(#f5fbff,#dceeff);border-color:#89bce7;box-shadow:0 .25rem #689ed0}
+.plate.enemy{background:linear-gradient(#fff6f8,#ffe0e6);border-color:#e4a0af;box-shadow:0 .25rem #cc7c91}
+.timer{background:linear-gradient(#ffb1cd 0 30%,#fff5dc 30% 78%,#eabb80 78%);border-color:#b98154;border-radius:1.3rem 1.3rem 1.8rem 1.8rem}
+.timer::before{content:"🍒";position:absolute;top:-.65rem;left:50%;transform:translateX(-50%);font:1.5rem var(--emoji)}
+.timer small{color:#97634a}
+@media(max-width:1000px){#toolbar .title{display:none}#toolbar{gap:4px;padding:0 6px}#toolbar button{font-size:10px;padding:5px 6px}.size{display:none}}
 /* ---------- 战场提示 ---------- */
 #hint{left:50%;top:8.4rem;transform:translateX(-50%);padding:.7rem 1.8rem;border-radius:2rem;background:rgba(91,68,97,.82);color:#fff;font-size:max(10px,1.45rem);font-weight:700;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none}
 #hint.show{opacity:1}
@@ -133,15 +144,6 @@ body.fill #stage{border-radius:0;box-shadow:none}
 #hand .skill.burst{margin-right:.45rem}
 #hand .coins{margin-right:.2rem}
 
-/* 糖果风顶栏与托盘 */
-.plate.panel{background:repeating-linear-gradient(90deg,#fffaf0 0 1.1rem,#fff0f4 1.1rem 2.2rem);border-color:#f3b6c8}
-.plate.player.panel{background:repeating-linear-gradient(90deg,#fffaf0 0 1.1rem,#eef6ff 1.1rem 2.2rem);border-color:#a9d3f7}
-.timer{background:linear-gradient(#ff9fbd 0 34%,#fff4cc 34%);border-color:#e98aa6;box-shadow:0 .35rem 0 rgba(196,72,94,.25)}
-.timer b{margin-top:.6rem}
-.timer small{color:#c4485e}
-#hand{border-color:#c98d4a;background:#fbe6ee;box-shadow:inset 0 .19rem 0 #fff,0 0 0 max(1.5px,.25rem) #f2cf83,0 0 0 max(2.5px,.45rem) #c98d4a,0 .55rem 0 #9c6436,0 .95rem 1.2rem rgba(56,40,61,.35)}
-.card{background:radial-gradient(circle at 50% 0,#fffaf2 .5rem,transparent .53rem) 0 -.12rem/1.4rem 1rem repeat-x,var(--card-bg)}
-
 /* ---------- 竖屏提示（仅自适应模式） ---------- */
 #rotate{position:absolute;inset:0;display:none;place-content:center;text-align:center;gap:12px;background:#2b2531;color:#fff;font-size:16px;z-index:5}
 #rotate .ico{font-size:44px;font-family:var(--emoji)}
@@ -152,7 +154,7 @@ body.fill #stage{border-radius:0;box-shadow:none}
 <div id="toolbar">
   <span class="title">奇境王冠 · 2.5D 糖果蛋糕城（快速视觉验收）</span>
   <div class="group" id="ratioGroup">
-    <button data-ratio="1.7778" aria-pressed="true">电脑 16:9</button>
+    <button data-ratio="1.7778" aria-pressed="true">电脑 16:9</button><button data-ratio="2.1667">手机 19.5:9</button><button data-ratio="1.3333">平板 4:3</button><button data-ratio="fill">自适应窗口</button>
   </div>
   <div class="group">
     <button id="autoBtn" aria-pressed="true">自动演示</button>
@@ -241,7 +243,7 @@ const stage = $('#stage');
 let ratio = 1.7778;
 
 // u = 舞台基准单位（px）。按高度 1%，宽度过窄时收缩，太小时保底以保证手机可读。
-function computeUnit(w, h) { return Math.max(6.5, Math.min(h / 65, w * .0097)); }
+function computeUnit(w, h) { return Math.max(4.4, Math.min(h / 65, w * .0097)); }
 
 function fitStage() {
   const vp = $('#viewport').getBoundingClientRect();
@@ -273,436 +275,17 @@ window.addEventListener('resize', fitStage);
 window.QJ = { $, $$, stage, fitStage };
 })();
 </script>
+<script src="../js/candy-field.js"></script>
 <script>
-/* P2：战场。全部程序绘制：手绘风草地、参数化交汇道路、三门城墙、墙顶炮台。 */
 (() => {
-'use strict';
-const canvas = QJ.$('#field'), ctx = canvas.getContext('2d');
-const TAU = Math.PI * 2, lerp = (a, b, t) => a + (b - a) * t, clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const INK = 'rgba(91,68,97,.72)';
-const TEAM = {
-  player: { main: '#5aa9f0', dark: '#2f72bd', light: '#bfe0ff' },
-  enemy:  { main: '#f27384', dark: '#c4485e', light: '#ffd1d8' }
-};
-function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-function rr(g, x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, Math.max(0, Math.min(r, Math.abs(w) / 2, Math.abs(h) / 2))); }
-function circle(g, x, y, r) { g.beginPath(); g.arc(x, y, Math.max(0, r), 0, TAU); }
-
-class Path {
-  constructor(pts) {
-    this.pts = pts; this.cum = [0];
-    for (let i = 1; i < pts.length; i++) this.cum.push(this.cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
-    this.length = this.cum[this.cum.length - 1];
-  }
-  at(t) {
-    const d = clamp(t, 0, 1) * this.length; let lo = 0, hi = this.cum.length - 1;
-    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (this.cum[mid] <= d) lo = mid; else hi = mid; }
-    const seg = this.cum[hi] - this.cum[lo] || 1, q = (d - this.cum[lo]) / seg, a = this.pts[lo], b = this.pts[hi];
-    return { x: lerp(a.x, b.x, q), y: lerp(a.y, b.y, q) };
-  }
-  angle(t) { const a = this.at(t - .004), b = this.at(t + .004); return Math.atan2(b.y - a.y, b.x - a.x); }
-  nearest(x, y) { let best = { d: Infinity, t: 0 }; for (let i = 0; i <= 200; i++) { const t = i / 200, p = this.at(t), d = Math.hypot(p.x - x, p.y - y); if (d < best.d) best = { d, t }; } return best; }
-  trace(g) { g.beginPath(); g.moveTo(this.pts[0].x, this.pts[0].y); for (let i = 1; i < this.pts.length; i++) g.lineTo(this.pts[i].x, this.pts[i].y); }
-}
-function bez(out, p0, p1, p2, p3, n) {
-  for (let i = 1; i <= n; i++) {
-    const t = i / n, m = 1 - t;
-    out.push({ x: m*m*m*p0.x + 3*m*m*t*p1.x + 3*m*t*t*p2.x + t*t*t*p3.x, y: m*m*m*p0.y + 3*m*m*t*p1.y + 3*m*t*t*p2.y + t*t*t*p3.y });
-  }
-}
-
-/* ---------- 几何：全部由舞台宽高推导，战场随比例拉伸 ---------- */
-function buildGeometry(w, h) {
-  const u = parseFloat(getComputedStyle(document.documentElement).fontSize) || 8;
-  const top = 7.4 * u, bottom = h - 14 * u, band = bottom - top, cy = (top + bottom) / 2;
-  const s = Math.min(band * .3, w * .16);          // 车道间距
-  const rw = s * .4;                                // 建筑与单位尺度基准
-  const road = rw * .7;                             // 路面宽
-  const S0 = rw / 50;                               // 线宽/细节基准
-  const T = rw * 1.2;                               // 城墙厚度
-  const m = Math.max(w * .016, rw * .25);           // 城墙到舞台边缘
-  const x1L = m + T, x1R = w - m - T;               // 城墙内侧面
-  const rs = x1L + rw * .62, re = x1R - rw * .62;   // 出生平台中心 = 路径起点
-  const L = re - rs, cx = w / 2, ys = [cy - s, cy, cy + s];
-  const lead = L * .1, hx = L * .15, slope = 1.45 * s / (L / 2 - lead);
-  const cross = (y0, y1) => {
-    const dir = Math.sign(y1 - y0), pts = [{ x: rs, y: y0 }, { x: rs + lead, y: y0 }];
-    bez(pts, { x: rs + lead, y: y0 }, { x: rs + lead + L * .14, y: y0 }, { x: cx - hx, y: cy - dir * hx * slope }, { x: cx, y: cy }, 28);
-    bez(pts, { x: cx, y: cy }, { x: cx + hx, y: cy + dir * hx * slope }, { x: re - lead - L * .14, y: y1 }, { x: re - lead, y: y1 }, 28);
-    pts.push({ x: re, y: y1 }); return new Path(pts);
-  };
-  const mid = []; for (let i = 0; i <= 12; i++) mid.push({ x: lerp(rs, re, i / 12), y: cy });
-  const paths = [cross(ys[0], ys[2]), new Path(mid), cross(ys[2], ys[0])];
-  return {
-    w, h, u, top, bottom, cy, cx, s, rw, road, S0, T, m, x1L, x1R, rs, re, L, ys, paths,
-    wy0: ys[0] - rw * 1.05, wy1: ys[2] + rw * 1.05,
-    unitR: rw * .3,
-    k: L / 1070,                                    // 原版道路长 1070 px → 当前像素的换算系数
-    pivot: { player: { x: m + T * .56, y: ys[1] - T * .98 }, enemy: { x: w - m - T * .56, y: ys[1] - T * .98 } }
-  };
-}
-
-/* ---------- 静态底图：草地 + 道路 + 平台 + 花丛（缓存为离屏画布） ---------- */
-function farFromRoads(F, x, y, gap) {
-  for (const p of F.paths) if (p.nearest(x, y).d < F.road / 2 + gap) return false;
-  return x > F.x1L + F.rw * .9 && x < F.x1R - F.rw * .9;
-}
-function drawBlades(g, x, y, len, S0, color, rnd) {
-  g.strokeStyle = color; g.lineWidth = Math.max(.8, 1.25 * S0); g.lineCap = 'round';
-  for (let i = -1; i <= 1; i++) {
-    const lean = (rnd() - .5) * .7 + i * .35, l = len * (.75 + rnd() * .45);
-    g.beginPath(); g.moveTo(x + i * 1.6 * S0, y);
-    g.quadraticCurveTo(x + i * 1.6 * S0 + lean * l * .3, y - l * .6, x + i * 1.6 * S0 + lean * l, y - l); g.stroke();
-  }
-}
-function drawFlower(g, x, y, r, petal, rnd) {
-  g.fillStyle = petal;
-  for (let i = 0; i < 5; i++) { const a = i * TAU / 5 + rnd(); circle(g, x + Math.cos(a) * r, y + Math.sin(a) * r, r * .78); g.fill(); }
-  g.fillStyle = '#ffd65c'; circle(g, x, y, r * .62); g.fill();
-}
-const CANDY = ['#ff8fb1', '#ffd65c', '#8fe0a6', '#7cc8ff', '#c9a2ff', '#ffb27a'];
-function lolly(g, x, y, r, col, S0, stick) {
-  if (stick) {
-    g.fillStyle = 'rgba(52,96,44,.22)'; g.beginPath(); g.ellipse(x + r * .15, y + r * .1, r * .55, r * .2, 0, 0, TAU); g.fill();
-    g.fillStyle = '#fff7ec'; g.strokeStyle = 'rgba(91,68,97,.45)'; g.lineWidth = Math.max(1, 1.4 * S0);
-    rr(g, x - r * .08, y - stick, r * .16, stick, r * .08); g.fill(); g.stroke();
-    y -= stick;
-  }
-  circle(g, x, y, r); g.fillStyle = '#fff'; g.fill(); g.strokeStyle = INK; g.lineWidth = Math.max(1.2, 2 * S0); g.stroke();
-  g.strokeStyle = col; g.lineWidth = r * .26; g.lineCap = 'round'; g.beginPath();
-  for (let a = 0; a < TAU * 2.1; a += .18) { const d = r * .08 + a * r * .066; g.lineTo(x + Math.cos(a) * d, y + Math.sin(a) * d); } g.stroke();
-  g.fillStyle = 'rgba(255,255,255,.75)'; g.beginPath(); g.ellipse(x - r * .38, y - r * .42, r * .2, r * .12, -.6, 0, TAU); g.fill();
-}
-function drawBush(g, x, y, r, rnd, S0) {
-  if (rnd() < .36) { lolly(g, x, y, r * .62, CANDY[Math.floor(rnd() * CANDY.length)], S0, r * 1.3); return; }
-  g.fillStyle = 'rgba(52,96,44,.22)'; g.beginPath(); g.ellipse(x + r * .15, y + r * .25, r * 1.2, r * .42, 0, 0, TAU); g.fill();
-  const drops = [];
-  for (let i = 0; i < 4; i++) drops.push({ x: x + (rnd() - .5) * r * 1.5, y: y + (rnd() - .5) * r * .5, r: r * (.38 + rnd() * .2), c: CANDY[Math.floor(rnd() * CANDY.length)] });
-  drops.sort((a, b) => a.y - b.y);
-  for (const d of drops) {
-    g.beginPath(); g.moveTo(d.x - d.r, d.y);
-    g.quadraticCurveTo(d.x - d.r, d.y - d.r * 1.3, d.x, d.y - d.r * 1.3); g.quadraticCurveTo(d.x + d.r, d.y - d.r * 1.3, d.x + d.r, d.y);
-    g.ellipse(d.x, d.y, d.r, d.r * .32, 0, 0, Math.PI); g.closePath();
-    g.fillStyle = d.c; g.fill(); g.strokeStyle = INK; g.lineWidth = Math.max(1, 1.6 * S0); g.stroke();
-    g.fillStyle = 'rgba(255,255,255,.6)'; g.beginPath(); g.ellipse(d.x - d.r * .35, d.y - d.r * .75, d.r * .2, d.r * .12, -.5, 0, TAU); g.fill();
-    g.fillStyle = 'rgba(255,255,255,.85)';
-    for (let k = 0; k < 4; k++) { circle(g, d.x + (rnd() - .5) * d.r * 1.2, d.y - d.r * (.2 + rnd() * .8), Math.max(.8, d.r * .05)); g.fill(); }
-  }
-}
-function roadLayers(F) {
-  const { road, S0 } = F;
-  return [
-    { w: road + 10 * S0, c: 'rgba(78,134,58,.42)' },   // 草地压边：清楚的绿色描边
-    { w: road + 4 * S0, c: '#dcb677' },                 // 沙土外沿
-    { w: road, c: '#f4dea4' }                           // 路面
-  ];
-}
-// 道路蒙版：先按宽度画出三条路，再模糊后取阈值。凹角（分岔、交汇处）会被填成圆弧，直边基本不动。
-function erf(x) { const t = 1 / (1 + .3275911 * x); return 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - .284496736) * t + .254829592) * t * Math.exp(-x * x); }
-function roadMask(F, width, color, dpr) {
-  const W = Math.round(F.w * dpr), H = Math.round(F.h * dpr);
-  const a = document.createElement('canvas'); a.width = W; a.height = H;
-  const ga = a.getContext('2d'); ga.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ga.strokeStyle = ga.fillStyle = '#fff'; ga.lineWidth = width; ga.lineCap = 'round'; ga.lineJoin = 'round';
-  for (const p of F.paths) { p.trace(ga); ga.stroke(); }
-  circle(ga, F.cx, F.cy, F.road * .62 + (width - F.road) / 2); ga.fill();
-  const b = document.createElement('canvas'); b.width = W; b.height = H;
-  const gb = b.getContext('2d', { willReadFrequently: true });
-  const sigma = F.road * .8, edge = .5 * erf(width / (sigma * Math.SQRT2)) * 255, lo = edge - 3, hi = edge + 3;
-  gb.filter = `blur(${(sigma * dpr).toFixed(1)}px)`; gb.drawImage(a, 0, 0); gb.filter = 'none';
-  const img = gb.getImageData(0, 0, W, H), d = img.data;
-  for (let i = 3; i < d.length; i += 4) { const v = d[i]; d[i] = v <= lo ? 0 : v >= hi ? 255 : (v - lo) / (hi - lo) * 255; d[i - 3] = d[i - 2] = d[i - 1] = 255; }
-  gb.putImageData(img, 0, 0);
-  gb.globalCompositeOperation = 'source-in'; gb.fillStyle = color; gb.fillRect(0, 0, W, H);
-  return b;
-}
-function drawRoads(g, F, rnd) {
-  const { road: rw, S0, cx, cy } = F, dpr = g.getTransform().a;
-  g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
-  { const lip = roadMask(F, F.road + 8 * S0, 'rgba(120,88,48,.32)', dpr); g.save(); g.setTransform(1, 0, 0, 1, 0, Math.round(4 * S0 * dpr)); g.drawImage(lip, 0, 0); g.restore(); }
-  for (const layer of roadLayers(F)) {
-    const m = roadMask(F, layer.w, layer.c, dpr);
-    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(m, 0, 0); g.restore();
-  }
-  // 广场花砖
-  g.strokeStyle = 'rgba(214,170,98,.55)'; g.lineWidth = Math.max(1, 1.6 * S0);
-  circle(g, cx, cy, rw * .5); g.stroke();
-  g.fillStyle = 'rgba(255,214,226,.8)';
-  for (let i = 0; i < 6; i++) { const a = i * TAU / 6; g.beginPath(); g.ellipse(cx + Math.cos(a) * rw * .2, cy + Math.sin(a) * rw * .2, rw * .12, rw * .065, a, 0, TAU); g.fill(); }
-  g.fillStyle = '#ffd65c'; circle(g, cx, cy, rw * .09); g.fill();
-  // 路面小石子
-  for (const p of F.paths) {
-    const n = Math.round(p.length / (rw * .32));
-    for (let i = 0; i < n; i++) {
-      const t = (i + rnd()) / n, q = p.at(t);
-      if (Math.hypot(q.x - cx, q.y - cy) < rw * .75) continue;
-      const a = p.angle(t), off = (rnd() - .5) * rw * .72;
-      g.fillStyle = rnd() < .55 ? 'rgba(222,188,124,.75)' : 'rgba(255,248,226,.9)';
-      g.beginPath(); g.ellipse(q.x - Math.sin(a) * off, q.y + Math.cos(a) * off, (1.2 + rnd() * 1.6) * S0, (.9 + rnd()) * S0, a + rnd(), 0, TAU); g.fill();
-    }
-  }
-  // 路边草簇
-  for (const p of F.paths) {
-    const n = Math.round(p.length / (rw * .9));
-    for (let i = 0; i < n; i++) {
-      const t = (i + rnd()) / n, q = p.at(t), a = p.angle(t), side = rnd() < .5 ? -1 : 1, off = side * (rw * .5 + 3 * S0);
-      const x = q.x - Math.sin(a) * off, y = q.y + Math.cos(a) * off;
-      if (!farFromRoads(F, x, y, -rw * .05)) continue;
-      drawBlades(g, x, y, 6 * S0, S0, rnd() < .5 ? '#5e9f45' : '#86c561', rnd);
-    }
-  }
-  g.restore();
-}
-function drawPlatforms(g, F) {
-  const { rw, S0, ys, T } = F;
-  for (const side of ['player', 'enemy']) {
-    for (const y of ys) {
-      const x0 = side === 'player' ? F.x1L - T * .08 : F.x1R - rw * 1.22, wdt = rw * 1.3, hh = rw * .52;
-      g.fillStyle = 'rgba(78,134,58,.35)'; rr(g, x0 - 3 * S0, y - hh - 3 * S0, wdt + 6 * S0, hh * 2 + 6 * S0, rw * .26); g.fill();
-      g.fillStyle = '#cbb58f'; rr(g, x0, y - hh + 5 * S0, wdt, hh * 2, rw * .22); g.fill();
-      g.fillStyle = '#efe5d1'; g.strokeStyle = 'rgba(150,120,110,.55)'; g.lineWidth = Math.max(1, 1.6 * S0);
-      rr(g, x0, y - hh, wdt, hh * 2, rw * .22); g.fill(); g.stroke();
-      // 石板缝
-      g.strokeStyle = 'rgba(190,164,130,.55)'; g.lineWidth = Math.max(.8, 1.1 * S0); g.beginPath();
-      for (let i = 1; i < 3; i++) { const xx = x0 + wdt * i / 3; g.moveTo(xx, y - hh + 3 * S0); g.lineTo(xx, y + hh - 3 * S0); }
-      g.moveTo(x0 + 3 * S0, y); g.lineTo(x0 + wdt - 3 * S0, y); g.stroke();
-      g.fillStyle = side === 'player' ? 'rgba(90,169,240,.22)' : 'rgba(242,115,132,.22)';
-      circle(g, x0 + wdt / 2, y, rw * .3); g.fill();
-    }
-  }
-}
-function drawTree(g, x, y, r, rnd, S0, kind) {
-  const lw = Math.max(1, 1.5 * S0);
-  g.fillStyle = 'rgba(52,96,44,.25)'; g.beginPath(); g.ellipse(x + r * .3, y + r * .08, r * .95, r * .34, 0, 0, TAU); g.fill();
-  if (kind === 'mush') {
-    g.fillStyle = '#fff4e2'; g.strokeStyle = '#a07a5a'; g.lineWidth = lw; rr(g, x - r * .22, y - r * .6, r * .44, r * .62, r * .18); g.fill(); g.stroke();
-    g.fillStyle = '#ff6b7a'; g.strokeStyle = '#a83a4a'; g.beginPath(); g.ellipse(x, y - r * .58, r * .62, r * .46, 0, Math.PI, 0); g.closePath(); g.fill(); g.stroke();
-    g.fillStyle = '#fffaf2'; for (const [dx, dy, dr] of [[-.3, -.75, .1], [.12, -.88, .12], [.36, -.68, .08]]) { circle(g, x + dx * r, y + dy * r, dr * r); g.fill(); }
-    return;
-  }
-  if (kind === 'cotton') {
-    g.fillStyle = '#fffaf2'; g.strokeStyle = '#b89a8a'; g.lineWidth = lw; rr(g, x - r * .07, y - r * 1.15, r * .14, r * 1.15, r * .07); g.fill(); g.stroke();
-    const c = rnd() < .5 ? ['#ffc2dc', '#ffe0ee', '#e98aae'] : ['#bfe3ff', '#e2f2ff', '#7cb8e8'];
-    const puffs = [[0, -1.6, .5], [-.38, -1.35, .4], [.4, -1.38, .42], [-.15, -1.25, .4], [.18, -1.82, .34]];
-    for (const [dx, dy, pr] of puffs) { circle(g, x + dx * r, y + dy * r, pr * r + lw); g.fillStyle = c[2]; g.fill(); }
-    for (const [dx, dy, pr] of puffs) { circle(g, x + dx * r, y + dy * r, pr * r); g.fillStyle = c[0]; g.fill(); }
-    for (const [dx, dy, pr] of puffs) { circle(g, x + (dx - .12) * r, y + (dy - .12) * r, pr * r * .45); g.fillStyle = c[1]; g.fill(); }
-    return;
-  }
-  g.fillStyle = '#b07a4a'; g.strokeStyle = '#7a4f2c'; g.lineWidth = lw; rr(g, x - r * .12, y - r * .9, r * .24, r * .92, r * .1); g.fill(); g.stroke();
-  const leaves = [[0, -1.45, .58], [-.42, -1.15, .45], [.42, -1.12, .46], [0, -1.05, .5]];
-  for (const [dx, dy, pr] of leaves) { circle(g, x + dx * r, y + dy * r, pr * r + lw); g.fillStyle = '#3f7f3a'; g.fill(); }
-  for (const [dx, dy, pr] of leaves) { circle(g, x + dx * r, y + dy * r, pr * r); g.fillStyle = '#62ad4c'; g.fill(); }
-  for (const [dx, dy, pr] of leaves) { circle(g, x + (dx - .14) * r, y + (dy - .14) * r, pr * r * .45); g.fillStyle = '#8fd06a'; g.fill(); }
-  g.fillStyle = '#ff6b7a'; for (let k = 0; k < 3; k++) { circle(g, x + (rnd() - .5) * r, y - r * (1.1 + rnd() * .5), r * .07); g.fill(); }
-}
-function drawGround(g, F) {
-  const { w, h, rw, S0 } = F, rnd = rng(20261006);
-  const base = g.createLinearGradient(0, 0, 0, h);
-  base.addColorStop(0, '#addf83'); base.addColorStop(.5, '#9bd572'); base.addColorStop(1, '#8bcb66');
-  g.fillStyle = base; g.fillRect(0, 0, w, h);
-  // 大块柔和色斑（手绘水彩感）
-  const tints = ['rgba(206,242,156,', 'rgba(118,186,88,', 'rgba(170,224,124,', 'rgba(226,246,170,'];
-  for (let i = 0; i < 34; i++) {
-    const x = rnd() * w, y = rnd() * h, r = (0.05 + rnd() * .12) * Math.max(w, h), c = tints[i % tints.length];
-    const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, c + '.32)'); gr.addColorStop(1, c + '0)');
-    g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
-  }
-  // 笔触草纹
-  const n = Math.round(w * h / 650), cols = ['rgba(98,160,72,.5)', 'rgba(132,196,98,.55)', 'rgba(200,238,150,.55)'];
-  for (let i = 0; i < n; i++) drawBlades(g, rnd() * w, rnd() * h, (4 + rnd() * 5) * S0, S0, cols[i % 3], rnd);
-  // 纸面颗粒
-  for (let i = 0; i < n * .6; i++) { g.fillStyle = rnd() < .5 ? 'rgba(255,255,230,.12)' : 'rgba(60,110,50,.08)'; g.fillRect(rnd() * w, rnd() * h, 1.4 * S0, 1.4 * S0); }
-  drawRoads(g, F, rnd);
-  drawPlatforms(g, F);
-  // 道路之间与边缘的花丛（避开道路）
-  const pet = ['#fff6fa', '#ffc4d8', '#e2d4ff', '#fff0a0', '#ffd7c4'];
-  for (let i = 0; i < 70; i++) {
-    const x = rnd() * w, y = lerp(F.wy0 - rw * .6, F.wy1 + rw * .6, rnd());
-    if (!farFromRoads(F, x, y, rw * .45)) continue;
-    const c = pet[i % pet.length];
-    for (let j = 0; j < 3; j++) drawFlower(g, x + (rnd() - .5) * 10 * S0, y + (rnd() - .5) * 7 * S0, Math.max(1.1, (1.5 + rnd()) * S0), c, rnd);
-  }
-  // 上下边缘灌木带（远离三路，压在 HUD 背后）
-  const br = rw * .5, step = br * 1.7;
-  for (let x = -br * .5; x < w + br; x += step * (.8 + rnd() * .4)) {
-    drawBush(g, x, Math.min(F.ys[0] - rw * 1.45, F.top) + br * 1.2 - rnd() * br * .3, br * (.75 + rnd() * .35), rnd, S0);
-    drawBush(g, x + step * .5, Math.max(F.ys[2] + rw * 1.55, F.bottom - br * .2) + rnd() * br * .6, br * (.8 + rnd() * .35), rnd, S0);
-  }
-  // 空白草地点缀：树、棉花糖树、小蘑菇，周围带几朵花；中央交汇区保持干净
-  const deco = [];
-  for (let i = 0; i < 260 && deco.length < 20; i++) {
-    const x = lerp(F.x1L + rw * 1.5, F.x1R - rw * 1.5, rnd()), y = lerp(F.ys[0] - rw * .8, F.ys[2] + rw * 1.3, rnd());
-    if (Math.abs(x - F.cx) < rw * 1.3 || !farFromRoads(F, x, y, rw * .95)) continue;
-    if (deco.some(d => Math.hypot(d.x - x, d.y - y) < rw * 1.15)) continue;
-    deco.push({ x, y, k: rnd() });
-  }
-  deco.sort((a, b) => a.y - b.y).forEach(d => {
-    const kind = d.k < .38 ? 'tree' : d.k < .68 ? 'cotton' : 'mush';
-    for (let j = 0; j < 4; j++) drawFlower(g, d.x + (rnd() - .5) * rw * .9, d.y + rw * (.05 + rnd() * .2), Math.max(1.2, 2.2 * S0), pet[j % pet.length], rnd);
-    drawTree(g, d.x, d.y, rw * (kind === 'mush' ? .34 : .46), rnd, S0, kind);
-  });
-  // 交汇区内侧四块草地各一丛
-  for (const [fx, fy] of [[.3, -.5], [.7, -.5], [.3, .5], [.7, .5]]) {
-    const x = lerp(F.rs, F.re, fx), y = F.cy + fy * F.s;
-    if (farFromRoads(F, x, y, br * .7)) drawBush(g, x, y, br * .7, rnd, S0);
-  }
-}
-
-/* ---------- 城墙（每帧绘制，含受击闪白、震动、裂纹） ---------- */
-function drawGate(g, F, y, main) {
-  const { T, rw, S0 } = F, x1 = F.m + T, oh = rw * (main ? .4 : .33), x0 = x1 - T * (main ? .2 : .34), x2 = x1 + T * .14;
-  g.fillStyle = '#5c4159'; g.strokeStyle = '#e6b955'; g.lineWidth = Math.max(1.2, 2.6 * S0);
-  g.beginPath(); g.moveTo(x0, y - oh); g.lineTo(x2 - oh * .45, y - oh); g.quadraticCurveTo(x2, y - oh, x2, y - oh * .55);
-  g.lineTo(x2, y + oh * .55); g.quadraticCurveTo(x2, y + oh, x2 - oh * .45, y + oh); g.lineTo(x0, y + oh); g.closePath(); g.fill(); g.stroke();
-  const glow = g.createLinearGradient(x0, 0, x2, 0); glow.addColorStop(0, 'rgba(255,214,140,0)'); glow.addColorStop(1, 'rgba(255,214,140,.35)');
-  g.fillStyle = glow; rr(g, x0, y - oh * .7, x2 - x0, oh * 1.4, oh * .4); g.fill();
-  // 两扇木门向外打开
-  g.fillStyle = '#c98c55'; g.strokeStyle = 'rgba(110,70,50,.8)'; g.lineWidth = Math.max(1, 1.3 * S0);
-  for (const sgn of [-1, 1]) {
-    g.save(); g.translate(x2, y + sgn * oh); g.rotate(sgn * .62);
-    rr(g, 0, -T * .05, oh * .82, T * .1, T * .04); g.fill(); g.stroke(); g.restore();
-  }
-}
-function drawRoundTower(g, F, x, y, r, team, flagT) {
-  const { S0, T } = F;
-  g.fillStyle = 'rgba(52,96,44,.22)'; circle(g, x + r * .14, y + r * .2, r); g.fill();
-  g.fillStyle = '#f3e3c3'; g.strokeStyle = INK; g.lineWidth = Math.max(1.2, 2.2 * S0); circle(g, x, y, r); g.fill(); g.stroke();
-  g.fillStyle = team.main; circle(g, x, y, r * .74); g.fill();
-  g.strokeStyle = team.light; g.lineWidth = Math.max(1, 1.6 * S0); g.beginPath();
-  for (let i = 0; i < 8; i++) { const a = i * TAU / 8; g.moveTo(x, y); g.lineTo(x + Math.cos(a) * r * .74, y + Math.sin(a) * r * .74); } g.stroke();
-  g.strokeStyle = team.dark; g.lineWidth = Math.max(1, 1.4 * S0); circle(g, x, y, r * .74); g.stroke();
-  g.fillStyle = '#f7c94f'; circle(g, x, y, r * .16); g.fill();
-  // 小三角旗，朝战场方向飘
-  const wave = Math.sin(flagT * 3 + y) * T * .06;
-  g.fillStyle = team.main; g.strokeStyle = '#fff'; g.lineWidth = Math.max(1, 1.4 * S0);
-  g.beginPath(); g.moveTo(x, y - r * .1); g.quadraticCurveTo(x + T * .45, y - r * .3 + wave, x + T * .85, y - r * .45 + wave); g.lineTo(x, y - r * .8); g.closePath(); g.fill(); g.stroke();
-}
-const CAKE_SQUASH = .4, CAKE_LINE = '#8a5a3c';
-function cream(g, x, y, r, S0) { circle(g, x, y, r); g.fillStyle = '#fffaf2'; g.fill(); g.strokeStyle = 'rgba(138,90,60,.4)'; g.lineWidth = Math.max(.8, S0); g.stroke(); }
-function cakeTier(g, F, cx, by, rx, h, team, rnd) {
-  const ry = rx * CAKE_SQUASH, rt = rx * .92, rty = rt * CAKE_SQUASH, S0 = F.S0, lw = Math.max(1.2, 2 * S0), ty = by - h;
-  const side = new Path2D(); side.moveTo(cx - rt, ty); side.lineTo(cx - rx, by); side.ellipse(cx, by, rx, ry, 0, Math.PI, 0, true); side.lineTo(cx + rt, ty); side.closePath();
-  const sg = g.createLinearGradient(cx - rx, 0, cx + rx, 0); sg.addColorStop(0, '#f8d39c'); sg.addColorStop(.35, '#ffe6b8'); sg.addColorStop(1, '#dea063');
-  g.fillStyle = sg; g.fill(side); g.strokeStyle = CAKE_LINE; g.lineWidth = lw; g.stroke(side);
-  g.save(); g.clip(side); g.strokeStyle = team.main; g.globalAlpha = .55; g.lineWidth = h * .12;
-  g.beginPath(); g.ellipse(cx, by - h * .45, (rx + rt) / 2, ry, 0, 0, Math.PI); g.stroke(); g.restore();
-  g.fillStyle = '#fffaf2';
-  for (let k = 0; k < 8; k++) { const a = .1 * Math.PI + k / 7 * .8 * Math.PI, x = cx + Math.cos(a) * rt, y = ty + Math.sin(a) * rty; rr(g, x - rt * .07, y - rty * .2, rt * .14, h * (.22 + ((k * 37) % 5) * .06), rt * .07); g.fill(); }
-  g.beginPath(); g.ellipse(cx, ty, rt * 1.03, rty * 1.05, 0, 0, TAU); g.fill(); g.strokeStyle = 'rgba(138,90,60,.55)'; g.lineWidth = lw * .8; g.stroke();
-  g.fillStyle = team.light; g.beginPath(); g.ellipse(cx, ty, rt * .74, rty * .74, 0, 0, TAU); g.fill();
-  for (let k = 0; k < 9; k++) {
-    const a = rnd() * TAU, d = .15 + rnd() * .45; g.save(); g.translate(cx + Math.cos(a) * rt * d, ty + Math.sin(a) * rty * d); g.rotate(rnd() * TAU);
-    g.fillStyle = CANDY[k % CANDY.length]; rr(g, -rt * .05, -rt * .016, rt * .1, rt * .032, rt * .016); g.fill(); g.restore();
-  }
-  for (let k = 0; k < 16; k++) { const a = k / 16 * TAU; cream(g, cx + Math.cos(a) * rt * .9, ty + Math.sin(a) * rty * .9 - rt * .03, rt * .1, S0); }
-  return ty;
-}
-function gingerGate(g, F, x, base, w, h, team) {
-  const S0 = F.S0, lw = Math.max(1.5, 2.4 * S0);
-  const arch = (ww, hh) => { g.beginPath(); g.moveTo(x - ww / 2, base); g.lineTo(x - ww / 2, base - hh + ww / 2); g.arc(x, base - hh + ww / 2, ww / 2, Math.PI, 0); g.lineTo(x + ww / 2, base); };
-  g.fillStyle = 'rgba(52,96,44,.28)'; g.beginPath(); g.ellipse(x + w * .2, base, w * .8, w * .22, 0, 0, TAU); g.fill();
-  arch(w, h); g.closePath(); g.fillStyle = '#c47a3c'; g.fill(); g.strokeStyle = '#7a4520'; g.lineWidth = lw; g.stroke();
-  g.fillStyle = 'rgba(255,255,255,.85)'; for (let k = 0; k < 7; k++) { const a = Math.PI + k / 6 * Math.PI; circle(g, x + Math.cos(a) * w * .4, base - h + w / 2 + Math.sin(a) * w * .4, Math.max(1, w * .035)); g.fill(); }
-  arch(w * .6, h * .76); g.closePath(); g.fillStyle = '#5a3420'; g.fill();
-  arch(w * .3, h * .5); g.closePath(); g.fillStyle = 'rgba(255,206,130,.3)'; g.fill();
-  arch(w * 1.06, h * 1.03); g.lineCap = 'butt'; g.lineWidth = w * .13; g.strokeStyle = '#fff'; g.stroke();
-  g.setLineDash([w * .11, w * .11]); g.strokeStyle = '#e8344a'; g.stroke(); g.setLineDash([]);
-  g.lineWidth = Math.max(1, 1.2 * S0); g.strokeStyle = 'rgba(122,69,32,.6)'; arch(w * 1.19, h * 1.07); g.stroke();
-  const ay = base - h * 1.04, aw = w * 1.4;
-  g.beginPath(); g.ellipse(x, ay, aw / 2, w * .3, 0, Math.PI, 0); g.closePath(); g.fillStyle = team.main; g.fill(); g.strokeStyle = team.dark; g.lineWidth = lw * .8; g.stroke();
-  for (let k = 0; k < 5; k++) cream(g, x - aw / 2 + aw * (k + .5) / 5, ay, aw / 10.5, S0);
-  circle(g, x, ay - w * .3, w * .09); g.fillStyle = '#e8344a'; g.fill();
-}
-function drawWall(g, F, side, st) {
-  const { T, ys, S0 } = F, team = TEAM[side], rnd = rng(side === 'player' ? 21 : 37), lw = Math.max(1.2, 2.2 * S0);
-  g.save();
-  if (side === 'enemy') { g.translate(F.w, 0); g.scale(-1, 1); }
-  if (st.shake > 0) g.translate((Math.random() - .5) * 4 * S0 * st.shake, (Math.random() - .5) * 2 * S0 * st.shake);
-  const x0 = F.m, x1 = F.m + T * 1.12, yt0 = ys[0] - T * 1.15, yt1 = ys[2] + T * .05, fh = T * .42, cx = F.m + T * .56, ww = x1 - x0;
-  // 投影（光源左上）
-  g.fillStyle = 'rgba(52,96,44,.26)'; rr(g, x0 + T * .2, yt0 + T * .22, ww, yt1 - yt0 + fh, T * .35); g.fill();
-  // 南侧立面：海绵 + 果酱夹层 + 奶油滴落
-  const face = new Path2D(); face.roundRect(x0, yt1 - T * .3, ww, fh + T * .3, T * .3);
-  const sg = g.createLinearGradient(x0, 0, x1, 0); sg.addColorStop(0, '#f8d39c'); sg.addColorStop(1, '#dea063');
-  g.fillStyle = sg; g.fill(face); g.save(); g.clip(face); g.fillStyle = team.main; g.globalAlpha = .5; g.fillRect(x0, yt1 + fh * .3, ww, fh * .18); g.restore();
-  g.strokeStyle = CAKE_LINE; g.lineWidth = lw; g.stroke(face);
-  // 顶面奶油
-  rr(g, x0, yt0, ww, yt1 - yt0, T * .32); g.fillStyle = '#fffaf2'; g.fill(); g.strokeStyle = CAKE_LINE; g.lineWidth = lw; g.stroke();
-  g.fillStyle = '#fffaf2'; for (let k = 0; k < 5; k++) { rr(g, x0 + ww * (k + .5) / 5 - T * .06, yt1 - T * .06, T * .12, fh * (.35 + (k % 3) * .14), T * .06); g.fill(); }
-  rr(g, x0 + T * .2, yt0 + T * .2, ww - T * .4, yt1 - yt0 - T * .4, T * .2); g.fillStyle = team.light; g.fill(); g.strokeStyle = team.main; g.lineWidth = lw * .8; g.stroke();
-  for (let y = yt0 + T * .22; y < yt1 - T * .05; y += T * .22) { cream(g, x0 + T * .09, y, T * .085, S0); cream(g, x1 - T * .09, y, T * .085, S0); }
-  // 三座塔与三道门，按屏幕 y 从上到下画
-  for (let i = 0; i < 3; i++) {
-    const main = i === 1, tiers = main ? [[.72, .42], [.52, .36]] : [[.55, .42]];
-    let by = ys[i] - T * .2, top = by;
-    g.fillStyle = 'rgba(52,96,44,.18)'; g.beginPath(); g.ellipse(cx + T * .12, by + T * .06, tiers[0][0] * T * 1.08, tiers[0][0] * T * CAKE_SQUASH * 1.2, 0, 0, TAU); g.fill();
-    for (const [rf, hf] of tiers) { top = cakeTier(g, F, cx, by, rf * T, hf * T, team, rnd); by -= hf * T; }
-    if (!main) lolly(g, cx, top + T * .02, T * .27, team.main, S0, T * .62);
-    gingerGate(g, F, F.m + T * 1.34, ys[i] + F.road * .42, T * (main ? .52 : .44), T * (main ? .66 : .56), team);
-  }
-  if (st.flash > 0) { g.globalCompositeOperation = 'lighter'; g.fillStyle = `rgba(255,255,255,${st.flash * .35})`; rr(g, x0 - T * .2, yt0 - T * .8, T * 1.9, yt1 - yt0 + T * 1.4, T * .4); g.fill(); }
-  g.restore();
-}
-
-/* ---------- 墙顶主炮 ---------- */
-function cannonDims(F) { return { R: F.T * .4, bl: F.T * .6, bw: F.T * .24, hb: F.T * .2 }; }
-function muzzle(F, side, angle) {
-  const p = F.pivot[side], { bl, hb } = cannonDims(F);
-  return { x: p.x + Math.cos(angle) * bl, y: p.y - hb - F.T * .06 + Math.sin(angle) * bl * .55 };
-}
-function drawCannon(g, F, side, st) {
-  const p = F.pivot[side], { R, bl, bw, hb } = cannonDims(F), S0 = F.S0, team = TEAM[side], ry = R * .45, lw = Math.max(1, 1.6 * S0);
-  g.save(); g.translate(p.x, p.y);
-  g.fillStyle = 'rgba(80,60,40,.22)'; g.beginPath(); g.ellipse(R * .2, ry * .5, R * 1.05, ry * 1.05, 0, 0, TAU); g.fill();
-  const disc = (y) => {
-    g.fillStyle = team.dark; g.beginPath(); g.ellipse(0, y + ry * .32, R, ry, 0, 0, TAU); g.fill();
-    g.fillStyle = team.main; g.beginPath(); g.ellipse(0, y, R, ry, 0, 0, TAU); g.fill(); g.strokeStyle = team.dark; g.lineWidth = lw; g.stroke();
-  };
-  disc(0);
-  g.fillStyle = '#fffaf2'; g.beginPath(); g.ellipse(0, -hb * .42, R * .97, ry * .97, 0, 0, TAU); g.fill();
-  disc(-hb * .78);
-  g.fillStyle = 'rgba(255,255,255,.4)'; g.beginPath(); g.ellipse(-R * .32, -hb * .78 - ry * .32, R * .32, ry * .28, 0, 0, TAU); g.fill();
-  const ax = Math.cos(st.angle), ay = Math.sin(st.angle) * .55, len = Math.hypot(ax, ay), nx = -ay / len, ny = ax / len;
-  const rec = st.recoil * R * .3, ox = -ax * rec, oy = -hb - F.T * .06 - ay * rec, ex = ox + ax * bl, ey = oy + ay * bl;
-  const seg = (c, w) => { g.strokeStyle = c; g.lineWidth = w; g.lineCap = 'round'; g.beginPath(); g.moveTo(ox, oy); g.lineTo(ex, ey); g.stroke(); };
-  seg('#8a5a3c', bw + lw * 2); seg('#f2c27a', bw);
-  g.strokeStyle = '#d4904a'; g.lineWidth = bw * .16;
-  for (let k = 1; k <= 4; k++) { const t = k / 5, px = ox + (ex - ox) * t, py = oy + (ey - oy) * t; g.beginPath(); g.moveTo(px - nx * bw * .42 - ax * bw * .12, py - ny * bw * .42 - ay * bw * .12); g.lineTo(px + nx * bw * .42 + ax * bw * .12, py + ny * bw * .42 + ay * bw * .12); g.stroke(); }
-  g.strokeStyle = 'rgba(255,255,255,.45)'; g.lineWidth = bw * .18; g.beginPath(); g.moveTo(ox + nx * bw * .22, oy + ny * bw * .22); g.lineTo(ex + nx * bw * .22, ey + ny * bw * .22); g.stroke();
-  circle(g, ex, ey, bw * .5); g.fillStyle = '#fffaf2'; g.fill(); g.strokeStyle = '#8a5a3c'; g.lineWidth = lw; g.stroke();
-  circle(g, ex, ey, bw * .3); g.fillStyle = '#5a3420'; g.fill();
-  if (st.glow > 0) { circle(g, ex, ey, bw * (.4 + st.glow * .5)); g.fillStyle = `rgba(255,214,110,${.25 + st.glow * .5})`; g.fill(); }
-  circle(g, 0, -hb - F.T * .06, bw * .42); g.fillStyle = '#e8344a'; g.fill(); g.strokeStyle = '#a82434'; g.lineWidth = lw; g.stroke();
-  g.restore();
-}
-
-function highlightLane(g, F, i, color) {
-  const p = F.paths[i];
-  g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
-  g.strokeStyle = color; g.globalAlpha = .28; g.lineWidth = F.road * 1.1; p.trace(g); g.stroke();
-  g.globalAlpha = 1; g.lineWidth = Math.max(2, 3.2 * F.S0); g.setLineDash([F.rw * .32, F.rw * .24]); p.trace(g); g.stroke();
-  g.restore();
-}
-function nearestLane(F, x, y) {
-  let best = { i: -1, d: Infinity, t: 0 };
-  F.paths.forEach((p, i) => { const n = p.nearest(x, y); if (n.d < best.d) best = { i, d: n.d, t: n.t }; });
-  return best;
-}
-
-/* ---------- 尺寸变化：重建几何与底图 ---------- */
-const field = { ctx, canvas, TEAM, INK, rr, circle, drawWall, drawCannon, muzzle, highlightLane, nearestLane, rng, F: null, bg: null, dpr: 1 };
-window.addEventListener('stage-resize', e => {
-  const { w, h } = e.detail, dpr = Math.min(2, window.devicePixelRatio || 1);
-  canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const F = buildGeometry(w, h);
-  const bg = document.createElement('canvas'); bg.width = canvas.width; bg.height = canvas.height;
-  const g = bg.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); drawGround(g, F);
-  Object.assign(field, { F, bg, dpr });
-  window.dispatchEvent(new CustomEvent('field-ready', { detail: F }));
-});
-QJ.field = field;
+const canvas=QJ.$('#field'),ctx=canvas.getContext('2d');
+const field={...CandyField,ctx,canvas,F:null,bg:null,dpr:1};
+window.addEventListener('stage-resize',e=>{
+ const {w,h}=e.detail,dpr=Math.min(w<950?1.25:2,devicePixelRatio||1);
+ canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+ const F=CandyField.buildGeometry(w,h);Object.assign(field,{F,dpr,bg:CandyField.background(F,dpr)});
+ window.dispatchEvent(new CustomEvent('field-ready',{detail:F}));
+});QJ.field=field;
 })();
 </script>
 <script>
@@ -801,7 +384,7 @@ $$('.skill').forEach(el => el.addEventListener('click', e => {
   setSelected({ kind: 'skill', id }); hint(id === 'potion' ? '点击一张卡牌，强化它的下一只单位' : '点击一条道路，发动连续炮击', 3);
 }));
 const canvas = fd.canvas;
-function pointer(e) { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; }
+function pointer(e) { const r = canvas.getBoundingClientRect(); return fd.unproject(F(), e.clientX-r.left, e.clientY-r.top); }
 canvas.addEventListener('pointermove', e => {
   if (!S.selected || S.selected.id === 'potion') { S.hover = -1; return; }
   const p = pointer(e), n = fd.nearestLane(F(), p.x, p.y); S.hover = n.d < F().rw * 1.1 ? n.i : -1;
@@ -890,13 +473,13 @@ function updateGuns(dt) {
       if (dd < range && dd < best) { best = dd; target = u; }
     }
     g.target = target;
-    const aim = target ? (() => { const p = unitPos(target); return Math.atan2(p.y - piv.y, p.x - piv.x); })() : g.rest;
+    const aim = target ? (() => { const p=fd.project(f,unitPos(target).x,unitPos(target).y), m=fd.cannonPose(f,side,g.angle,0); return Math.atan2((p.y-m.y)/.55,p.x-m.x); })() : g.rest;
     g.angle += Math.atan2(Math.sin(aim - g.angle), Math.cos(aim - g.angle)) * clamp(dt * 7, 0, 1);
     if (g.windup > 0) {
       g.windup -= dt;
       if (g.windup <= 0) {
         if (target) {
-          const m = fd.muzzle(f, side, g.angle), tp = unitPos(target), dist = Math.hypot(tp.x - m.x, tp.y - m.y);
+          const screenM=fd.muzzle(f,side,g.angle,1), m=fd.unproject(f,screenM.x,screenM.y), tp = unitPos(target), dist = Math.hypot(tp.x - m.x, tp.y - m.y);
           S.shots.push({ kind: 'shell', side, sx: m.x, sy: m.y, tx: tp.x, ty: tp.y, t: 0, dur: Math.max(.22, dist / (CANNON.speed * f.k)), target, dmg: CANNON.dmg });
           S.fx.push({ kind: 'flash', x: m.x, y: m.y, a: g.angle, life: .16, max: .16 });
           g.recoil = 1;
@@ -959,7 +542,7 @@ function update(dt) {
 
 /* ---------- 绘制 ---------- */
 function drawUnit(u) {
-  const d = UNITS[u.type], p = unitPos(u), r = unitR(u), team = fd.TEAM[u.side];
+  const d=UNITS[u.type], gp=unitPos(u), p=fd.project(F(),gp.x,gp.y), r=unitR(u)*p.k, team=fd.TEAM[u.side];
   const pop = u.born > 0 ? 1 - u.born / .35 : 1, s = .4 + .6 * pop, hop = Math.abs(Math.sin(u.bob)) * r * .2, lift = (r * 1.05 + hop) * s;
   ctx.save(); ctx.translate(p.x, p.y);
   ctx.fillStyle = 'rgba(52,80,44,.3)'; ctx.beginPath(); ctx.ellipse(r * .1, r * .14, r * 1.15 * s, r * .5 * s, 0, 0, TAU); ctx.fill();
@@ -988,7 +571,7 @@ function drawShot(s) {
     ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = r * .9; ctx.lineCap = 'round';
     const pt = Math.max(0, s.t - .08), px = lerp(s.sx, s.tx, pt), py = lerp(s.sy, s.ty, pt) - Math.sin(pt * Math.PI) * f.rw * .7;
     ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(x, y - lift); ctx.stroke();
-    ctx.fillStyle = '#4b5060'; ctx.beginPath(); ctx.arc(x, y - lift, r, 0, TAU); ctx.fill();
+    ctx.fillStyle = s.side==='player'?'#95d6ff':'#ff9fba'; ctx.beginPath(); ctx.arc(x, y - lift, r, 0, TAU); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.beginPath(); ctx.arc(x - r * .35, y - lift - r * .35, r * .35, 0, TAU); ctx.fill();
   } else {
     const r = f.unitR * .28, g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, r * 1.8);
@@ -1032,11 +615,11 @@ function render() {
   if (S.hover >= 0 && S.selected) fd.highlightLane(ctx, f, S.hover, S.selected.id === 'burst' ? '#f27350' : '#5aa9f0');
   for (const side of ['player', 'enemy']) fd.drawWall(ctx, f, side, { hp: S.hp[side] / WALL_HP, shake: S.wall[side].shake, flash: S.wall[side].flash, time: S.clock });
   for (const side of ['player', 'enemy']) { const g = S.gun[side]; fd.drawCannon(ctx, f, side, { angle: g.angle, recoil: g.recoil, glow: g.windup > 0 ? 1 - g.windup / CANNON.windup : 0 }); }
-  for (const x of S.fx) if (x.kind === 'drop') drawFx(x);
+  for (const x of S.fx) if(x.kind==='drop'){const p=f.paths[x.lane].at(x.t);fd.atGround(ctx,f,p.x,p.y,()=>{ctx.translate(-p.x,-p.y);drawFx(x)});}
   const arr = [...S.units].sort((a, b) => unitPos(a).y - unitPos(b).y);
   for (const u of arr) drawUnit(u);
-  for (const s of S.shots) drawShot(s);
-  for (const x of S.fx) if (x.kind !== 'drop') drawFx(x);
+  for (const s of S.shots) { const p=s.kind==='shell'?{x:lerp(s.sx,s.tx,s.t),y:lerp(s.sy,s.ty,s.t)}:s; fd.atGround(ctx,f,p.x,p.y,()=>{ctx.translate(-p.x,-p.y);drawShot(s)}); }
+  for(const x of S.fx) if(x.kind!=='drop')fd.atGround(ctx,f,x.x,x.y,()=>{ctx.translate(-x.x,-x.y);drawFx(x)});
 }
 
 /* ---------- HUD 同步 ---------- */
