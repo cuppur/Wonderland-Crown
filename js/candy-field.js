@@ -346,7 +346,7 @@ function drawWall(g,F,side,st={}){
     const tower=point(x0+T*.48,ys[i]-T*.18,height),main=i===1;
     g.save();g.translate(tower.x,tower.y);g.scale(tower.k,tower.k);
     let by=0,top=0;for(const [r,h] of (main?[[.55,.33],[.37,.28]]:[[.43,.31]])){top=cakeTier(g,F,0,by,T*r,T*h,team,rnd);by-=T*h;}
-    if(i===0)lolly(g,0,top,T*.23,team.main,S0,T*.52);
+    lolly(g,main?-T*.22:0,top,T*.23,team.main,S0,T*.52);
     g.restore();
     const gate=point(x1,ys[i]);g.save();g.translate(gate.x,gate.y);g.scale(enemy?-gate.k:gate.k,gate.k);
     gingerGate(g,F,0,0,T*(main?.53:.43),T*(main?.68:.57),team);g.restore();
