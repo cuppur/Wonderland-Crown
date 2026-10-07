@@ -61,9 +61,13 @@ required = {
     "按路径换算射程": "u.range*this.laneScale(u.lane)",
     "平行地图": "mode === 'straight' ? ys.map",
     "侧向城门": "g.transform(.48,-.16,0,1,0,0)",
+    "系统菜单入口": 'id="menuBtn"',
+    "统一 HUD 尺度": "document.documentElement.style.fontSize=f.u+'px'",
+    "首页独占版本": 'class="menu-version"',
+    "两地图缩略图": 'class="map-thumb"',
     "游戏标题": "<title>奇境王冠</title>",
     "外部样式入口": '<link rel="stylesheet" href="./css/style.css" />',
-    "微软 Emoji 字体": 'font-family:"Segoe UI Emoji"',
+    '微软 Emoji 字体': '--emoji:"Segoe UI Emoji"',
     "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:500,attack:10,speed:80,range:60,interval:.2,cooldown:5,regen:10",
     "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:700,attack:20,speed:60,range:70,interval:.5,cooldown:5,regen:10",
     "象最新属性": "elephant:{name:'磐石象',cost:10,hp:1000,attack:15,speed:40,range:80,interval:.8,cooldown:5,regen:20",
@@ -98,8 +102,8 @@ required = {
     "炮台回中不绕远路": "t.angle+=shortestAngleDelta(t.angle,rest)*clamp(dt*2.4,0,1)",
     "三路战线标题": "<b>三路战线</b><span>三条平行路线，战线清晰</span>",
     "交汇战线精简说明": "<b>交汇战线</b><span>三条道路汇入平滑路面</span>",
-    "模式标题居中": ".mode-option b{text-align:center}",
-    "计时器内层虚线隐藏": "#centerHud::after{display:none}",
+    '模式标题居中': '.mode-option b{display:block;text-align:center',
+    '计时器内层虚线隐藏': '#centerHud::before{content:"🍒"',
     "城门血量": "kind:'tower',side,hp:10000,maxHp:10000",
     "金币增长": "this.coins.player+=1*dt;this.coins.enemy+=1*dt;",
     "初始金币": "this.coins={player:15,enemy:15}",
@@ -113,10 +117,10 @@ required = {
     "炮口烟雾绘制": "else if(f.kind==='smoke')",
     '炮弹短拖尾': 'ctx.moveTo(q.x-dx/d*18*scale,q.y-dy/d*18*scale)',
     "透明中毒图标": "./assets/images/poison-status-icon-v1.png",
-    "底部卡牌与金币": "#bottomDock{top:auto;bottom:1.2%",
-    "左下战术键": "#tactical{top:auto;left:1.2%;right:auto;bottom:1.4%",
-    "精简药水按钮": "🧪 魔力药水 · ${POTION.cost}G",
-    "精简炮阵按钮": "💥 爆裂炮阵 · ${BURST.cost}G",
+    '底部卡牌与金币': '#bottomDock{position:absolute;z-index:8;left:50%;bottom:max(.9rem,env(safe-area-inset-bottom))',
+    '左下战术键': '#tactical{display:flex;gap:.62rem',
+    '精简药水按钮': '<strong>魔力药水</strong>',
+    '精简炮阵按钮': '<strong>爆裂炮阵</strong>',
     "返回首页按钮": 'id="homeBtn"',
     "暂停按钮": 'id="pauseBtn"',
     "BGM 文件": "./assets/audio/BGM.ogg",
@@ -261,7 +265,7 @@ for resource in manifest["resources"]:
 
 print("[PASS] 最新属性表未被修改，且仍为 20260730.xlsx")
 print("[PASS] 四单位、药水、城门、金币、爆裂炮和守门炮静态配置已同步")
-print("[PASS] 底部卡牌、左下战术键、双地图道路与系统按钮契约存在")
+print("[PASS] 一体托盘、原版卡牌、双地图与收纳系统菜单契约存在")
 print("[PASS] BGM、单发炮、连发炮资源存在，音画限时逻辑存在")
 print("[PASS] 中毒图标 PNG 有效，背景/宫殿/糖果炮使用缓存程序绘制")
 print("[PASS] 点击与拖拽均允许在整条道路任意位置部署")
