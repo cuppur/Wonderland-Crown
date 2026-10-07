@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:qjwg:eva:command:v1",
+  "title": "EVA Command v1",
+  "type": "object",
+  "required": ["schemaVersion", "summary", "commands"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "summary": {"type": "string", "maxLength": 280},
+    "commands": {"type": "array", "maxItems": 6, "items": {"oneOf": [
+      {"type": "object", "required": ["action", "unit", "lane"], "additionalProperties": false, "properties": {"action": {"const": "deploy"}, "unit": {"$ref": "#/$defs/unit"}, "lane": {"$ref": "#/$defs/lane"}}},
+      {"type": "object", "required": ["action", "unit"], "additionalProperties": false, "properties": {"action": {"const": "usePotion"}, "unit": {"$ref": "#/$defs/unit"}}},
+      {"type": "object", "required": ["action", "lane"], "additionalProperties": false, "properties": {"action": {"enum": ["useBurst", "advance", "hold", "retreat"]}, "lane": {"$ref": "#/$defs/lane"}}},
+      {"type": "object", "required": ["action", "lane", "targetId"], "additionalProperties": false, "properties": {"action": {"const": "focusTarget"}, "lane": {"$ref": "#/$defs/lane"}, "targetId": {"oneOf": [{"type": "integer", "minimum": 1}, {"const": "enemy-tower"}]}}},
+      {"type": "object", "required": ["action", "lane", "toLane"], "additionalProperties": false, "properties": {"action": {"const": "switchLane"}, "lane": {"$ref": "#/$defs/lane"}, "toLane": {"$ref": "#/$defs/lane"}}},
+      {"type": "object", "required": ["action", "lane", "progress"], "additionalProperties": false, "properties": {"action": {"const": "setRallyPoint"}, "lane": {"$ref": "#/$defs/lane"}, "progress": {"type": "number", "minimum": 0.04, "maximum": 0.96}}}
+    ]}}
+  },
+  "$defs": {"unit": {"enum": ["snake", "lion", "elephant", "dragon"]}, "lane": {"enum": ["top", "middle", "bottom"]}}
+}

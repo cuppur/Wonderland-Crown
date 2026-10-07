@@ -56,7 +56,7 @@
   function providerChanged(side, keep = false) {
     const provider = field(side, 'provider').value, mock = provider === 'mock';
     field(side, 'baseUrl').disabled = mock; field(side, 'apiKey').disabled = mock; field(side, 'reasoningProtocol').disabled = !['compatible', 'custom'].includes(provider);
-    if (!keep) { field(side, 'baseUrl').value = E.Providers.defaults[provider]; field(side, 'model').value = mock ? (side === 'player' ? 'aggressive-mock' : 'defensive-mock') : ''; metadata[side] = []; $(`#evaModels-${side}`).replaceChildren(); }
+    if (!keep) { field(side, 'apiKey').value = ''; field(side, 'baseUrl').value = E.Providers.defaults[provider]; field(side, 'model').value = mock ? (side === 'player' ? 'aggressive-mock' : 'defensive-mock') : ''; metadata[side] = []; $(`#evaModels-${side}`).replaceChildren(); }
     tested[side] = null; reasoning(side); status(side, mock ? 'Mock 不消耗 API，可直接开始。' : '填入配置后，点击测试连接。');
   }
   function syncFair() { field('enemy', 'interval').disabled = $('#evaFair').checked; if ($('#evaFair').checked) field('enemy', 'interval').value = field('player', 'interval').value; }
@@ -95,7 +95,7 @@
         syncFair(); const configs = Object.fromEntries(sides.map(side => [side, readConfig(side)]));
         for (const side of sides) { ensureConfig(configs[side]); if (configRequests[side]) throw new Error('请等待连接测试完成'); if (configs[side].provider !== 'mock' && tested[side] !== signature(configs[side])) throw new Error((side === 'player' ? '蓝方' : '红方') + '请先测试当前配置的连接'); }
         this.configs = configs; this.debug = $('#evaDebugEnabled').checked;
-        if ($('#evaRemember').checked) localStorage.setItem('qjwg-eva-settings-v1', JSON.stringify(Object.fromEntries(sides.map(side => { const { apiKey, modelMetadata, ...safe } = configs[side]; return [side, safe]; })))); else localStorage.removeItem('qjwg-eva-settings-v1');
+        try { if ($('#evaRemember').checked) localStorage.setItem('qjwg-eva-settings-v1', JSON.stringify(Object.fromEntries(sides.map(side => { const { apiKey, modelMetadata, ...safe } = configs[side]; return [side, safe]; })))); else localStorage.removeItem('qjwg-eva-settings-v1'); } catch (_) { $('#evaRemember').checked = false; }
         hide(configOverlay); $('#game-shell').classList.add('eva-match'); agents.player.classList.remove('eva-hidden'); agents.enemy.classList.remove('eva-hidden'); debugBtn.classList.toggle('eva-hidden', !this.debug); $('#evaDebugTab').classList.toggle('eva-hidden', !this.debug); result.replaceChildren(); $('#resultOverlay').classList.add('eva-result');
         if (this.reconfiguring && E.arena.active) { for (const side of sides) { const a = E.arena.agents[side]; a.cancel(); a.config = configs[side]; a.adapter = E.Providers.create(configs[side]); } E.arena.retry(); }
         else { E.arena.stop(); engine.start({ mode: $('#evaMap').value, duration: $('#evaDuration').value }); E.arena.start(configs); }
@@ -112,7 +112,7 @@
         const a = E.arena.agents[side], panel = agents[side]; if (!a) continue;
         panel.querySelector('strong').textContent = a.config.model;
         panel.querySelector('.eva-agent-meta').textContent = `${labels[a.config.provider]} · ${a.config.reasoning.toUpperCase()} · ${a.config.interval}s`;
-        const state = panel.querySelector('.eva-agent-state span'); state.textContent = '● ' + a.status; state.classList.toggle('error', ['ERROR', 'TIMEOUT'].includes(a.status));
+        const state = panel.querySelector('.eva-agent-state span'); state.textContent = '● ' + a.status + (a.status === 'EXECUTING' ? ' · ' + (a.executedCount || 0) : ''); state.classList.toggle('error', ['ERROR', 'TIMEOUT'].includes(a.status));
         panel.querySelector('time').textContent = a.isThinking ? ((performance.now() - a.started) / 1000).toFixed(1) + 's' : a.latency ? (a.latency / 1000).toFixed(2) + 's' : `${Math.max(0, a.nextAt - now).toFixed(1)}s`;
         panel.querySelector('.eva-strategy').textContent = a.summary;
         panel.querySelector('.eva-command-list').replaceChildren(...a.recent.map(({ at, command }) => el('div', '', `${Math.floor(at / 60)}:${String(Math.floor(at % 60)).padStart(2, '0')} ${commandText(command)}`)));
@@ -132,11 +132,12 @@
     finish(win, reason) {
       E.arena.update(); for (const a of Object.values(E.arena.agents)) a.status = 'IDLE'; this.paint();
       const configs = this.configs, stats = E.arena.logger.summary(), towers = engine.readState().towers;
+      $('#resultTitle').style.color = win === 'draw' ? '#9a6ba3' : win === 'player' ? '#3f86bf' : '#bd6d91';
       $('#resultTitle').textContent = win === 'draw' ? 'EVA · 平局' : `胜者：${configs[win].model}`;
       result.replaceChildren(el('div', 'eva-vs', configs.player.model + '  VS  ' + configs.enemy.model));
       $('#resultDetail').textContent = `${reason} · 战斗 ${engine.readState().elapsed.toFixed(1)} 秒`;
       const table = el('table', 'eva-result-table'); const head = el('tr'); for (const text of ['对战统计', '蓝方 AI', '红方 AI']) head.append(el('th', '', text)); table.append(head);
-      const rows = [ ['API 请求 / 有效决策', s => `${s.requests} / ${s.decisions}`], ['Input / Output Token', s => `${s.inputTokens} / ${s.outputTokens}${s.usageKnown ? '' : '（部分未报告）'}`], ['Reasoning Token（已报告）', s => s.reasoningTokens], ['平均 / 最大响应', s => `${(s.latencyAverage / 1000).toFixed(2)} / ${(s.latencyMax / 1000).toFixed(2)} 秒`], ['执行 / 拒绝命令', s => `${s.accepted} / ${s.rejected}`], ['出兵 / 药水 / 炮阵', s => `${s.deployed} / ${s.potions} / ${s.bursts}`], ['错误轮次', s => s.errors] ];
+      const rows = [ ['API 请求 / 有效决策', s => `${s.apiRequests || 0} / ${s.decisions}`], ['Input / Output Token', s => `${s.inputTokens} / ${s.outputTokens}${s.usageKnown ? '' : '（部分未报告）'}`], ['Reasoning Token', s => s.reasoningReported ? s.reasoningTokens : '未报告'], ['平均 / 最大响应', s => `${(s.latencyAverage / 1000).toFixed(2)} / ${(s.latencyMax / 1000).toFixed(2)} 秒`], ['执行 / 拒绝命令', s => `${s.accepted} / ${s.rejected}`], ['出兵 / 药水 / 炮阵', s => `${s.deployed} / ${s.potions} / ${s.bursts}`], ['错误 / 取消请求', s => `${s.errors} / ${s.cancelled}`] ];
       for (const [title, format] of rows) { const row = el('tr'); row.append(el('td', '', title)); for (const side of sides) row.append(el('td', '', format(stats[side]))); table.append(row); }
       const hp = el('tr'); hp.append(el('td', '', '最终城墙 HP')); for (const side of sides) hp.append(el('td', '', Math.ceil(towers[side].hp))); table.append(hp); result.append(table, el('p', 'eva-note', '未配置可核验价格，不估算 API 费用。Mock 请求不产生 token 消耗。'));
       const log = el('button', 'secondary', '查看完整战斗日志'); log.addEventListener('click', () => this.openLogs()); result.append(log);

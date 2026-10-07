@@ -1,10 +1,15 @@
 # EVA AI Arena — 当前恢复点（2026-10-07）
 
 - UI 微调已在 UI 分支提交 `996c6f6`；当前独立分支 feature/eva-ai-arena，独立 worktree eva-ai-arena。
-- E1 核心闭环和页面已实现：稳定结构化 observation、9 类校验命令（换路仅交汇）、双方 Mock、Provider adapters、记忆、单请求控制、日志、配置和结算。
+- [x] E1 核心闭环和页面已实现并提交 `3789c9f`：稳定结构化 observation、9 类校验命令（换路仅交汇）、双方 Mock、Provider adapters、记忆、单请求控制、日志、配置和结算。
 - 已启动本地代理 localhost:8772；API key 仅页面内存。用户已确认本轮搭框架，由用户在游戏内输入 URL/key，因此不进行真实付费 API 验收。
-- 静态回归已全 PASS，初次 Mock 浏览器对战已自主出兵/用药水/炮阵，零页面异常；1920×1080 配置/战场已截图检查。完整比赛和异常/协议测试正在补齐。
-- 下一步：完整 E2E、Provider HTTP fixtures、非法命令/公平/取消竞态/移动命令验证，再更新文档提交。
+- [x] E2 浏览器完整验收：`python tests/playtest_eva.py` 32 组 PASS，227 个本地 HTTP fixture 请求；六种 Provider 双方分别完成 10–14 次有效决策。真实付费服务未连接。
+- Mock 完整自主比赛：游戏时间 1459.7 秒，蓝方城门 1660 HP、红方 0 HP，正常结算；双方各 466 次决策、78 次出兵、7 次药水、32 次炮阵。长比赛通过测试探针加速原 Game.update，未修改属性、伤害或胜负条件。
+- 单次错误 WAIT、连续三次错误暂停、重试/重新配置保留战局；401/403/429/500/504、非法 JSON/命令、断线、超时、取消和晚返回全部通过；Debug/日志/记忆中不暴露密钥或私有推理内容。
+- 1920×1080、1648×928、844×390、1024×768 配置/战场/日志截图已检查，手机 AI 面板标题与日志入口已修正。浏览器未捕获异常为 0。
+- [x] E3 文档和普通模式回归：`python tests/verify_game.py` 7 组 PASS、`python tests/playtest_game.py` 16 组 PASS。使用说明/协议/已知限制见 `docs/EVA_ARENA.md`，Command JSON Schema 见 `docs/eva-command.schema.json`。
+- 验收证据：`output/playwright/eva-report.json` 和 `eva-*.png`（忽略提交，可重跑生成）。启动：`python tools/eva_server.py --port 8772`，打开 http://127.0.0.1:8772/index.html。
+- 当前任务完成。下一步由用户在游戏内配置真实 Provider 并完成真实服务验收；普通 UI 稳定分支保留，恢复时以此 EVA 工作区和本文顶部为准。
 - 不 push、不改属性表；普通 UI worktree 保持独立。
 
 ---

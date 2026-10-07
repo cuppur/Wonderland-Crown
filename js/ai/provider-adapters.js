@@ -22,13 +22,21 @@
       if (/claude-(opus-4-[5678]|sonnet-4-6)(-|$)/.test(model)) return { levels: ['auto', 'low', 'medium', 'high', ...(model.includes('opus-4-6') ? ['max'] : [])], kind: 'anthropic', adaptive: /4-[678]/.test(model), note: '已知型号的 effort；未知型号保留 Auto' };
     }
     if (provider === 'gemini') {
-      if (/gemini-3(?:[.-]|$)/.test(model)) return { levels: model.includes('flash') ? ['auto', 'minimal', 'low', 'medium', 'high'] : ['auto', 'low', ...(model.includes('3.1') ? ['medium'] : []), 'high'], kind: 'gemini-level', note: 'thinkingLevel；仅显示该系列支持的档位' };
+      if (/gemini-3(?:[.-]|$)/.test(model)) {
+        let levels = null;
+        if (/gemini-3\.[78]-flash/.test(model)) levels = ['auto', 'low', 'medium', 'high'];
+        else if (/gemini-3(?:\.[156])?-flash/.test(model) && !model.includes('image')) levels = ['auto', 'minimal', 'low', 'medium', 'high'];
+        else if (/gemini-3\.1-flash-lite-image/.test(model)) levels = ['auto', 'minimal', 'high'];
+        else if (/gemini-3\.1-pro/.test(model)) levels = ['auto', 'low', 'medium', 'high'];
+        else if (/gemini-3-pro/.test(model)) levels = ['auto', 'low', 'high'];
+        if (levels) return { levels, kind: 'gemini-level', note: 'thinkingLevel；仅显示该型号支持的档位' };
+      }
       if (/gemini-2\.5/.test(model)) return { levels: LEVELS, kind: 'gemini-budget', minimum: model.includes('lite') ? 512 : 128, note: '档位转换为 thinkingBudget；受单次 token 上限约束' };
     }
     if (provider === 'deepseek' && /deepseek-(flash|v4)/.test(model)) return { levels: ['auto', 'low', 'high', 'max'], kind: 'deepseek', note: 'thinking + reasoning_effort' };
     if (['openai', 'compatible', 'custom'].includes(provider)) {
       const advertised = meta?.supported_reasoning_efforts;
-      if (Array.isArray(advertised)) return { levels: ['auto', ...LEVELS.filter(l => advertised.includes(l))], kind: 'openai', note: '档位来自服务端元数据' };
+      if (Array.isArray(advertised)) return { levels: ['auto', ...LEVELS.filter(l => l !== 'auto' && advertised.includes(l))], kind: 'openai', note: '档位来自服务端元数据' };
       if (/^(o[134]|gpt-5|gpt-6)/.test(model) && !/chat|non-reasoning/.test(model)) return { levels: ['auto', ...(/^gpt-5(?:-|$)/.test(model) && !/^gpt-5-[1-9]/.test(model) ? ['minimal'] : []), 'low', 'medium', 'high'], kind: 'openai', note: '保守型号档位；Auto 交由服务端默认' };
     }
     return { levels: ['auto'], kind: 'none', note: provider === 'compatible' || provider === 'custom' ? '能力未知；如服务支持可选择 reasoning_effort 协议' : '模型不支持或能力未知，使用服务端默认' };
@@ -100,7 +108,7 @@
   class OpenAICompatibleAdapter extends ProviderAdapter {
     buildRequest(system, user) { const c = this.config, cap = reasoningCapability(c); return { path: '/chat/completions', body: {
       model: c.model, messages: [{ role: 'system', content: system }, { role: 'user', content: user }], stream: false,
-      [cap.kind === 'openai' ? 'max_completion_tokens' : 'max_tokens']: c.maxTokens || 4096,
+      [cap.kind === 'openai' && /^(o[134]|gpt-5|gpt-6)/.test(c.model) ? 'max_completion_tokens' : 'max_tokens']: c.maxTokens || 4096,
       ...normalizeReasoningLevel(c), ...(c.jsonMode ? { response_format: { type: 'json_object' } } : {})
     } }; }
     extractText(d) { const c = d.choices?.[0]; if (c?.finish_reason === 'length') throw new Error('JSON_PARSE: token 上限导致输出截断，请提高单次上限'); if (typeof c?.message?.content !== 'string') throw new Error('JSON_PARSE: 缺少文本回答'); return c.message.content; }

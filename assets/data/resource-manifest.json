@@ -47,6 +47,69 @@
       "sha256": "744B39922F0AD7C6242B8DC11753AFD74BDBFBAC289B585CCDE52EC779874B44",
       "source_reference_count": 1,
       "embedded_in_html": false
+    },
+    {
+      "type": "script",
+      "source": "js/ai/agent-controller.js",
+      "publicPath": "js/ai/agent-controller.js",
+      "source_reference_count": 1,
+      "embedded_in_html": false,
+      "bytes": 6863,
+      "sha256": "9449CFD3C3D651CF75AB1F857BF65FE8FEB88173043604C78E895900240C2C55"
+    },
+    {
+      "type": "script",
+      "source": "js/ai/battle-logger.js",
+      "publicPath": "js/ai/battle-logger.js",
+      "source_reference_count": 1,
+      "embedded_in_html": false,
+      "bytes": 1922,
+      "sha256": "C09326C2A997FCF8733D45216C8C81A2A96CAFC5B2467F212F8C10A19CC83553"
+    },
+    {
+      "type": "script",
+      "source": "js/ai/eva-ui.js",
+      "publicPath": "js/ai/eva-ui.js",
+      "source_reference_count": 1,
+      "embedded_in_html": false,
+      "bytes": 25806,
+      "sha256": "DDFC453A6CDC42F3F66893BEF29036F1ED53B515AE740B9884BE98DD0B4CB65D"
+    },
+    {
+      "type": "script",
+      "source": "js/ai/mock-agent.js",
+      "publicPath": "js/ai/mock-agent.js",
+      "source_reference_count": 1,
+      "embedded_in_html": false,
+      "bytes": 2105,
+      "sha256": "ED8BC6EE1A7754FEE5CACB0FA2EDC3E6B6BE8A01031C3F69E1EB58F4847C04AD"
+    },
+    {
+      "type": "script",
+      "source": "js/ai/protocol.js",
+      "publicPath": "js/ai/protocol.js",
+      "source_reference_count": 1,
+      "embedded_in_html": false,
+      "bytes": 9412,
+      "sha256": "C8E5DC1F53E948F83026A256A9B279993BD6F0991391B120DC21F5680202D043"
+    },
+    {
+      "type": "script",
+      "source": "js/ai/provider-adapters.js",
+      "publicPath": "js/ai/provider-adapters.js",
+      "source_reference_count": 1,
+      "embedded_in_html": false,
+      "bytes": 13926,
+      "sha256": "E7A78E67B01A0B746FE6EA286CA48EA00A3BE67ECB307BCBE7D22FD1006C9E04"
+    },
+    {
+      "type": "style",
+      "source": "css/eva.css",
+      "publicPath": "css/eva.css",
+      "source_reference_count": 1,
+      "embedded_in_html": false,
+      "bytes": 6897,
+      "sha256": "A50C2A523B6EABD2EB30B2746E0533192B8DAE81CABFBD31CD45CE55ADD1920D"
     }
   ],
   "fonts": [
@@ -55,5 +118,8 @@
     "system-ui（系统回退字体）"
   ],
   "external_network_dependencies": [],
-  "json_runtime_dependencies": []
+  "json_runtime_dependencies": [],
+  "optional_network_dependencies": [
+    "User-configured text model API (EVA mode only)"
+  ]
 }

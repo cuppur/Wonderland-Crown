@@ -12,7 +12,7 @@ import socket
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, unquote
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -55,11 +55,14 @@ class EvaHandler(SimpleHTTPRequestHandler):
             self.reply(200, {"relay": True, "schemaVersion": 1})
             return
         # Only ship public game files, never agent metadata, spreadsheets, tests, or secrets.
-        path = urlsplit(self.path).path
+        path = unquote(urlsplit(self.path).path)
         if path not in {"/", "/index.html", "/favicon.ico"} and not path.startswith(("/js/", "/css/", "/assets/")):
             self.reply(404, {"error": "Not a public game resource"})
             return
         if any(p.startswith(".") or p == ".." for p in path.split("/")[1:]):
+            self.reply(404, {"error": "Not found"})
+            return
+        if not (ROOT / path.lstrip("/")).resolve().is_relative_to(ROOT):
             self.reply(404, {"error": "Not found"})
             return
         super().do_GET()

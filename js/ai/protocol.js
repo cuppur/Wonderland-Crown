@@ -64,7 +64,12 @@
         else if (state.state !== 'playing') reason = 'GAME_NOT_PLAYING';
         else if (!c || typeof c !== 'object' || Array.isArray(c) || !ACTIONS.includes(c.action)) reason = 'UNKNOWN_ACTION';
         else if (!LANES.includes(c.lane) && c.action !== 'usePotion') reason = 'INVALID_LANE';
-        else if (Object.keys(c).some(k => !['action', 'unit', 'lane', 'targetId', 'toLane', 'progress'].includes(k))) reason = 'UNKNOWN_FIELD';
+        else {
+          const allowed = { deploy: ['action', 'unit', 'lane'], usePotion: ['action', 'unit'], useBurst: ['action', 'lane'],
+            advance: ['action', 'lane'], hold: ['action', 'lane'], retreat: ['action', 'lane'],
+            focusTarget: ['action', 'lane', 'targetId'], switchLane: ['action', 'lane', 'toLane'], setRallyPoint: ['action', 'lane', 'progress'] }[c.action];
+          if (Object.keys(c).some(k => !allowed.includes(k))) reason = 'UNKNOWN_FIELD';
+        }
         const key = c && typeof c === 'object' ? JSON.stringify(Object.keys(c).sort().map(k => [k, c[k]])) : String(c);
         if (!reason && seen.has(key)) reason = 'DUPLICATE';
         seen.add(key);

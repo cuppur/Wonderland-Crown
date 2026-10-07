@@ -1,3 +1,5 @@
+> 2026-10-07 EVA 分支：UI 微调已在 UI 的 996c6f6 保存，EVA 在独立 feature/eva-ai-arena/worktree 实现；最新进度见 TASK_STATE.md，使用与协议见 docs/EVA_ARENA.md。原 UI 交接以下保留。
+
 > **2026-10-07 Codex 完成记录：** 本交接列出的预览补齐与正式落地已实施，当前恢复点看 `TASK_STATE.md` 顶部。正式入口是本 UI 工作目录的 `index.html`，两种地图均使用糖果蛋糕城。新增共享绘制模块 `js/candy-field.js` 和浏览器回归 `tests/playtest_game.py`。下文为原始交接需求，保留作设计依据。
 
 # 奇境王冠 · UI 重构交接文档（交给 Codex）

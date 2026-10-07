@@ -18,7 +18,7 @@
     }
     tick() {
       if (this.isThinking || !this.arena.active || this.arena.engine.state() !== 'playing') return;
-      const now = this.arena.engine.readState().elapsed;
+      const now = this.arena.engine.clock();
       if (now < this.nextAt) { if (!['ERROR', 'TIMEOUT'].includes(this.status) && performance.now() >= (this.executingUntil || 0)) this.status = 'COOLDOWN'; return; }
       void this.decide();
     }
@@ -51,7 +51,7 @@
         if (epoch !== this.epoch) return;
         this.isThinking = false; this.controller = null; this.latency = performance.now() - this.started;
         if (!this.arena.active || this.arena.engine.state() !== 'playing') return;
-        this.nextAt = this.arena.engine.readState().elapsed + (this.config.interval || 3);
+        this.nextAt = this.arena.engine.clock() + (this.config.interval || 3);
         const entry = { timestamp: new Date().toISOString(), gameTime: observation.gameTime, side: this.side, provider: this.config.provider, model: this.config.model,
           observationId: observation.observationId, decisionId: id, publicSummary: packet?.summary || '', commandsRequested: packet?.commands || [],
           commandsAccepted: validation.accepted, commandsRejected: validation.rejected, latency: this.latency,
@@ -82,7 +82,7 @@
       if (state === 'playing') Object.values(this.agents).forEach(a => a.tick());
     }
     fail(side) { this.failedSide = side; this.engine.pause(); Object.values(this.agents).forEach(a => a.cancel()); this.onFailure(side); }
-    retry() { this.failedSide = null; for (const a of Object.values(this.agents)) { a.errors = 0; a.nextAt = this.engine.readState().elapsed; } this.engine.resume(); }
+    retry() { this.failedSide = null; for (const a of Object.values(this.agents)) { a.errors = 0; a.nextAt = this.engine.clock(); } this.engine.resume(); }
     snapshot() { return { active: this.active, failedSide: this.failedSide, stats: this.logger.summary(), agents: Object.fromEntries(Object.entries(this.agents).map(([side, a]) => [side, { status: a.status, isThinking: a.isThinking, serial: a.serial, summary: a.summary, recent: a.recent, latency: a.latency, errors: a.errors, memory: a.memory.context(), debug: a.debug }])) }; }
   }
   E.AgentController = AgentController; E.Arena = Arena;

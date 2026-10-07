@@ -50,3 +50,8 @@ pptx_build/
 
 # Reproducible Playwright screenshots and local reports
 output/playwright/
+
+# Optional local credentials must never enter a commit
+.env
+.env.*
+!.env.example
