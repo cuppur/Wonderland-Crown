@@ -1,3 +1,14 @@
+# 真实 API 实测完成 — 当前恢复点（2026-10-07）
+
+- 用户提供项目外 api.txt 并明确授权实测；没有复制、修改或提交该凭据文件，密钥只在测试进程/页面内存中使用。
+- Packy 文件地址 /v 实际返回 404，测试同域名补成 /v1 后成功；Packy 返回 deepseek-flash/deepseek-v4-flash/deepseek-v4-pro，官方 DeepSeek 返回 deepseek-flash/deepseek-v4-pro。两端模型查询和连接测试均通过。
+- 真实模型暴露提示词格式歧义：曾返回 type 字段或动作嵌套对象；已补明确 action 扁平 JSON 示例，校验器保持严格。Auto/Low 初测还出现截断/超时，已有脱敏失败报告。
+- DeepSeek 原生、Custom/compatible 的已知型号现在支持 None（关闭推理），并识别模型 effort 元数据。使用 None + JSON 模式 + 2048 token + 60 秒超时 + 10 秒公平周期完成真实双方各 10 次有效决策。
+- 成功场次：Packy 执行 27、拒绝 2、出兵 11、炮阵 2；官方执行 21、拒绝 4、出兵 7、炮阵 1。请求错误/页面异常均为 0。平均响应分别 8.99 秒和 1.15 秒。6 次合法校验拒绝与金币/目标/冷却/冲突有关，合法部分仍执行。
+- 游戏时间 197.9 秒、HP 9720/8450 后主动暂停结束验收；未把十轮验收说成完整比赛。成功报告 output/playwright/live-api/report.json、桌面/手机截图和密钥遮挡配置截图均已检查。
+- 新增可复用 tests/playtest_eva_live.py，必须显式提供外部凭据路径才运行真实接口。静态 7 组、EVA 快速回归 31 组 PASS；仅本地提交，不 push。使用说明与已知限制已更新 docs/EVA_ARENA.md。
+
+---
 # 模型列表问题修复 — 当前恢复点（2026-10-07）
 
 - 分支 feature/eva-ai-arena；本轮排查截图中的模型列表查询和公平周期/Debug 含义。

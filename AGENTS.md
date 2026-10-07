@@ -85,4 +85,5 @@
 - 每方最多一个在途请求。暂停/返回/结算取消并更新 epoch，迟到响应不可执行；连续三错暂停，重试/重新配置保留战局，重开清理。
 - URL/Key/模型由用户游戏内输入。Key 仅当前页面内存，不写 env/localStorage/sessionStorage/日志/截图/Git；只可显式保存非敏感配置。未知价格不估算费用。
 - 不展示隐藏思维链，Debug 原始响应也必须先过滤 thought/thinking/reasoning_content 和密钥。
-- 用户已明确本轮先搭框架，由用户填真实 URL/Key，不能把 HTTP fixture 通过描述为真实账户验证。
+- 框架阶段使用 fixtures；用户随后提供外部凭据文件并授权真实 API 实测。可用 `tests/playtest_eva_live.py --credentials-file <外部文件>` 复测对应服务；只在明确授权的任务内调用真实 API，不能把 fixtures 通过描述为真实账户验证。
+- DeepSeek 原生或兼容服务的已知 flash/v4 型号支持 None（thinking.disabled）与 Low/High/Max。真实验收使用 None、JSON 模式、2048 token、60 秒超时，双方各 10 次决策通过。SYSTEM 提示必须展示含 action 字段的扁平 JSON 示例，不能只用模糊的动作名/参数伪代码。

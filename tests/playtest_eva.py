@@ -300,12 +300,17 @@ try:
         caps = page.evaluate("""()=>{
           const cap=(provider,model)=>EVA.Providers.reasoningCapability({provider,model}).levels;
           return {pro:cap('gemini','gemini-3-pro-preview'),newFlash:cap('gemini','gemini-3.8-flash'),unknown:cap('openai','unknown-model'),
+            relayDeepSeek:cap('custom','deepseek-flash'),
+            noThinking:EVA.Providers.normalizeReasoningLevel({provider:'custom',model:'deepseek-flash',reasoning:'none'}),
+            declared:EVA.Providers.reasoningCapability({provider:'compatible',model:'deepseek-flash',modelMetadata:{effort:{supported_levels:['low','high']}}}).levels,
             budget:EVA.Providers.normalizeReasoningLevel({provider:'gemini',model:'gemini-2.5-flash',reasoning:'high',maxTokens:8192}),
             override:EVA.Providers.normalizeReasoningLevel({provider:'compatible',model:'local-unknown',reasoningProtocol:'effort',reasoning:'medium'})};
         }""")
         assert caps['pro'] == ['auto', 'low', 'high'] and 'minimal' not in caps['newFlash']
         assert caps['unknown'] == ['auto'] and 'thinkingBudget' in caps['budget']['thinkingConfig']
         assert caps['override']['reasoning_effort'] == 'medium'
+        assert caps['relayDeepSeek'] == ['auto', 'none', 'low', 'high', 'max']
+        assert caps['noThinking'] == {'thinking': {'type': 'disabled'}} and 'max' not in caps['declared']
         passed("model-specific reasoning subsets, Gemini budget vs level, unknown Auto and explicit compatible override")
 
         # CORS direct transport and redaction even if a model echoes a credential in public text.

@@ -8,7 +8,22 @@
     deepseek: 'https://api.deepseek.com/v1', custom: ''
   };
   const LEVELS = ['auto', 'minimal', 'low', 'medium', 'high', 'max'];
-  const SYSTEM = `You control one side of the three-lane strategy game 奇境王冠. Use only the structured Observation and bounded public memory. Return JSON only: {"schemaVersion":1,"summary":"brief public tactic in Chinese","commands":[]}. Never output hidden thoughts or chain-of-thought. At most 6 commands. Commands: deploy {unit:snake|lion|elephant|dragon,lane:top|middle|bottom}; usePotion {unit}; useBurst {lane}; advance/hold/retreat {lane}; focusTarget {lane,targetId:enemy unit id or "enemy-tower"}; setRallyPoint {lane,progress:0.04..0.96}; switchLane {lane,toLane} only on cross map, performed at center junction. Lanes name your own gate; cross lanes exit opposite top/bottom gate. Hold stops marching but attacks in range. Retreat walks back to own gate without attacking. Rally walks to progress then holds. Orders persist for present and future units on that lane until replaced. Potion affects the next deployment of that type. Burst hits enemies on your half of the selected route, not towers. Respect live coins/cooldowns; do not request duplicate card deployments. Empty commands means WAIT. Match time and cooldowns advance independently of API wall-clock latency.`;
+  const SYSTEM = `You control one side of the three-lane strategy game 奇境王冠. Use only the structured Observation and bounded public memory.
+Return a single JSON object with exactly schemaVersion, summary, commands. schemaVersion must be 1. summary is a brief public tactic in Chinese, at most 120 characters. commands is an array of 0 to 6 objects; normally use only 1 to 3 commands. Empty commands means WAIT. Do not output Markdown, commentary, hidden thoughts or chain-of-thought.
+Every command is a FLAT JSON object with an "action" string. Put the remaining fields at the same level as action. These are the ONLY allowed object shapes (values shown are examples, choose values from the current Observation):
+{"action":"deploy","unit":"lion","lane":"middle"}
+{"action":"usePotion","unit":"lion"}
+{"action":"useBurst","lane":"top"}
+{"action":"advance","lane":"middle"}
+{"action":"hold","lane":"top"}
+{"action":"retreat","lane":"bottom"}
+{"action":"focusTarget","lane":"middle","targetId":"enemy-tower"}
+{"action":"setRallyPoint","lane":"middle","progress":0.5}
+{"action":"switchLane","lane":"top","toLane":"middle"}
+No additional fields. Do not use the action name as a wrapper key. A complete valid response example is {"schemaVersion":1,"summary":"中路部署狮子推进。","commands":[{"action":"deploy","unit":"lion","lane":"middle"}]}.
+unit must be snake, lion, elephant or dragon. lane/toLane must be top, middle or bottom. focusTarget targetId must be the NUMERIC id of a live enemy unit from Observation or the string "enemy-tower". Rally progress must be 0.04..0.96. switchLane is available only on cross map and is performed at the center junction.
+Lanes name your own gate; cross lanes exit the opposite top/bottom gate. Hold stops marching but attacks in range. Retreat walks back to own gate without attacking. Rally walks to progress then holds. Orders persist for present and future units on that lane until replaced. Potion affects the next deployment of that type. Burst hits enemies on your half of the selected route, not towers.
+Use Observation rules and self coins/cooldowns. Reserve the TOTAL cost of your command batch; deploy each unit type at most once per response. Use memory rejected commands to correct mistakes. Match time and cooldowns advance independently of API wall-clock latency.`;
 
   function reasoningCapability(config) {
     const { provider, model = '', reasoningProtocol = 'auto', modelMetadata: meta } = config;
@@ -33,7 +48,10 @@
       }
       if (/gemini-2\.5/.test(model)) return { levels: LEVELS, kind: 'gemini-budget', minimum: model.includes('lite') ? 512 : 128, note: '档位转换为 thinkingBudget；受单次 token 上限约束' };
     }
-    if (provider === 'deepseek' && /deepseek-(flash|v4)/.test(model)) return { levels: ['auto', 'low', 'high', 'max'], kind: 'deepseek', note: 'thinking + reasoning_effort' };
+    if (['deepseek', 'compatible', 'custom'].includes(provider) && /^deepseek-(flash|v4)/.test(model)) {
+      const advertised = meta?.effort?.supported_levels;
+      return { levels: ['auto', 'none', ...['low', 'high', 'max'].filter(l => !Array.isArray(advertised) || advertised.includes(l))], kind: 'deepseek', note: 'None 关闭推理，适合快速决策；Auto 使用服务默认（DeepSeek 官方默认为 High）' };
+    }
     if (['openai', 'compatible', 'custom'].includes(provider)) {
       const advertised = meta?.supported_reasoning_efforts;
       if (Array.isArray(advertised)) return { levels: ['auto', ...LEVELS.filter(l => l !== 'auto' && advertised.includes(l))], kind: 'openai', note: '档位来自服务端元数据' };
@@ -46,7 +64,7 @@
     if (level === 'auto') return {};
     if (!cap.levels.includes(level)) throw new Error('CONFIG: selected reasoning level is unsupported');
     if (cap.kind === 'openai') return { reasoning_effort: level };
-    if (cap.kind === 'deepseek') return { thinking: { type: 'enabled' }, reasoning_effort: level };
+    if (cap.kind === 'deepseek') return level === 'none' ? { thinking: { type: 'disabled' } } : { thinking: { type: 'enabled' }, reasoning_effort: level };
     if (cap.kind === 'anthropic') return { output_config: { effort: level }, ...(cap.adaptive ? { thinking: { type: 'adaptive' } } : {}) };
     if (cap.kind === 'gemini-level') return { thinkingConfig: { thinkingLevel: level } };
     if (cap.kind === 'gemini-budget') return { thinkingConfig: { thinkingBudget: Math.max(cap.minimum, Math.min(({ minimal: 512, low: 1024, medium: 4096, high: 8192, max: 16384 })[level], (config.maxTokens || 4096) - 512)) } };

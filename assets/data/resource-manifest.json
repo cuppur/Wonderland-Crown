@@ -72,8 +72,8 @@
       "publicPath": "js/ai/eva-ui.js",
       "source_reference_count": 1,
       "embedded_in_html": false,
-      "bytes": 27304,
-      "sha256": "96A488FF03F145DE8F5A15D832DDE7750A91AB27F2DFEBAF9915E754C2DF2ACB"
+      "bytes": 27344,
+      "sha256": "7A949298E0D1D5A3D3DE6861BB5FDE5DFAB10D543D0BCD90379199811D589CDD"
     },
     {
       "type": "script",
@@ -99,8 +99,8 @@
       "publicPath": "js/ai/provider-adapters.js",
       "source_reference_count": 1,
       "embedded_in_html": false,
-      "bytes": 15753,
-      "sha256": "24E77382EEC5E27A0D872BEEA1D1FC4C8BDA057BFA55FE18215BDB8BEE658149"
+      "bytes": 17205,
+      "sha256": "D3B77D1E231AD02E8FBDB0E64F6DFEF6D79D585C2CB303C2A42634807D634B75"
     },
     {
       "type": "style",

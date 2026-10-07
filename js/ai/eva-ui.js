@@ -54,7 +54,7 @@
   };
   const signature = c => { const { modelMetadata, ...values } = c; return JSON.stringify(values); }; // memory only; never saved or exported
   function status(side, message, good = null) { const p = form(side).querySelector('[data-info="connection"]'); p.textContent = message; p.className = 'eva-connection' + (good === true ? ' ok' : good === false ? ' bad' : ''); }
-  function reasoning(side) { const c = readConfig(side), cap = E.Providers.reasoningCapability(c), select = field(side, 'reasoning'), previous = select.value; select.replaceChildren(...cap.levels.map(l => { const o = el('option', '', l === 'auto' ? 'Auto · 服务默认' : l[0].toUpperCase() + l.slice(1)); o.value = l; return o; })); select.value = cap.levels.includes(previous) ? previous : 'auto'; select.disabled = cap.levels.length === 1; form(side).querySelector('[data-info="reasoning"]').textContent = cap.note; }
+  function reasoning(side) { const c = readConfig(side), cap = E.Providers.reasoningCapability(c), select = field(side, 'reasoning'), previous = select.value; select.replaceChildren(...cap.levels.map(l => { const o = el('option', '', l === 'auto' ? 'Auto · 服务默认' : l === 'none' ? 'None · 关闭推理' : l[0].toUpperCase() + l.slice(1)); o.value = l; return o; })); select.value = cap.levels.includes(previous) ? previous : 'auto'; select.disabled = cap.levels.length === 1; form(side).querySelector('[data-info="reasoning"]').textContent = cap.note; }
   function baseUrlHint(side) {
     const hint = form(side).querySelector('[data-info="baseUrl"]'), value = field(side, 'baseUrl').value.trim();
     hint.replaceChildren();

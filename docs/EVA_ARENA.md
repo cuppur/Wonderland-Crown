@@ -1,6 +1,6 @@
 # 奇境王冠 · EVA AI Arena
 
-本阶段在 `feature/eva-ai-arena` 独立分支上增加 AI 对战模式。普通游戏和 UI 稳定版本仍保留在 `UI` 分支。双方 URL、密钥、模型由玩家在游戏内输入；本阶段按用户后续指令不连接真实付费账户。
+本阶段在 `feature/eva-ai-arena` 独立分支上增加 AI 对战模式。普通游戏和 UI 稳定版本仍保留在 `UI` 分支。双方 URL、密钥、模型由玩家在游戏内输入。框架开发先使用 Mock/fixtures，随后用户提供外部凭据并授权真实 API 验收，结果见本文末尾。
 
 ## 启动与使用
 
@@ -45,6 +45,7 @@ Packy 用户请核对控制台“数据看板”中的 API Endpoint。[官方快
 | `css/eva.css` | EVA 专用淡蓝/淡粉/奶油界面与手机/平板规则 |
 | `tools/eva_server.py` | 可选本地 API 代理及公开静态文件服务，无第三方 Python 依赖 |
 | `tests/playtest_eva.py` | 浏览器完整比赛、真实 HTTP fixture adapter/异常/交互验收 |
+| `tests/playtest_eva_live.py` | 明确授权后使用外部凭据文件，跑实际模型查询、连接与双方决策；不复制/落盘密钥 |
 | `docs/eva-command.schema.json` | 可独立使用的 Command v1 JSON Schema |
 
 `css/style.css`、`js/candy-field.js` 的本轮棒棒糖/半卡宽间距在 UI 分支先提交，再作为本分支基线。没有改单位属性表，也没有引入框架。
@@ -148,6 +149,8 @@ Validator 检查版本、动作/字段白名单、单位与路线、金币、技
 
 UI 使用 Auto/Minimal/Low/Medium/High/Max 的公共档位集合，按模型能力显示子集，不假定所有型号支持全部档位。Auto 不发送推理参数。模型列表的 Anthropic `capabilities.effort`、兼容服务的 `supported_reasoning_efforts` 优先于保守型号规则。未知原生型号保持 Auto，仍允许连接。Gemini 列表按 `supportedGenerationMethods` 过滤非生成模型，并保留返回元数据。模型列表可分页，最多查询十页。
 
+DeepSeek flash/v4 已知型号另支持 None：显式发送 `thinking.type=disabled`。Custom/compatible 选择这些型号时也识别 DeepSeek 参数和 `effort.supported_levels` 元数据。[官方说明](https://api-docs.deepseek.com/guides/thinking_mode/) 指出默认启用 High 推理；Auto 保留服务默认。实时对战实测建议先用 None，JSON 模式、2048 token 上限和 60 秒超时，公平周期可先设 10 秒。Low/High/Max 的非流式响应可能较慢，需按服务实测调整。
+
 实现参考官方 [OpenAI Chat Completions](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create)、[Anthropic 模型能力](https://platform.claude.com/docs/en/api/models/list) / [effort](https://platform.claude.com/docs/en/build-with-claude/effort)、[Gemini thinking](https://ai.google.dev/gemini-api/docs/generate-content/thinking) / [models](https://ai.google.dev/api/models)、[DeepSeek thinking](https://api-docs.deepseek.com/guides/thinking_mode/)。型号规则是本阶段兼容基线，服务更新后以该服务实际能力/连接测试为准。
 
 所有请求为非流式、纯文本；不要求隐藏思维链，不打开 Gemini `includeThoughts`。Anthropic thinking blocks、OpenAI/DeepSeek reasoning_content、Gemini thought parts 在进入 Debug/日志/Memory 前过滤。Debug 的 Raw API Response 是只保留公开文本和用量的脱敏响应，不展示隐藏思维或凭据。
@@ -185,8 +188,32 @@ EVA 测试通过页面完成首页/普通对局/配置/连接测试/双 Mock 自
 
 另用真正的本地 HTTP fixture 服务跑六种请求/响应协议、两方每种十轮以上决策、推理参数、用量、思维过滤；测试错误 Key/URL、模型列表不可用、限流、超时、非法 JSON/命令、断连、暂停后的迟到响应、恢复/重新配置/判负、配置保存和手机/平板布局。Fixture 凭据是明确的测试字符串，不是实际密钥。它验证接入框架和异常处理，不证明某一家真实账户/中转站当前可用。
 
-当前限制：仅单机；Custom 要求 Chat Completions 兼容；非流式；无真实账户验收；未知模型推理能力需 Auto 或手动协议；日志滚动保存而非无限持久化；直连依赖 CORS；代理只供本机使用，未做公网多用户服务；平行地图不支持换路；手机观战面板收起摘要/命令，完整信息通过日志弹窗查看。没有账号、排行、ELO、训练、数据库或多人系统。
+当前限制：仅单机；Custom 要求 Chat Completions 兼容；非流式；实际账户仅验证了 Packy/DeepSeek 的 deepseek-flash，两方各 10 次有效决策，未验证所有型号或付费完整比赛；未知模型推理能力需 Auto 或手动协议；日志滚动保存而非无限持久化；直连依赖 CORS；代理只供本机使用，未做公网多用户服务；平行地图不支持换路；手机观战面板收起摘要/命令，完整信息通过日志弹窗查看。没有账号、排行、ELO、训练、数据库或多人系统。
 
-下一阶段建议：先用玩家的真实配置完成双方各十轮以上验收，记录延迟/非法命令率；再根据实际战斗评估 Observation 的规则体积、推理档位和 token 上限，优化提示词和策略。后续可扩展可信价格配置、比赛日志归档/回放及更多 Custom 协议。
+下一阶段建议：根据真实对战评估 Observation 的规则体积、响应延迟、推理档位和 token 上限，优化提示词和策略。后续可扩展可信价格配置、比赛日志归档/回放及更多 Custom 协议。
 
 2026-10-07 模型列表修复回归：专项 17 组、EVA 快速回归 31 组、静态 7 组全部通过。专项截图/报告位于 `output/playwright/model-list/`；原完整比赛报告保留在 `output/playwright/eva-report-full.json`。
+
+## 真实 API 验收（2026-10-07）
+
+用户提供项目外的 api.txt 并授权实测。文件中 Packy URL 以 `/v` 结尾，实际返回 404；测试在相同域名补成 `/v1` 后通过。没有修改或复制凭据文件。Packy 当前令牌返回 3 个 DeepSeek 型号，官方返回 2 个；双方均选择 `deepseek-flash`。
+
+初测发现动作伪代码让真实模型生成 `type` 字段或动作名嵌套对象，严格校验器正确拒绝；默认高推理还出现截断/超时。现已改为明确的扁平 JSON 示例，保留严格验证，并增加 None 档位。
+
+修复后的真实浏览器对战，使用本地代理、None、JSON 模式、2048 token、60 秒超时、10 秒公平周期：
+
+| 项目 | 蓝方 Packy | 红方官方 DeepSeek |
+|---|---:|---:|
+| 有效决策 / 请求错误 | 10 / 0 | 10 / 0 |
+| 执行 / 拒绝命令 | 27 / 2 | 21 / 4 |
+| 部署单位 / 炮阵 | 11 / 2 | 7 / 1 |
+| 平均 / 最大响应 | 8.99 / 18.82 秒 | 1.15 / 1.51 秒 |
+| Input / Output token | 27467 / 732 | 27091 / 636 |
+
+这是本轮成功对战的用量，不包含连接测试和之前的失败尝试。6 条拒绝分别涉及金币不足、目标已失效、技能冷却或同路冲突；合法部分继续执行，未造成请求错误。双方未使用药水。游戏时间 197.9 秒时主动暂停结束验收，城门 HP 蓝方 9720、红方 8450，未宣称完整比赛结束。页面异常为 0。
+
+完整脱敏报告和截图位于 `output/playwright/live-api/`，不提交生成文件或凭据。可在已获授权的任务中复测：
+
+```powershell
+python tests/playtest_eva_live.py --credentials-file C:/path/api.txt
+```
