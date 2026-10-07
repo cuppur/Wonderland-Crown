@@ -35,6 +35,8 @@ try:
             ('webkit-touch', p.webkit, {'viewport': {'width': 844, 'height': 390}, 'is_mobile': True, 'has_touch': True, 'device_scale_factor': 3}),
         ]
         for name, engine, options in scenarios:
+            if name == 'android-touch':
+                options['user_agent'] = 'Mozilla/5.0 (Linux; Android 12; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36'
             browser = engine.launch(headless=True)
             context = browser.new_context(**options)
             for mode in ['cross', 'straight']:

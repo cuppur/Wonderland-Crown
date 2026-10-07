@@ -27,7 +27,7 @@ class Quiet(SimpleHTTPRequestHandler):
     def copyfile(self, source, output):
         try:
             super().copyfile(source, output)
-        except (BrokenPipeError, ConnectionResetError):
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
             pass  # Closing a WebKit page can cancel its audio resource request.
 
 
@@ -52,6 +52,7 @@ LEGACY = """delete CanvasRenderingContext2D.prototype.roundRect;
 delete CanvasRenderingContext2D.prototype.getTransform;
 delete CanvasRenderingContext2D.prototype.filter;"""
 BLOCK_READBACK = """CanvasRenderingContext2D.prototype.getImageData=function(){throw new DOMException('Canvas readback unavailable','SecurityError');};"""
+ANDROID_UA = 'Mozilla/5.0 (Linux; Android 12; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36'
 
 
 def battlefield_pixels(png):
@@ -74,6 +75,8 @@ try:
             ("webkit-touch", pw.webkit, {"viewport": {"width": 844, "height": 390}, "is_mobile": True, "has_touch": True, "device_scale_factor": 3}, None),
         ]
         for name, engine, options, patch in cases:
+            if name.startswith('android'):
+                options['user_agent'] = ANDROID_UA
             browser = engine.launch(headless=True)
             for mode in ["cross", "straight"]:
                 context = browser.new_context(**options)

@@ -15,6 +15,7 @@
 - 测试：`python tests/verify_game.py`（静态契约、资源、属性表哈希、JS 语法），必须全部 PASS。
 - 浏览器回归命令：`python tests/playtest_game.py`（需开发环境 Python Playwright；不属于游戏运行依赖）。截图/报告位于 `output/playwright/`。
 - 浏览器检查：用 Playwright 自带 headless Chromium，不要用本机 Edge/Chrome（会触发 IDM 弹窗）。检查 console、`window.__QJWG_TEST__.snapshot()` 和关键交互。
+- 手机专项：`python tests/playtest_mobile.py`（开发环境 Playwright Chromium/WebKit + Pillow）；检查实际战场像素、触屏/DPR、旋转与全屏暂态尺寸、旧 Canvas 接口以及离屏画布释放。只缩窗口尺寸不够。
 - 测试探针 `window.__QJWG_TEST__` 与隐藏的 `#qjwgTestProbe` 只在 localhost 且 URL 含 `test` 时启用。
 
 ## 3. 目录结构
