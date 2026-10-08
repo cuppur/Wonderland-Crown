@@ -92,9 +92,31 @@ try:
                 backing = frame.evaluate("()=>{const c=document.getElementById('gameCanvas');return {dpr:c.width/c.clientWidth,pixels:c.width*c.height};}")
                 if name != 'desktop':
                     assert 2 <= backing['dpr'] <= 2.51 and backing['pixels'] <= 2205000, backing
-                game.locator('#menuBtn').click()
+                assert frame.evaluate('typeof OrdinaryCommander') == 'function'
+                if name != 'desktop':
+                    page.set_viewport_size({'width':390,'height':844})
+                    frame.wait_for_function("document.documentElement.classList.contains('portrait-mode') && document.querySelector('#pauseBtn .btn-label').textContent==='继续'")
+                    frozen = game.locator('#timer').inner_text()
+                    page.wait_for_timeout(1200)
+                    assert game.locator('#timer').inner_text() == frozen
+                    page.set_viewport_size({'width':844,'height':390})
+                    frame.wait_for_function("!document.documentElement.classList.contains('portrait-mode') && document.querySelector('#pauseBtn .btn-label').textContent==='暂停'")
+                    if not game.locator('#topButtons').is_visible():
+                        game.locator('#menuBtn').click()
+                    game.locator('#pauseBtn').click()
+                    page.set_viewport_size({'width':390,'height':844})
+                    frame.wait_for_function("document.documentElement.classList.contains('portrait-mode')")
+                    page.set_viewport_size({'width':844,'height':390})
+                    frame.wait_for_function("!document.documentElement.classList.contains('portrait-mode')")
+                    assert game.locator('#pauseBtn .btn-label').inner_text() == '继续'
+                    if not game.locator('#topButtons').is_visible():
+                        game.locator('#menuBtn').click()
+                    game.locator('#pauseBtn').click()
+                    frame.wait_for_function("document.querySelector('#pauseBtn .btn-label').textContent==='暂停'")
+                if not game.locator('#topButtons').is_visible():
+                    game.locator('#menuBtn').click()
                 assert game.locator('#topButtons').is_visible()
-                report['checks'].append({'browser':name,'map':mode,'creamPixels':cream,'backing':backing,'timerContinues':True,'deployment':True})
+                report['checks'].append({'browser':name,'map':mode,'creamPixels':cream,'backing':backing,'timerContinues':True,'deployment':True,'hardAI':True,'rotationPause':name!='desktop'})
                 print(f'[PASS] published {name}/{mode}: battlefield pixels, timer, deployment, transition recovery and menu', flush=True)
                 page.close()
                 for key in events:
