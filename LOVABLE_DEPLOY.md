@@ -17,3 +17,8 @@ Lovable 项目：Wonderland Crown Portal（72e4454c-102f-490a-89bb-af66ac4996be�
 同日高清版已发布：UI 运行来源 468bbf4，Lovable 内容提交 b71bcb944372e4b87daa25d2f6738519076e6f86，缓存版本 20261007-hd1。
 手机 DPR 最高 2.5，并按约 220 万像素限制；地面/道路缓存使用相同 DPR。道路几何、宽度、圆角与投影保持上一版计算，只增加路外蘑菇、棉花糖云朵和花簇。
 公网六场景与八文件对照全部通过，安卓模拟 844×390 主画布为 2110×975（2057250 像素）；最新版报告覆盖前一轮手机修复报告，修改前截图另保存在 output/playwright/hd/。
+
+2026-10-08 六项缺陷与困难普通 AI 已发布：UI 运行来源 cce1d69（游戏核心 5c0008d）；Lovable 内容提交 2d6e7b38644923dffe9eddc02f20462f2a0484f6，部署 ID 69a05027-9773-4659-bdd4-905aaaef900b，缓存版本 20261007-hard1。
+新增 js/ordinary-ai.js，发布必须保留两个 js 文件；三个原文件与新增 AI 脚本已经逐字核对。正式发布以 Git LF 字节为准，resource-manifest.json 的脚本字节数/哈希与实际 LF 文件一致；打包附件应从 git show 取 content、bytes、SHA256，避免 Windows 工作区 CRLF 导致哈希歧义。
+公网桌面、安卓触屏、WebKit × 双地图六场景及九资源 Git blob 检查通过，已加载游戏无脚本/console 错误或资源 HTTP 失败。手机测试新增竖屏冻结、横屏恢复和保留手动暂停验证，困难指挥器已加载。报告/截图仍在 output/playwright/published-mobile/。
+道路形状和单位规则未变；普通 AI 策略、保留约束与 64 场旧 AI 对照结果见 ORDINARY_AI.md。UI 部署继续不包含 EVA 凭据或本地 API 代理。

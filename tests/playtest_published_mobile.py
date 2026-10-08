@@ -28,7 +28,7 @@ def open_page(context):
         page.on('console', lambda m, events=events: events['consoleErrors'].append(m.text) if m.type == 'error' else None)
         page.on('response', lambda r, events=events: events['badResources'].append({'url':r.url,'status':r.status}) if '/game/' in r.url and r.status >= 400 else None)
         try:
-            page.goto(args.url, wait_until='domcontentloaded', timeout=60000)
+            page.goto(args.url + ('&' if '?' in args.url else '?') + 'release=20261007-hard1', wait_until='domcontentloaded', timeout=60000)
             return page, events
         except Exception as error:
             if 'net::ERR_TIMED_OUT' not in str(error) or attempt == 2:
@@ -59,7 +59,7 @@ try:
         ]
         for name, engine, options in scenarios:
             if name == 'android-touch':
-                options['user_agent'] = 'Mozilla/5.0 (Linux; Android 12; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Mobile Safari/537.36'
+                options['user_agent'] = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36'
             browser = engine.launch(headless=True, **network)
             context = browser.new_context(**options)
             for mode in ['cross', 'straight']:
@@ -94,6 +94,8 @@ try:
                     assert 2 <= backing['dpr'] <= 2.51 and backing['pixels'] <= 2205000, backing
                 assert frame.evaluate('typeof OrdinaryCommander') == 'function'
                 if name != 'desktop':
+                    # Headless Chromium cannot resize an OS window while fullscreen.
+                    page.evaluate("async()=>{if(document.fullscreenElement)await document.exitFullscreen();}")
                     page.set_viewport_size({'width':390,'height':844})
                     frame.wait_for_function("document.documentElement.classList.contains('portrait-mode') && document.querySelector('#pauseBtn .btn-label').textContent==='继续'")
                     frozen = game.locator('#timer').inner_text()
@@ -122,7 +124,7 @@ try:
                 for key in events:
                     report[key].extend(events[key])
             browser.close()
-        request = p.request.new_context(**network)
+        request = p.request.new_context(user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36', **network)
         try:
             report['resources'] = []
             for name in ['index.html','css/style.css','js/candy-field.js','js/ordinary-ai.js','assets/data/resource-manifest.json','assets/images/poison-status-icon-v1.png','assets/audio/BGM.ogg','assets/audio/cannon1.mp3','assets/audio/explosions.mp3']:
