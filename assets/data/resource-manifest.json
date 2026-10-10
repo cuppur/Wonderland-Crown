@@ -43,8 +43,8 @@
       "type": "script",
       "source": "js/candy-field.js",
       "publicPath": "js/candy-field.js",
-      "bytes": 31938,
-      "sha256": "63E3FD3E7EBD43C26264BD869BE5D00853BA88C3F5B01160A650353F12D1A357",
+      "bytes": 32263,
+      "sha256": "ECC8733C744165DBCB29BC684AD4341E51FD71BC4297BE871497608D87E73B17",
       "source_reference_count": 1,
       "embedded_in_html": false
     },
@@ -52,8 +52,8 @@
       "type": "script",
       "source": "js/ordinary-ai.js",
       "publicPath": "js/ordinary-ai.js",
-      "bytes": 9009,
-      "sha256": "51E4560C6E91328ABF48FEB92724143B42D8D7E49A40102140979D7B1984EF1F",
+      "bytes": 9044,
+      "sha256": "2D1E4BA3B6D6841FCC9965168DB20D83535F4729953A5D6D81714A34EF3F0DA1",
       "source_reference_count": 1,
       "embedded_in_html": false
     }

@@ -274,6 +274,21 @@ function project(F,x,y) { const k=depth(F,y); return {x:F.cx+(x-F.cx)*k,y,k}; }
 function unproject(F,x,y) { return {x:F.cx+(x-F.cx)/depth(F,y),y}; }
 function atGround(g,F,x,y,paint) { const p=project(F,x,y); g.save();g.translate(p.x,p.y);g.scale(p.k,p.k);paint(p);g.restore(); }
 
+// Deterministic meadow clusters; their full silhouettes stay clear of every road.
+function meadowLayout(F) {
+  const rnd=rng(20261011),deco=[],rw=F.rw;
+  const kinds=['flowers','mush','flowers','cloud','candy'];
+  for(let i=0;i<3200&&deco.length<100;i++){
+    const kind=kinds[i%kinds.length],r=rw*(.16+rnd()*.08);
+    const x=lerp(F.rs+rw,F.re-rw,rnd()),y=lerp(F.ys[0]-rw*.25,F.ys[2]+rw*.75,rnd());
+    const gap=r*1.25+rw*.07,rise=r*(kind==='candy'?1.25:.55);
+    if(!farFromRoads(F,x,y,gap)||!farFromRoads(F,x,y-rise,gap))continue;
+    if(deco.some(d=>Math.hypot(d.x-x,d.y-y)<d.r+r+rw*.10))continue;
+    deco.push({x,y,r,kind,gap,rise});
+  }
+  return deco.sort((a,b)=>a.y-b.y);
+}
+
 function drawGround(g,F,dpr=1) {
   const {w,h,rw,S0}=F,rnd=rng(20261007);
   const flat=document.createElement('canvas'), pad=w*.26;
@@ -293,7 +308,7 @@ function drawGround(g,F,dpr=1) {
   drawRoads(roadContext,F,rnd,dpr);a.drawImage(roads,0,0,w,h);releaseCanvas(roads);
   drawPlatforms(a,F);
   const flowers=['#fff5df','#ffccde','#e4d5ff','#ffe08e'];
-  for(let i=0;i<180;i++){
+  for(let i=0;i<360;i++){
     const x=rnd()*w,y=rnd()*h;if(!farFromRoads(F,x,y,rw*.35))continue;
     drawFlower(a,x,y,Math.max(1,2.8*S0),flowers[i%4],rnd);
   }
@@ -316,19 +331,14 @@ function drawGround(g,F,dpr=1) {
       if(row===0&&rnd()<.6)atGround(g,F,x,top,()=>lolly(g,0,0,rw*.24,CANDY[Math.floor(rnd()*6)],S0,rw*.75));
     }
   }
-  const deco=[];
-  for(let i=0;i<900&&deco.length<38;i++){
-    const kind=i%3===0?'mush':i%3===1?'cloud':'flowers',r=rw*(kind==='flowers'?.26:.34);
-    const x=lerp(F.rs+rw*1.3,F.re-rw*1.3,rnd()),y=lerp(F.ys[0]-rw*.2,F.ys[2]+rw*.7,rnd());
-    // Keep the whole silhouette off the roads and leave room between clusters.
-    const gap=r*1.25+rw*.16;
-    if(!farFromRoads(F,x,y,gap)||!farFromRoads(F,x,y-r*1.2,gap)||deco.some(d=>Math.hypot(d.x-x,d.y-y)<rw*1.15))continue;
-    deco.push({x,y,r,kind});
-  }
-  deco.sort((a,b)=>a.y-b.y).forEach(d=>atGround(g,F,d.x,d.y,()=>{
+  meadowLayout(F).forEach(d=>atGround(g,F,d.x,d.y,()=>{
     if(d.kind==='cloud')drawMeadowCloud(g,d.r,S0,rnd);
     else if(d.kind==='flowers')drawMeadowFlowers(g,d.r,S0,rnd);
-    else drawTree(g,0,0,d.r,rnd,S0,'mush');
+    else if(d.kind==='candy')drawBush(g,0,0,d.r,rnd,S0);
+    else {
+      drawTree(g,-d.r*.38,0,d.r*.76,rnd,S0,'mush');
+      drawTree(g,d.r*.43,d.r*.08,d.r*.52,rnd,S0,'mush');
+    }
   }));
   if(F.mode==='straight'){
     // Two pairs of candy milestones between lanes, with clear grass buffers.
@@ -448,6 +458,6 @@ function highlightLane(g,F,i,color){
   for(let j=0;j<=160;j++){const q=F.paths[i].at(j/160),p=project(F,q.x,q.y);j?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y);}g.stroke();g.restore();
 }
 function nearestLane(F,x,y){let best={i:0,d:Infinity,t:0};F.paths.forEach((p,i)=>{const n=p.nearest(x,y);if(n.d<best.d)best={i,d:n.d,t:n.t};});return best;}
-window.CandyField={TEAM,INK,rr,circle,rng,releaseCanvas,Path,buildGeometry,depth,project,unproject,atGround,drawGround,background,wallBounds,drawWall,drawCannon,cannonPose,cannonDims,muzzle,highlightLane,nearestLane};
+window.CandyField={TEAM,INK,rr,circle,rng,releaseCanvas,Path,buildGeometry,depth,project,unproject,atGround,meadowLayout,drawGround,background,wallBounds,drawWall,drawCannon,cannonPose,cannonDims,muzzle,highlightLane,nearestLane};
 
 })();

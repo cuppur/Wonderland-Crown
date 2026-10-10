@@ -16,7 +16,7 @@
 - 浏览器回归命令：`python tests/playtest_game.py`（需开发环境 Python Playwright；不属于游戏运行依赖）。截图/报告位于 `output/playwright/`。
 - 浏览器检查：用 Playwright 自带 headless Chromium，不要用本机 Edge/Chrome（会触发 IDM 弹窗）。检查 console、`window.__QJWG_TEST__.snapshot()` 和关键交互。
 - 手机专项：`python tests/playtest_mobile.py`（开发环境 Playwright Chromium/WebKit + Pillow）；检查实际战场像素、触屏/DPR、旋转与全屏暂态尺寸、旧 Canvas 接口以及离屏画布释放。只缩窗口尺寸不够。
-- 边界回归：`python tests/playtest_rules.py`；缓存回归：`python tests/playtest_cache.py`；备用启动器：`python tests/verify_launcher.py`；普通困难 AI：`python tests/playtest_ai.py`（包含旧 AI 对照实战）。
+- 属性表实际战斗回归：`python tests/playtest_balance.py`；边界回归：`python tests/playtest_rules.py`；缓存回归：`python tests/playtest_cache.py`；备用启动器：`python tests/verify_launcher.py`；普通困难 AI：`python tests/playtest_ai.py`（包含旧 AI 对照实战）。
 - 测试探针 `window.__QJWG_TEST__` 与隐藏的 `#qjwgTestProbe` 只在 localhost 且 URL 含 `test` 时启用。
 
 ## 3. 目录结构
@@ -53,7 +53,7 @@
 
 - 正式战场填满视口；`W/H` 取实际容器尺寸，`CandyField.buildGeometry()` 推导三路/门口/平台/炮台位置。
 - 战斗保留地面坐标；绘制用 `CandyField.project()`，点击和拖拽用 `unproject()`。上路深度 0.8，下路 1.0。立体物件按脚底位置缩放。
-- 单位基础数值不改；移速/射程按各路线 `length/1070` 换算。窗口缩放保留 t/血量/冷却，并同步炮弹位置/拖尾/速度。
+- 单位基础数值只按最新单位属性表更新；移速/射程按各路线 `length/1070` 换算。窗口缩放保留 t/血量/冷却，并同步炮弹位置/拖尾/速度。
 - 守门炮的射程与优先级以基地地面中心计算，绘制炮台坐在中路塔顶；两个位置分别使用，不能让塔顶高度影响上下路防守范围。
 - `CandyField.muzzle()` 是唯一可见炮口计算，Game 转为地面坐标用于炮弹/FX；含转向、0.55 纵向压扁和后坐。不要在发射/绘制中各写一套偏移。
 - 背景（包括模糊道路蒙版）只在尺寸/模式变化时缓存；宫殿按血量百分位在包围区域内缓存，炮台/Emoji/特效实时绘制。同尺寸/地图/DPR 重开复用背景与完好宫殿。手机 DPR ≤2.5，同时按 220 万像素预算限制；道路/草地缓存与主画布保持同一 DPR，投影逐物理像素行绘制。
