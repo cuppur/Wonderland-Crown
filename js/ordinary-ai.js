@@ -7,7 +7,7 @@ class OrdinaryCommander {
  progress(u){return this.side==='player'?u.t:1-u.t;}
  stats(type,buffed=false){
   const d=this.rules.units[type],b=buffed?this.rules.buffs[type]:{};
-  return{type,hp:d.hp*(b.hp||1),attack:d.attack*(b.attack||1),interval:d.interval/(b.attackSpeed||1),speed:d.speed*(b.speed||1),range:d.range,regen:d.regen*(b.regen||1),buffed,buff:b};
+  return{type,hp:d.hp*(b.hp||1),attack:d.attack*(b.attack||1),interval:d.interval/(b.attackSpeed||1),speed:d.speed*(b.speed||1),range:d.range*(buffed?this.rules.potion.scale:1),regen:d.regen*(b.regen||1),buffed,buff:b};
  }
  dps(u,horizon=5){
   let d=u.attack/u.interval;

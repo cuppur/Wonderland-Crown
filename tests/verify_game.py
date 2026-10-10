@@ -13,9 +13,9 @@ ROOT = Path(__file__).resolve().parents[1]
 HTML = ROOT / "index.html"
 STYLE = ROOT / "css" / "style.css"
 TABLE_DIR = ROOT / "单位属性表"
-EXPECTED_TABLE = "20260730.xlsx"
+EXPECTED_TABLE = "20261010.xlsx"
 EXPECTED_TABLE_SHA256 = {
-    "29FAB6D7CCFA1175778D9706FF7D4277CAFB72D29D1F72DD90C42BAAA9F232B2",
+    "A53FAD5E12CE9C1B13613C8B7C1030FA7FC73EB15A89C3BE3B3EA016AAF93ED4",
 }
 
 
@@ -69,10 +69,10 @@ required = {
     "外部样式入口": '<link rel="stylesheet" href="./css/style.css" />',
     '微软 Emoji 字体': '--emoji:"Segoe UI Emoji"',
     "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:500,attack:10,speed:80,range:60,interval:.2,cooldown:5,regen:10",
-    "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:700,attack:20,speed:60,range:70,interval:.5,cooldown:5,regen:10",
+    "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:700,attack:30,speed:60,range:70,interval:.5,cooldown:5,regen:15",
     "象最新属性": "elephant:{name:'磐石象',cost:10,hp:1000,attack:15,speed:40,range:80,interval:.8,cooldown:5,regen:20",
     "龙最新属性": "dragon:{name:'星焰龙',cost:10,hp:800,attack:20,speed:50,range:100,interval:1,cooldown:5,regen:15",
-    "蛇药水倍率": "snake:{hp:1,attack:1,speed:2,attackSpeed:2,regen:1,poisonDamage:2,poisonDuration:1}",
+    "蛇药水倍率": "snake:{hp:1,attack:1,speed:2,attackSpeed:2,regen:1,poisonDamage:2,poisonDuration:1.5}",
     "狮药水倍率": "lion:{hp:2,attack:2,speed:1,attackSpeed:1,regen:1,killHeal:2}",
     "报告移除建议费用": "<th>每金币价值</th></tr>",
     "象药水倍率": "elephant:{hp:2,attack:1,speed:1,attackSpeed:1,regen:2,heavyDamage:2}",
@@ -95,7 +95,7 @@ required = {
     "象三秒重击": "if(u.type==='elephant'&&u.charge>=3)u.heavyReady=true",
     "象三倍伤害": "mult=3*(u.buffed?(u.buff.heavyDamage||1):1)",
     "龙燃烧": "v.burnDps=20*(u.buffed?(u.buff.burnDamage||1):1);v.burn=3*(u.buffed?(u.buff.burnDuration||1):1)",
-    "药水属性": "const POTION={cost:5,cooldown:20};",
+    "药水属性": "const POTION={cost:5,cooldown:20,scale:1.3};",
     "爆裂炮属性": "const BURST={cost:20,cooldown:20,damage:1000,shots:10};",
     "守门炮属性": "const GUARD_CANNON={interval:2,windup:.28,damage:150,rangeFactor:.2};",
     "炮台最短角度差": "const shortestAngleDelta=(from,to)=>Math.atan2(Math.sin(to-from),Math.cos(to-from));",
@@ -104,7 +104,7 @@ required = {
     "交汇战线精简说明": "<b>交汇战线</b><span>三条道路汇入平滑路面</span>",
     '模式标题居中': '.mode-option b{display:block;text-align:center',
     '计时器内层虚线隐藏': '#centerHud::before{content:"🍒"',
-    "城门血量": "kind:'tower',side,hp:10000,maxHp:10000",
+    "城门血量": "kind:'tower',side,hp:5000,maxHp:5000",
     "金币增长": "this.coins.player+=1*dt;this.coins.enemy+=1*dt;",
     "初始金币": "this.coins={player:15,enemy:15}",
     '正式道路范围': 'roadStart:f.rs,roadEnd:f.re',
@@ -134,7 +134,8 @@ required = {
     "十连发动画时长": "const BURST_VISUAL_DURATION=FX_TIMING.burstLead+(BURST.shots-1)*FX_TIMING.burstStep+FX_TIMING.burstExplosion;",
     "十连发音频拟合": "this.playTimed(this.burstVoice,visualDuration,true)",
     "基础棋子视觉缩小30%": "const UNIT_BASE_VISUAL_SCALE=.7;",
-    "药水相对基础体型放大": "u.visualScale=UNIT_BASE_VISUAL_SCALE*1.4",
+    "药水攻击距离同步放大": "u.range*=POTION.scale",
+    "药水相对基础体型放大": "u.visualScale=UNIT_BASE_VISUAL_SCALE*POTION.scale",
     "重击状态图标": "if(u.heavyReady)ctx.fillText('💢'",
     "药水王冠状态": "if(u.buffed)ctx.fillText('👑'",
     "中毒绿色视觉": "ctx.fillStyle='rgba(80,190,82,.24)'",
@@ -263,7 +264,7 @@ for resource in manifest["resources"]:
     if not (ROOT / resource["publicPath"]).is_file():
         fail(f"manifest 引用不存在的文件：{resource['publicPath']}")
 
-print("[PASS] 最新属性表未被修改，且仍为 20260730.xlsx")
+print("[PASS] 最新属性表未被修改，且仍为 20261010.xlsx")
 print("[PASS] 四单位、药水、城门、金币、爆裂炮和守门炮静态配置已同步")
 print("[PASS] 一体托盘、原版卡牌、双地图与收纳系统菜单契约存在")
 print("[PASS] BGM、单发炮、连发炮资源存在，音画限时逻辑存在")

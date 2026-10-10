@@ -28,7 +28,7 @@ def open_page(context):
         page.on('console', lambda m, events=events: events['consoleErrors'].append(m.text) if m.type == 'error' else None)
         page.on('response', lambda r, events=events: events['badResources'].append({'url':r.url,'status':r.status}) if '/game/' in r.url and r.status >= 400 else None)
         try:
-            page.goto(args.url + ('&' if '?' in args.url else '?') + 'release=20261007-hard1', wait_until='domcontentloaded', timeout=60000)
+            page.goto(args.url + ('&' if '?' in args.url else '?') + 'release=20261011-meadow1', wait_until='domcontentloaded', timeout=60000)
             return page, events
         except Exception as error:
             if 'net::ERR_TIMED_OUT' not in str(error) or attempt == 2:

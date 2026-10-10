@@ -92,7 +92,7 @@ with sync_playwright() as pw:
 
         fresh()
         s = snapshot()
-        assert s["towerHp"] == {"player": 10000, "enemy": 10000}
+        assert s["towerHp"] == {"player": 5000, "enemy": 5000}
         assert 15 <= s["coins"]["player"] < 16
         assert s["geometry"]["projection"] == {"top": .8, "bottom": 1}
         p = point(0)
@@ -202,7 +202,7 @@ with sync_playwright() as pw:
         assert snapshot()["state"] == "ended" and page.locator("#resultOverlay").is_visible()
         page.screenshot(path=str(OUT / "game-result-phone.png"))
         page.locator("#restartBtn").click()
-        assert snapshot()["state"] == "playing" and snapshot()["towerHp"]["player"] == 10000
+        assert snapshot()["state"] == "playing" and snapshot()["towerHp"]["player"] == 5000
         fresh(duration="unlimited")
         step(5)
         assert page.locator("#timer").inner_text() == "∞" and snapshot()["state"] == "playing"
