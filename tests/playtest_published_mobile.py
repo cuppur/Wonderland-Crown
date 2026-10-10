@@ -67,11 +67,18 @@ try:
                 game = page.frame_locator('iframe[title="奇境王冠"]')
                 game.locator('#startBtn').wait_for(timeout=60000)
                 frame = next(f for f in page.frames if '/game/index.html' in f.url)
+                assert 'v=20261011-meadow1' in frame.url, 'Published iframe uses an old release'
                 frame.wait_for_function("document.readyState==='complete' && typeof CandyField==='object'", timeout=60000)
                 assert game.locator('.mode-option').count() == 2 and game.locator('#evaEnterBtn').count() == 0
                 game.locator(f'[data-mode="{mode}"]').click()
                 game.locator('#startBtn').click()
                 game.locator('#menuOverlay').wait_for(state='hidden')
+                assert game.locator('#playerHpText').inner_text() == '5000 / 5000'
+                assert game.locator('#enemyHpText').inner_text() == '5000 / 5000'
+                lion_title = game.locator('[data-type="lion"]').get_attribute('title')
+                assert '攻击 30' in lion_title and '回复 15/秒' in lion_title
+                clusters = frame.evaluate("()=>CandyField.meadowLayout(CandyField.buildGeometry(innerWidth,innerHeight,'"+mode+"')).length")
+                assert clusters > 38, 'Published meadow did not gain decorations'
                 page.wait_for_timeout(400)
                 timer = game.locator('#timer').inner_text()
                 # Reproduce fullscreen's short-lived unusable iframe layout.
@@ -118,7 +125,7 @@ try:
                 if not game.locator('#topButtons').is_visible():
                     game.locator('#menuBtn').click()
                 assert game.locator('#topButtons').is_visible()
-                report['checks'].append({'browser':name,'map':mode,'creamPixels':cream,'backing':backing,'timerContinues':True,'deployment':True,'hardAI':True,'rotationPause':name!='desktop'})
+                report['checks'].append({'browser':name,'map':mode,'creamPixels':cream,'backing':backing,'timerContinues':True,'deployment':True,'hardAI':True,'rotationPause':name!='desktop','latestBalance':True,'meadowClusters':clusters})
                 print(f'[PASS] published {name}/{mode}: battlefield pixels, timer, deployment, transition recovery and menu', flush=True)
                 page.close()
                 for key in events:
