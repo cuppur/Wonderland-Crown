@@ -1,3 +1,12 @@
+# Android 独立 APK 已安装 — 完成点（2026-10-17）
+
+- 当前 UI 游戏已打包为自包含离线横屏 Android 应用，名称“奇境王冠·新版”，包名`com.qijingwangguan.mobile`；旧版仍独立保留为`com.qijingwangguan.game`，安装时验证手机上两个包同时存在。
+- Android 16 手机通过 USB ADB 安装成功并实际启动，首页横屏截图 output/android/phone-home.png 已检查；APK签名校验通过，3.4 MB，文件 output/android/WonderlandCrown-New.apk。
+- 新糖果王冠图标含自适应图标与多密度资源。新增 android-app/ 构建脚本与说明；游戏HTML、JS、图片、音频复制到APK，离线运行，不含EVA密钥、API代理或网络权限。项目外个人调试签名密钥保存在android-app/wonderland-crown-debug.keystore并忽略提交。
+- 后续构建可运行 `.\\android-app\\build-apk.ps1 -Sdk <Android SDK路径> -AdbDevice <设备序列号>`；安装时会再次确认旧版包存在，包名不同则并装，若新版已安装才使用更新模式。
+
+---
+
 # 最新属性表、道路旁装饰与 Lovable 发布完成（2026-10-11）
 
 - 最新原表为 单位属性表/20261010.xlsx，SHA256 A53FAD5E12CE9C1B13613C8B7C1030FA7FC73EB15A89C3BE3B3EA016AAF93ED4；原工作簿只读，已归档提交。

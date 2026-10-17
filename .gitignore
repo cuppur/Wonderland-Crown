@@ -50,6 +50,9 @@ pptx_build/
 
 # Reproducible Playwright screenshots and local reports
 output/playwright/
+output/android/
+android-app/build/
+android-app/*.keystore
 
 # Local checkouts and encrypted API configuration
 .claude/
