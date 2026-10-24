@@ -1,3 +1,13 @@
+# GitHub 主线与安卓 Release — 发布前检查完成（2026-10-24）
+
+- 用户授权推送UI主分支到GitHub，并在Releases附安卓APK。本轮只推送UI，不推送EVA/beauty草稿；GitHub默认分支已核对为UI，远程尚无Release。
+- 从最新UI动物版重新构建Android 2026.10.24（versionCode20261024），包名com.qijingwangguan.mobile，沿用既有个人调试签名，与旧APK证书SHA256相同。构建器支持版本与原签名路径参数，并校验删除操作限制在明确的临时构建目录。
+- APK 3409953字节，SHA256 2ca86feae695d93f64974eef21b4528c85eee50d09c5b3fc2468afb1a0b94f71。九个打包游戏文件与当前UI运行文件逐字节一致，与Git运行源码换行归一化一致；不含beauty/EVA/密钥/签名私钥。APK签名v1/v2/v3、zipalign、版本/包名验证通过。
+- 提取APK内容在Chromium完全断网、844×390/DPR3触屏环境下双地图渲染/计时/动物部署通过，无pageerror；截图已检查。本轮未安装实体手机。Windows WebKit无法打开离线file页，未计为安卓验证。
+- 发布附件为output/android/WonderlandCrown-Android-v2026.10.24.apk与SHA256SUMS.txt；发布说明release-notes.md和校验报告留在忽略的output/android。README加入Release下载入口，原签名文件不提交。
+- 下一步：提交打包版本和文档，推送UI，创建v2026.10.24标签与Release；下载上传附件核对SHA后发布，记录完成点。本轮无关机或Lovable部署要求。
+
+---
 # 普通入口旧beauty缓存修复完成（2026-10-24）
 
 - 用户复报普通cmd仍显示beauty。进一步真实浏览器复现：同源网址曾缓存beauty后，服务端切换UI仍可从浏览器缓存读到beauty；上轮只用全新浏览器验证，遗漏了旧缓存。

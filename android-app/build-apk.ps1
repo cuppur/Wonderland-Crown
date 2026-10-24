@@ -1,6 +1,9 @@
 param(
     [string]$Sdk = $env:ANDROID_SDK_ROOT,
-    [string]$AdbDevice = ''
+    [string]$AdbDevice = '',
+    [int]$VersionCode = 20261024,
+    [string]$VersionName = '2026.10.24',
+    [string]$SigningKey = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -20,19 +23,27 @@ foreach ($required in @($aapt2, $androidJar, $jarTool, $keytool)) {
     if (-not (Test-Path -LiteralPath $required)) { throw "Required Android build tool is missing: $required" }
 }
 
-$build = Join-Path $env:TEMP 'wonderland-crown-mobile-build'
+$build = [System.IO.Path]::GetFullPath((Join-Path $env:TEMP 'wonderland-crown-mobile-build'))
+function Assert-BuildPath([string]$Target) {
+    $absolute = [System.IO.Path]::GetFullPath($Target)
+    if ($absolute -ne $build -and -not $absolute.StartsWith($build + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing to remove a path outside the build directory: $absolute"
+    }
+}
+if ($VersionCode -le 20261017 -or $VersionName -notmatch '^\d{4}\.\d{2}\.\d{2}(?:\.\d+)?$') { throw 'Use a newer version code and a YYYY.MM.DD version name.' }
+if ($SigningKey -and -not (Test-Path -LiteralPath $SigningKey -PathType Leaf)) { throw 'The selected signing key does not exist.' }
 $source = Join-Path $build 'source'
 $res = Join-Path $source 'res'
 $manifest = Join-Path $source 'AndroidManifest.xml'
 $activitySource = Join-Path $source 'java/com/qijingwangguan/mobile/MainActivity.java'
 $outDir = Join-Path $projectRoot 'output/android'
-if (Test-Path -LiteralPath $build) { Remove-Item -LiteralPath $build -Recurse -Force }
+if (Test-Path -LiteralPath $build) { Assert-BuildPath $build; Remove-Item -LiteralPath $build -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $build, $source, $outDir | Out-Null
 Copy-Item -LiteralPath (Join-Path $appRoot 'app/src/main/AndroidManifest.xml') -Destination $source -Force
 Copy-Item -LiteralPath (Join-Path $appRoot 'app/src/main/java') -Destination $source -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $appRoot 'app/src/main/res') -Destination $source -Recurse -Force
 $gameAssets = Join-Path $build 'assets/game'
-if (Test-Path -LiteralPath $gameAssets) { Remove-Item -LiteralPath $gameAssets -Recurse -Force }
+if (Test-Path -LiteralPath $gameAssets) { Assert-BuildPath $gameAssets; Remove-Item -LiteralPath $gameAssets -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $gameAssets | Out-Null
 foreach ($entry in @('index.html', 'css', 'js', 'assets')) {
     Copy-Item -LiteralPath (Join-Path $projectRoot $entry) -Destination $gameAssets -Recurse -Force
@@ -46,17 +57,17 @@ $classesJar = Join-Path $build 'classes.jar'
 $dexDir = Join-Path $build 'dex'
 $unsigned = Join-Path $build 'app-final-unsigned.apk'
 $aligned = Join-Path $build 'app-aligned.apk'
-$keystore = Join-Path $appRoot 'wonderland-crown-debug.keystore'
+$keystore = if ($SigningKey) { [System.IO.Path]::GetFullPath($SigningKey) } else { Join-Path $appRoot 'wonderland-crown-debug.keystore' }
 $finalApk = Join-Path $build 'WonderlandCrown-New.apk'
 $deliverable = Join-Path $outDir 'WonderlandCrown-New.apk'
 foreach ($path in @($generated, $classes, $dexDir)) {
-    if (Test-Path -LiteralPath $path) { Remove-Item -LiteralPath $path -Recurse -Force }
+    if (Test-Path -LiteralPath $path) { Assert-BuildPath $path; Remove-Item -LiteralPath $path -Recurse -Force }
     New-Item -ItemType Directory -Force -Path $path | Out-Null
 }
 
 & $aapt2 compile --dir $res -o $compiledResources
 if ($LASTEXITCODE -ne 0) { throw "aapt2 resource compile failed ($LASTEXITCODE)" }
-& $aapt2 link -o $aaptApk -I $androidJar --manifest $manifest --rename-manifest-package com.qijingwangguan.mobile --min-sdk-version 23 --target-sdk-version 35 --version-code 20261017 --version-name 2026.10.17 --java $generated -R $compiledResources --auto-add-overlay
+& $aapt2 link -o $aaptApk -I $androidJar --manifest $manifest --rename-manifest-package com.qijingwangguan.mobile --min-sdk-version 23 --target-sdk-version 35 --version-code $VersionCode --version-name $VersionName --java $generated -R $compiledResources --auto-add-overlay
 if ($LASTEXITCODE -ne 0) { throw "aapt2 resource link failed ($LASTEXITCODE)" }
 
 & $javac -encoding UTF-8 -source 8 -target 8 -Xlint:-options -Xlint:-deprecation -bootclasspath $androidJar -d $classes $activitySource (Join-Path $generated 'com/qijingwangguan/mobile/R.java')
