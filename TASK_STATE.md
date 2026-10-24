@@ -5,6 +5,14 @@
 - 普通入口按Git定位UI工作区，首页/样式/脚本带构建指纹，服务禁止缓存；实际cmd与旧浏览器缓存回归均验证正确。
 - 保留双地图、拖拽、药水、炮阵、内置困难AI、音频、暂停、首页、全屏与数值报告。
 - 安卓2026.10.24、versionCode20261024，包名com.qijingwangguan.mobile，沿用原签名。Release准备附APK及SHA256SUMS.txt。
-- 当前：主线旧实验兼容项与公开文档清理完成，正在回归并完成GitHub Release。本轮无网站部署或关机任务。
+- 当前：普通主线整理与回归完成，已推送GitHub；安卓Release正式发布。本轮无网站部署或关机任务。
 
 验证结果：静态七组、普通16项、规则12项、战斗属性6组、手机10场景、启动器5组与真实缓存回归通过；普通AI九组含64场对照60胜4负。APK签名通过且九个游戏文件与当前主线一致；SHA256 e48b66918e5d64783c7eb09cef29cd68ceb45bb02dd63bc8302f0278fb46f40d。远端已核对仅有UI主分支。下一步完成主线推送及安卓Release最终发布核验。
+
+## 发布完成
+
+- GitHub远端分支列表核验仅有UI，默认分支UI。公开文档、代码、测试和Release只保留普通游戏内容，文本扫描通过。
+- Release：https://github.com/cuppur/Wonderland-Crown/releases/tag/v2026.10.24 ，已公开并标记Latest，目标普通主线运行提交0256296。
+- 安装附件WonderlandCrown-Android-v2026.10.24.apk，3409953字节，SHA256 e48b66918e5d64783c7eb09cef29cd68ceb45bb02dd63bc8302f0278fb46f40d；另附SHA256SUMS.txt。
+- 两个上传附件均已从GitHub重新下载，逐字节哈希与本地一致。最终APK提取内容在完全断网Chromium触屏环境双地图渲染/计时/出兵通过，无pageerror；签名沿用原证书。本轮未重新安装实体手机。
+- 后续修改从UI主线继续；发布APK从该主线构建。当前任务完成。
