@@ -18,9 +18,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def checkout(mode):
-    expected = 'UI' if mode == 'ui' else 'EVA'
-    has_eva = (ROOT / 'tools/eva_server.py').is_file()
-    if (mode == 'eva') == has_eva:
+    expected = {'ui':'UI', 'eva':'EVA', 'beauty':'beauty'}[mode]
+    branch = subprocess.run(['git', '-C', str(ROOT), 'symbolic-ref', '--quiet', '--short', 'HEAD'], capture_output=True, text=True, encoding='utf-8').stdout.strip()
+    if branch == expected:
         return ROOT
     result = subprocess.run(['git', '-C', str(ROOT), 'worktree', 'list', '--porcelain'], capture_output=True, text=True, encoding='utf-8', check=True)
     for entry in result.stdout.split('\n\n'):
@@ -76,7 +76,7 @@ def serve(root, mode, port):
         base = SimpleHTTPRequestHandler
     class Handler(base):
         def __init__(self, *args, **kwargs):
-            if mode == 'ui':
+            if mode != 'eva':
                 kwargs['directory'] = str(root)
             super().__init__(*args, **kwargs)
 
@@ -96,7 +96,7 @@ def serve(root, mode, port):
                 self.end_headers()
                 self.wfile.write(payload)
                 return
-            if mode == 'ui':
+            if mode != 'eva':
                 path = unquote(urlsplit(self.path).path)
                 if path not in {'/', '/index.html', '/favicon.ico'} and not path.startswith(('/js/', '/css/', '/assets/')):
                     self.send_error(404)
@@ -114,7 +114,7 @@ def serve(root, mode, port):
 def launch(mode, open_browser=True):
     root = checkout(mode)
     build = build_id(root, mode)
-    first = 8765 if mode == 'ui' else 8772
+    first = {'ui':8765, 'eva':8772, 'beauty':8785}[mode]
     for port in range(first, first + 10):
         info = health(port)
         if info and info.get('gameMode') == mode and info.get('build') == build:
@@ -150,7 +150,7 @@ def launch(mode, open_browser=True):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mode', choices=['ui', 'eva'], required=True)
+    parser.add_argument('--mode', choices=['ui', 'eva', 'beauty'], required=True)
     parser.add_argument('--serve', action='store_true')
     parser.add_argument('--port', type=int, default=8772)
     parser.add_argument('--no-open', action='store_true')

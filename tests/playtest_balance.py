@@ -40,19 +40,26 @@ try:
           const poisons=victim.poisons.map(p=>({dps:p.dps,duration:p.t}));
           const commander=new OrdinaryCommander('player',{units,buffs,potion});
           const aiRanges=Object.fromEntries(Object.keys(units).map(t=>[t,commander.stats(t,true).range]));
-          g.start();return {towers,normalHit,regen,enhancedHit,enhanced,poisons,aiRanges,restartHp:g.towers.player.hp,report:document.querySelector('#reportBody').textContent};
+          const rangeHits=[];for(const type of Object.keys(units)){for(const buffed of [false,true]){for(const inside of [false,true]){
+            g.start();const u=g.createUnit('player',type,1,.35),v=g.createUnit('enemy','elephant',1,.65);
+            if(buffed)g.buffUnit(u);u.attackClock=0;v.attackClock=999;
+            v.x=u.x+u.range*g.laneScale(1)+v.size*.35*g.unitScale()+(inside?-.5:.5);v.y=u.y;g.units=[u,v];
+            g.updateUnits(0);rangeHits.push({type,buffed,inside,attacked:u.attackClock>0});
+          }}}
+          g.start();return {rangeHits,towers,normalHit,regen,enhancedHit,enhanced,poisons,aiRanges,restartHp:g.towers.player.hp,report:document.querySelector('#reportBody').textContent};
         }""")
         assert result['towers'] == [[5000,5000],[5000,5000]] and result['restartHp']==5000
-        assert (result['normalHit'],result['enhancedHit'],result['regen']) == (30,60,15)
-        for t, r in {'snake':60,'lion':70,'elephant':80,'dragon':100}.items():
+        assert (result['normalHit'],result['enhancedHit'],result['regen']) == (25,50,15)
+        for t, r in {'snake':40,'lion':50,'elephant':60,'dragon':80}.items():
             u=result['enhanced'][t]
             assert abs(u['range']-r*1.3)<1e-8 and abs(u['scale']-.7*1.3)<1e-8
             assert not u['duplicate'] and u['first']==u['range'] and result['aiRanges'][t]==u['range']
+        assert all(r['inside']==r['attacked'] for r in result['rangeHits']), result['rangeHits']
         assert result['poisons'] == [{'dps':2,'duration':10},{'dps':4,'duration':15}]
-        assert '60.0' in result['report'] and '25.0' in result['report'] and '16.80' in result['report']
+        assert '50.0' in result['report'] and '25.0' in result['report'] and '15.60' in result['report']
         assert not report['errors'], report['errors']
         report.update(passed=True, measurements=result)
-        report['checks']=['5000城墙开局与重开','狮子30/60直伤及15每秒回血','四种强化射程与体型+30%且不重复放大','强化毒15秒独立叠加','AI射程估计和数值报告同步']
+        report['checks']=['5000城墙开局与重开','狮子25/50直伤及15每秒回血','四种强化射程与体型+30%且不重复放大','强化毒15秒独立叠加','AI射程估计和数值报告同步','四单位普通与强化射程内外实际攻击边界']
         for label in report['checks']: print('[PASS] '+label, flush=True)
         browser.close()
 finally:

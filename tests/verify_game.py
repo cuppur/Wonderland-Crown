@@ -15,7 +15,7 @@ STYLE = ROOT / "css" / "style.css"
 TABLE_DIR = ROOT / "单位属性表"
 EXPECTED_TABLE = "20261010.xlsx"
 EXPECTED_TABLE_SHA256 = {
-    "A53FAD5E12CE9C1B13613C8B7C1030FA7FC73EB15A89C3BE3B3EA016AAF93ED4",
+    "EB69ACA1D6C4A185D1634150104BD79E2A24C7B88690D6A9D7D0E9BCA4B10C6D",
 }
 
 
@@ -68,10 +68,10 @@ required = {
     "游戏标题": "<title>奇境王冠</title>",
     "外部样式入口": '<link rel="stylesheet" href="./css/style.css" />',
     '微软 Emoji 字体': '--emoji:"Segoe UI Emoji"',
-    "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:500,attack:10,speed:80,range:60,interval:.2,cooldown:5,regen:10",
-    "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:700,attack:30,speed:60,range:70,interval:.5,cooldown:5,regen:15",
-    "象最新属性": "elephant:{name:'磐石象',cost:10,hp:1000,attack:15,speed:40,range:80,interval:.8,cooldown:5,regen:20",
-    "龙最新属性": "dragon:{name:'星焰龙',cost:10,hp:800,attack:20,speed:50,range:100,interval:1,cooldown:5,regen:15",
+    "蛇最新属性": "snake:{name:'毒影蛇',cost:10,hp:500,attack:10,speed:80,range:40,interval:.2,cooldown:5,regen:10",
+    "狮最新属性": "lion:{name:'圣鬃狮',cost:10,hp:700,attack:25,speed:60,range:50,interval:.5,cooldown:5,regen:15",
+    "象最新属性": "elephant:{name:'磐石象',cost:10,hp:1000,attack:15,speed:40,range:60,interval:.8,cooldown:5,regen:20",
+    "龙最新属性": "dragon:{name:'星焰龙',cost:10,hp:800,attack:20,speed:50,range:80,interval:1,cooldown:5,regen:15",
     "蛇药水倍率": "snake:{hp:1,attack:1,speed:2,attackSpeed:2,regen:1,poisonDamage:2,poisonDuration:1.5}",
     "狮药水倍率": "lion:{hp:2,attack:2,speed:1,attackSpeed:1,regen:1,killHeal:2}",
     "报告移除建议费用": "<th>每金币价值</th></tr>",

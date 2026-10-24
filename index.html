@@ -122,10 +122,10 @@ const POISON_STATUS_ICON_URL='./assets/images/poison-status-icon-v1.png';
 const poisonStatusIcon=new Image();poisonStatusIcon.decoding='async';poisonStatusIcon.src=POISON_STATUS_ICON_URL;
 
 const UNIT_DATA={
- snake:{name:'毒影蛇',cost:10,hp:500,attack:10,speed:80,range:60,interval:.2,cooldown:5,regen:10,aoe:false,size:23,role:'快速刺客',special:'中毒2/s×10秒，可独立叠加'},
- lion:{name:'圣鬃狮',cost:10,hp:700,attack:30,speed:60,range:70,interval:.5,cooldown:5,regen:15,aoe:false,size:27,role:'均衡战士',special:'参与击杀回复100生命'},
- elephant:{name:'磐石象',cost:10,hp:1000,attack:15,speed:40,range:80,interval:.8,cooldown:5,regen:20,aoe:true,size:32,role:'慢速坦克',special:'每3秒蓄势，下一击造成300%伤害'},
- dragon:{name:'星焰龙',cost:10,hp:800,attack:20,speed:50,range:100,interval:1,cooldown:5,regen:15,aoe:true,size:29,role:'远程魔法战士',special:'群体燃烧20/s×3秒，刷新不叠加'}
+ snake:{name:'毒影蛇',cost:10,hp:500,attack:10,speed:80,range:40,interval:.2,cooldown:5,regen:10,aoe:false,size:23,role:'快速刺客',special:'中毒2/s×10秒，可独立叠加'},
+ lion:{name:'圣鬃狮',cost:10,hp:700,attack:25,speed:60,range:50,interval:.5,cooldown:5,regen:15,aoe:false,size:27,role:'均衡战士',special:'参与击杀回复100生命'},
+ elephant:{name:'磐石象',cost:10,hp:1000,attack:15,speed:40,range:60,interval:.8,cooldown:5,regen:20,aoe:true,size:32,role:'慢速坦克',special:'每3秒蓄势，下一击造成300%伤害'},
+ dragon:{name:'星焰龙',cost:10,hp:800,attack:20,speed:50,range:80,interval:1,cooldown:5,regen:15,aoe:true,size:29,role:'远程魔法战士',special:'群体燃烧20/s×3秒，刷新不叠加'}
 };
 const POTION={cost:5,cooldown:20,scale:1.3};
 const BURST={cost:20,cooldown:20,damage:1000,shots:10};
