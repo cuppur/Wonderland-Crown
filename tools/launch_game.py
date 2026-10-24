@@ -1,4 +1,4 @@
-"""One-click Windows launcher for the stable UI and independent EVA checkout."""
+"""One-click Windows launcher for the ordinary game."""
 from __future__ import annotations
 
 import argparse
@@ -20,7 +20,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def checkout(mode):
-    expected = {'ui':'UI', 'eva':'EVA', 'beauty':'beauty'}[mode]
+    if mode != 'ui':
+        raise ValueError('Unsupported game mode')
+    expected = 'UI'
     branch = subprocess.run(['git', '-C', str(ROOT), 'symbolic-ref', '--quiet', '--short', 'HEAD'], capture_output=True, text=True, encoding='utf-8').stdout.strip()
     if branch == expected:
         return ROOT
@@ -69,17 +71,9 @@ def health(port):
 
 def serve(root, mode, port):
     build = build_id(root, mode)
-    if mode == 'eva':
-        sys.path.insert(0, str(root / 'tools'))
-        from eva_server import EvaHandler
-        from eva_settings import LocalSettings, default_settings_file
-        base = EvaHandler
-    else:
-        base = SimpleHTTPRequestHandler
-    class Handler(base):
+    class Handler(SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
-            if mode != 'eva':
-                kwargs['directory'] = str(root)
+            kwargs['directory'] = str(root)
             super().__init__(*args, **kwargs)
 
         def log_message(self, *_):
@@ -121,25 +115,22 @@ def serve(root, mode, port):
                 self.end_headers()
                 self.wfile.write(payload)
                 return
-            if mode != 'eva':
-                path = unquote(urlsplit(self.path).path)
-                if path not in {'/', '/index.html', '/favicon.ico'} and not path.startswith(('/js/', '/css/', '/assets/')):
-                    self.send_error(404)
-                    return
-                if any(p.startswith('.') or p == '..' for p in path.split('/')[1:]) or not (root / path.lstrip('/')).resolve().is_relative_to(root):
-                    self.send_error(404)
-                    return
+            path = unquote(urlsplit(self.path).path)
+            if path not in {'/', '/index.html', '/favicon.ico'} and not path.startswith(('/js/', '/css/', '/assets/')):
+                self.send_error(404)
+                return
+            if any(p.startswith('.') or p == '..' for p in path.split('/')[1:]) or not (root / path.lstrip('/')).resolve().is_relative_to(root):
+                self.send_error(404)
+                return
             super().do_GET()
     server = ThreadingHTTPServer(('127.0.0.1', port), Handler)
-    if mode == 'eva':
-        server.settings = LocalSettings(default_settings_file()) if os.name == 'nt' else None
     server.serve_forever()
 
 
 def launch(mode, open_browser=True):
     root = checkout(mode)
     build = build_id(root, mode)
-    first = {'ui':8765, 'eva':8772, 'beauty':8785}[mode]
+    first = 8765
     for port in range(first, first + 10):
         info = health(port)
         if info and info.get('gameMode') == mode and info.get('build') == build:
@@ -166,7 +157,7 @@ def launch(mode, open_browser=True):
         break
     else:
         raise RuntimeError('No available local game port')
-    query = ('eva=1&' if mode == 'eva' else '') + 'mode=' + mode + '&launch=' + build
+    query = 'mode=' + mode + '&launch=' + build
     url = f'http://127.0.0.1:{port}/index.html?' + query
     if open_browser:
         webbrowser.open(url)
@@ -176,9 +167,9 @@ def launch(mode, open_browser=True):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mode', choices=['ui', 'eva', 'beauty'], required=True)
+    parser.add_argument('--mode', choices=['ui'], required=True)
     parser.add_argument('--serve', action='store_true')
-    parser.add_argument('--port', type=int, default=8772)
+    parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--no-open', action='store_true')
     args = parser.parse_args()
     if args.serve:

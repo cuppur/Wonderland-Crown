@@ -69,7 +69,7 @@ try:
                 frame = next(f for f in page.frames if '/game/index.html' in f.url)
                 assert 'v=20261011-meadow1' in frame.url, 'Published iframe uses an old release'
                 frame.wait_for_function("document.readyState==='complete' && typeof CandyField==='object'", timeout=60000)
-                assert game.locator('.mode-option').count() == 2 and game.locator('#evaEnterBtn').count() == 0
+                assert game.locator('.mode-option').count() == 2
                 game.locator(f'[data-mode="{mode}"]').click()
                 game.locator('#startBtn').click()
                 game.locator('#menuOverlay').wait_for(state='hidden')

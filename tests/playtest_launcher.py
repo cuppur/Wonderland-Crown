@@ -1,4 +1,4 @@
-"""Exercise the real Windows cmd entry and a browser with legacy beauty cache."""
+"""Exercise the real Windows cmd entry and a browser with a legacy browser cache."""
 import json, os, subprocess, tempfile, threading
 from pathlib import Path
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -22,7 +22,7 @@ with tempfile.TemporaryDirectory(prefix='qjwg-cmd-capture-') as tmp:
  assert info['gameMode']=='ui' and info['build']==query['launch'][0]
  branch=subprocess.check_output(['git','-C',info['root'],'branch','--show-current'],text=True).strip();assert branch=='UI',info
  with opener.open(url) as r:
-  html=r.read().decode();assert 'BeautySprites' not in html
+  html=r.read().decode();assert '毒影蛇' in html
   assert 'no-store' in r.headers.get('Cache-Control','') and r.headers['X-QJWG-Mode']=='ui'
   assert './css/style.css?launch='+info['build'] in html and './js/ordinary-ai.js?launch='+info['build'] in html
  report.update(url=url,root=info['root'],branch=branch)
@@ -30,13 +30,21 @@ with tempfile.TemporaryDirectory(prefix='qjwg-cmd-capture-') as tmp:
  # Real HTTP caching, without routing (Playwright routing disables the cache).
  legacy={'active':True}
  class Relay(SimpleHTTPRequestHandler):
-  def __init__(self,*a,**kw):super().__init__(*a,directory=str(COMMON),**kw)
+  def __init__(self,*a,**kw):super().__init__(*a,directory=info['root'],**kw)
   def log_message(self,*a):pass
   def end_headers(self):
    if legacy['active']:self.send_header('Cache-Control','public, max-age=3600')
    super().end_headers()
   def do_GET(self):
-   if legacy['active']:return super().do_GET()
+   if legacy['active']:
+    path=urlsplit(self.path).path
+    if path in {'/index.html','/css/style.css','/js/ordinary-ai.js'}:
+     body=(Path(info['root'])/path.lstrip('/')).read_bytes()
+     if path.endswith('.html'):body=body.replace(b'</head>',b'<script>window.__staleEntry=true;</script></head>')
+     elif path.endswith('.css'):body+=b'\n:root{--stale-cache:1;}'
+     else:body+=b'\nwindow.__staleScript=true;'
+     self.send_response(200);self.send_header('Content-Type','text/html' if path.endswith('.html') else 'text/css' if path.endswith('.css') else 'application/javascript');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body);return
+    return super().do_GET()
    with opener.open(origin+self.path) as r:
     body=r.read();self.send_response(r.status)
     for h in ['Content-Type','Cache-Control','Pragma','X-QJWG-Mode','X-QJWG-Build']:
@@ -47,18 +55,19 @@ with tempfile.TemporaryDirectory(prefix='qjwg-cmd-capture-') as tmp:
   with sync_playwright() as p:
    browser=p.chromium.launch(headless=True);page=browser.new_page(viewport={'width':1920,'height':1080})
    local=f'http://127.0.0.1:{server.server_port}'
-   page.goto(local+'/index.html?test=1');page.wait_for_function('typeof BeautyCharacters!=="undefined"')
+   page.goto(local+'/index.html?test=1');page.wait_for_function('!!window.__staleEntry && !!window.__staleScript')
    legacy['active']=False
-   page.goto(local+'/index.html?test=1');report['legacyCacheReproduced']=page.evaluate('typeof BeautyCharacters!=="undefined"')
+   page.goto(local+'/index.html?test=1');report['legacyCacheReproduced']=page.evaluate('!!window.__staleEntry')
    page.on('pageerror',lambda e:report['errors'].append(str(e)))
    response=page.goto(local+parts.path+'?'+parts.query+'&test=1');page.wait_for_function('!!window.__QJWG_TEST__')
-   config=page.evaluate('__QJWG_TEST__.config()');assert 'BeautySprites' not in page.content()
+   config=page.evaluate('__QJWG_TEST__.config()');assert not page.evaluate('!!window.__staleEntry || !!window.__staleScript')
+   assert page.evaluate('getComputedStyle(document.documentElement).getPropertyValue("--stale-cache").trim()')==''
    assert config['units']['lion']['attack']==25 and [config['units'][t]['range'] for t in ['snake','lion','elephant','dragon']]==[40,50,60,80]
    page.locator('#startBtn').click();page.wait_for_timeout(300);assert page.locator('#menuOverlay').is_hidden()
-   page.screenshot(path=str(OUT/'ordinary-after-beauty-cache.png'))
+   page.screenshot(path=str(OUT/'ordinary-after-legacy-cache.png'))
    page.set_viewport_size({'width':844,'height':390});page.wait_for_timeout(200);page.screenshot(path=str(OUT/'ordinary-small-after-cache.png'))
    assert not report['errors'],report['errors'];browser.close()
-   report['checks'].append('预热beauty页面和样式脚本缓存后，同浏览器从普通启动地址进入新属性动物对局')
+   report['checks'].append('预热旧页面和样式脚本缓存后，同浏览器从启动地址进入最新动物对局')
  finally:server.shutdown();server.server_close()
 report['passed']=True
 (OUT/'entry-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')

@@ -25,7 +25,6 @@ with sync_playwright() as p:
     frame = next(f for f in page.frames if '/game/index.html' in f.url)
     frame.wait_for_function("document.readyState === 'complete' && typeof CandyField === 'object'", timeout=60000)
     assert game.locator('.mode-option').count() == 2
-    assert game.locator('#evaEnterBtn').count() == 0
     page.screenshot(path=str(OUT / 'home-desktop.png'))
     game.locator('#startBtn').click()
     game.locator('#menuOverlay').wait_for(state='hidden')

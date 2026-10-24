@@ -4,7 +4,7 @@
 
 普通模式首次动物部署不早于第 3 个游戏秒；同方相邻动物部署至少隔 2 秒。双方初始 15 金币，每游戏秒 +1；蛇、狮、象、龙各 10 金币，卡牌冷却 5 秒。药水和炮阵继续使用正式规则。指挥器只读公开战场信息，经 Game.deploy / armPotion / useBurst 购买动作，没有额外收入、数值加成、单位操控或绕过冷却。
 
-js/ordinary-ai.js 负责决策，index.html updateAI 调用；重开清除计划。EVA 对战不调用这个指挥器，仍由玩家选择的模型决定合法动作。
+js/ordinary-ai.js 负责决策，index.html updateAI 调用；重开清除计划。
 
 ## 决策原则
 

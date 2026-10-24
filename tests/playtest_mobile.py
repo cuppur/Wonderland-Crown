@@ -4,7 +4,6 @@ Checks actual battlefield pixels, tiny fullscreen-transition sizes, legacy Canva
 APIs, readback restrictions, orientation, deployment and explicit surface release.
 Uses no accounts or personal API settings. Run: python tests/playtest_mobile.py
 """
-import importlib.util
 import json
 import threading
 from functools import partial
@@ -31,16 +30,7 @@ class Quiet(SimpleHTTPRequestHandler):
             pass  # Closing a WebKit page can cancel its audio resource request.
 
 
-if (ROOT / "tools/eva_server.py").exists():
-    spec = importlib.util.spec_from_file_location("eva_server", ROOT / "tools/eva_server.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    server = module.make_server(0)
-    class QuietEva(module.EvaHandler, Quiet):
-        pass
-    server.RequestHandlerClass = QuietEva
-else:
-    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(Quiet, directory=str(ROOT)))
+server = ThreadingHTTPServer(("127.0.0.1", 0), partial(Quiet, directory=str(ROOT)))
 threading.Thread(target=server.serve_forever, daemon=True).start()
 url = f"http://127.0.0.1:{server.server_port}/index.html?test=1"
 report = {"checks": [], "pageErrors": [], "consoleErrors": [], "cases": []}

@@ -2,7 +2,7 @@
 
 这是一个独立的离线 Android WebView 应用。应用名称为“奇境王冠·新版”，包名为 `com.qijingwangguan.mobile`，因此会和旧版 `com.qijingwangguan.game` 并排安装。
 
-APK 内包含游戏运行所需的 `index.html`、`css/`、`js/` 和 `assets/`，可离线游玩。安装包不含 EVA API 密钥、本地代理或测试文件。游戏运行时使用全屏横屏布局。
+APK 内包含游戏运行所需的 `index.html`、`css/`、`js/` 和 `assets/`，可离线游玩。安装包不含 个人凭据、本地代理或测试文件。游戏运行时使用全屏横屏布局。
 
 ## 构建
 
@@ -16,7 +16,7 @@ APK 内包含游戏运行所需的 `index.html`、`css/`、`js/` 和 `assets/`�
 
 ## GitHub Release（2026.10.24）
 
-Release 安装包从 UI 主线生成，版本名 2026.10.24，版本号 20261024。沿用已有的个人调试签名和包名 com.qijingwangguan.mobile，可更新之前安装的“奇境王冠·新版”，与旧包 com.qijingwangguan.game 继续并存。APK 为完整离线动物版，不包含 beauty 草稿、EVA 或 API 配置。
+Release 安装包从 UI 主线生成，版本名 2026.10.24，版本号 20261024。沿用已有的个人调试签名和包名 com.qijingwangguan.mobile，可更新之前安装的“奇境王冠·新版”，与旧包 com.qijingwangguan.game 继续并存。APK 为完整离线动物版，无需账号与个人 API 配置。
 
 工作区中没有原签名时，使用 `-SigningKey <本机已有签名文件路径>` 指定原签名，不能生成新签名后声称可覆盖旧包。可通过 `-VersionCode`、`-VersionName` 设置后续发布版本；签名文件不提交到 GitHub。
 

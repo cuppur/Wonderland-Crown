@@ -10,7 +10,7 @@
 
 ## 2. 运行与测试
 
-- 一键启动：根目录「一键启动-普通游戏.cmd」与「一键启动-EVA对战.cmd」，由 tools/launch_game.py 定位 UI / EVA 分支并启动本地服务。
+- 一键启动：根目录「一键启动-普通游戏.cmd」，由 tools/launch_game.py 定位 UI 主分支并启动本地服务。
 - 开发启动：项目根目录执行 `python -m http.server 8765 --bind 127.0.0.1`，打开 `http://127.0.0.1:8765/index.html?test=1`。
 - 测试：`python tests/verify_game.py`（静态契约、资源、属性表哈希、JS 语法），必须全部 PASS。
 - 浏览器回归命令：`python tests/playtest_game.py`（需开发环境 Python Playwright；不属于游戏运行依赖）。截图/报告位于 `output/playwright/`。
@@ -43,7 +43,7 @@
 
 - 常量与数值：`UNIT_DATA`、`BUFFS`、`POTION`、`BURST`、`GUARD_CANNON`、`FX_TIMING`、`FIELD`、`CASTLE_GEOMETRY`（数值只在 index.html 内维护）。
 - 地图与路径：`Path` 类、`Game.buildPaths()`、`CandyField.buildGeometry()`；两种模式“三路战线”和“交汇战线”。
-- 普通 AI：`OrdinaryCommander`（js/ordinary-ai.js），策略与验证见 ORDINARY_AI.md；EVA 模型决策另行处理。
+- 普通 AI：`OrdinaryCommander`（js/ordinary-ai.js），策略与验证见 ORDINARY_AI.md。
 - 战斗：`Game` 类（部署、单位更新、攻击、城墙、炮台、AI、渲染）。
 - 卡牌与拖拽：`.card` DOM、`queueDrag()`、`beginDrag()`、`finishDrag()`。
 - 技能：魔力药水（拖到卡牌，强化下一只）、爆裂炮阵（选一路连续 10 炮）。

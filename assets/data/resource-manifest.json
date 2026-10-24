@@ -52,8 +52,8 @@
       "type": "script",
       "source": "js/ordinary-ai.js",
       "publicPath": "js/ordinary-ai.js",
-      "bytes": 9044,
-      "sha256": "2D1E4BA3B6D6841FCC9965168DB20D83535F4729953A5D6D81714A34EF3F0DA1",
+      "bytes": 9030,
+      "sha256": "3114445AC470ABE723E0BFF9B3E8F02255649D881340CDBF428FEDCDF6CD67D9",
       "source_reference_count": 1,
       "embedded_in_html": false
     }

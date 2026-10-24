@@ -92,7 +92,7 @@ class OrdinaryCommander {
   this.lastDeploy=game.elapsed;return true;
  }
  update(game){
-  if(game.state!=='playing'||game.evaMode||game.elapsed+1e-9<this.nextThink)return;
+  if(game.state!=='playing'||game.elapsed+1e-9<this.nextThink)return;
   const lanes=this.lanes(game),danger=[...lanes].sort((a,b)=>b.danger-a.danger)[0],urgent=danger.p>.68&&danger.danger>.65||danger.p>.86&&danger.deficit>.1,pressure=danger.p>.35&&danger.deficit>.45;
   this.nextThink=game.elapsed+(urgent?.18:.4);
   const coins=game.coins[this.side],skills=game.tacticCool[this.side],foe=this.side==='enemy'?'player':'enemy',losing=game.towers[this.side].hp<game.towers[foe].hp;
