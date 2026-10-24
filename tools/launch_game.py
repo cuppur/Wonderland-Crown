@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
+import re
 import json
 import os
 import subprocess
@@ -83,12 +85,35 @@ def serve(root, mode, port):
         def log_message(self, *_):
             pass
 
+        def end_headers(self):
+            # A mode can previously have occupied this port in another checkout.
+            self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('X-QJWG-Mode', mode)
+            self.send_header('X-QJWG-Build', build)
+            super().end_headers()
+
+        def send_head(self):
+            if urlsplit(self.path).path in {'/', '/index.html'}:
+                html = (root / 'index.html').read_text(encoding='utf-8')
+                # CSS and scripts need fresh URLs too: their old cache entries
+                # can survive a fresh navigation of the entry document.
+                html = re.sub(r'((?:src|href)=["\'])(\./(?:js|css)/[^"\'?]+)(?:\?[^"\']*)?(["\'])',
+                              lambda m:m[1]+m[2]+'?launch='+build+m[3], html)
+                payload = html.encode('utf-8')
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.send_header('Content-Length', str(len(payload)))
+                self.end_headers()
+                return io.BytesIO(payload)
+            return super().send_head()
+
         def do_GET(self):
             if self.headers.get('Host') not in {f'127.0.0.1:{port}', f'localhost:{port}'}:
                 self.send_error(421)
                 return
             if self.path == '/launch/api/health':
-                payload = json.dumps({'gameMode': mode, 'build': build, 'pid': os.getpid()}).encode()
+                payload = json.dumps({'gameMode': mode, 'build': build, 'pid': os.getpid(), 'root': str(root.resolve())}).encode()
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Cache-Control', 'no-store')
@@ -141,7 +166,8 @@ def launch(mode, open_browser=True):
         break
     else:
         raise RuntimeError('No available local game port')
-    url = f'http://127.0.0.1:{port}/index.html' + ('?eva=1' if mode == 'eva' else '')
+    query = ('eva=1&' if mode == 'eva' else '') + 'mode=' + mode + '&launch=' + build
+    url = f'http://127.0.0.1:{port}/index.html?' + query
     if open_browser:
         webbrowser.open(url)
     print(url)

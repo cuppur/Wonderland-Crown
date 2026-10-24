@@ -1,3 +1,12 @@
+# 普通入口旧beauty缓存修复完成（2026-10-24）
+
+- 用户复报普通cmd仍显示beauty。进一步真实浏览器复现：同源网址曾缓存beauty后，服务端切换UI仍可从浏览器缓存读到beauty；上轮只用全新浏览器验证，遗漏了旧缓存。
+- 启动URL增加mode与launch构建指纹，首页响应中的CSS/JS也附同构建指纹；所有本地响应禁止缓存，并带X-QJWG-Mode/Build诊断头。health增加实际服务root。分支选择仍严格UI/EVA/beauty，不改游戏内容与属性。
+- 新增tests/playtest_launcher.py：执行真实根目录普通cmd（从其他工作目录启动，并截获浏览器打开地址而不启本机Edge）；验证选中UI工作区、URL版本和响应头。实际HTTP预热beauty首页/样式/脚本缓存，同一Chromium先复现旧页面，再经新普通地址打开新属性动物版并进入对局；1920×1080/844×390截图已检查。根目录与UI工作区运行均通过，legacyCacheReproduced=true。
+- 三工作区静态校验通过，启动器五组通过；仅终止确认属于本项目UI工作区的旧普通服务并重启，新地址为 http://127.0.0.1:8765/index.html?mode=ui&launch=07632e61fac4c04c2081 。beauty和EVA现有服务未中断。
+- UI/EVA同步启动修复；beauty原有未提交角色/素材/代码保留。未推送、未发布公网，无关机动作。
+
+---
 # 最新单位属性与三入口分离完成（2026-10-24）
 
 - 最新原表仍为单位属性表/20261010.xlsx，但内容已更新，SHA256 EB69ACA1D6C4A185D1634150104BD79E2A24C7B88690D6A9D7D0E9BCA4B10C6D。原表只读，字节未改，UI / EVA 归档相同原表并更新静态契约。
